@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
+  m_Name: EnemyAnimation
+  m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
+  idleClip: {fileID: -203655887218126122, guid: 11d57b3b59b33c446b6d86a514fd82af, type: 3}
+  idleTransitionDuration: 0.15
+  deathClip: {fileID: -203655887218126122, guid: f38790ce837900e4db260f296137a8db, type: 3}
+  deathTransitionDuration: 0.15
+  deathPlaybackSpeed: 3
+  standUpClip: {fileID: -203655887218126122, guid: 448b0d5eb6ff88d4e9dc2a87d10c1fe6, type: 3}
+  standUpTransitionDuration: 0.15
+  standUpPlaybackSpeed: 3
+  standUpToIdleTransitionDuration: 0.25
+  attackReactions:
+  - {fileID: 11400000, guid: 20c3b58b8335b484b8db600c7d44ca12, type: 2}
+  - {fileID: 11400000, guid: 361bccece8cb182419460f1e0dda1319, type: 2}
+  - {fileID: 11400000, guid: d8021ea590a8abc4baa9bb1a64c65ae2, type: 2}
+  - {fileID: 11400000, guid: 6c3e9c91e17df3b46a3da2ac19612f34, type: 2}
+  defaultHitFront: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitBack: {fileID: 11400000, guid: 9627be5412a31ab46be040eee2178670, type: 2}
+  defaultHitLeft: {fileID: 11400000, guid: 6a8f935b1f84af24ab707da5495ff328, type: 2}
+  defaultHitRight: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}

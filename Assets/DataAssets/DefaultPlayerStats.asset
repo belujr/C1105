@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3c1d19aab02b954383fe7f7d73e9773, type: 3}
+  m_Name: DefaultPlayerStats
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatsData
+  walkSpeed: 4.5
+  sprintSpeed: 8
+  rotationSpeed: 15
+  gravity: -20
+  jumpHeight: 2
+  maxJumps: 2
+  dashSpeed: 30
+  dashDuration: 0.1
+  dashCooldown: 1
+  slideSpeed: 20
+  slideDuration: 1
+  slideCooldown: 1.5
+  grappleSpeed: 30
+  grappleMaxRange: 25
+  grappleReleaseDistance: 2.5
+  grappleArcDip: 0.5
+  comboResetWindow: 2
+  combatStanceDuration: 1.5
+  magnetismRadius: 3.5
+  idealStrikeDistance: 0
