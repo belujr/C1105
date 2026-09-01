@@ -14,20 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
   attackIcon: {fileID: 21300000, guid: fcae1a2c306fc454684b479f60922387, type: 3}
   animationTriggerName: Compass Kick
-  animationDuration: 0.8
+  animationDuration: 0.6
   forwardLungeSpeed: 1.4
   transitionDuration: 0.05
   chargePauseTime: 0.3
   damage: 10
   knockbackForce: 2.5
   strikeDistance: 1
-  isAOE: 1
+  isAOE: 0
   aoeRadius: 6
   coneAngle: 120
   maxEnemiesHit: 4
   verticalLift: 0
   hitStopDuration: 1
   cameraShakeIntensity: 0.5
-  cameraShakeDuration: 0.2
+  cameraShakeDuration: 0.5
   customHitSound: {fileID: 0}
   customVFX: {fileID: 0}

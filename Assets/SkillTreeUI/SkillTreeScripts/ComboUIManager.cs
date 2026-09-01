@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // Added for Scene transitions
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Collections;
 
@@ -12,20 +12,18 @@ public class ComboUIManager : MonoBehaviour
 
     [Header("UI Panel & Inputs")]
     public GameObject skillTreePanel; 
-    public InputActionReference backAction; // Drag UI/Cancel here
-    [Tooltip("Drag your PlayerControls Input Asset here from the Project window")]
+    public InputActionReference backAction;
     public InputActionAsset inputActions; 
 
     [Header("Player Data References")]
     public CombatStyle playerCombatStyle; 
 
     [Header("UI References")]
-    public UIComboSlot[] comboSlots; 
-    public Transform availableMovesContainer; 
-    public GameObject moveButtonPrefab; 
+    public UIComboSlot[] comboSlots; // Contains 4 slot elements now
+    public Transform treeContainer; // Main parent containing your 4 tree branches
+    public SkillTreeNode startingSelectedNode; // Initial node focused when menu opens
 
-    [Header("Unlocked Attacks")]
-    public List<AttackData> unlockedAttacks; 
+    private SkillTreeNode[] allTreeNodes;
 
     private void Awake()
     {
@@ -35,12 +33,15 @@ public class ComboUIManager : MonoBehaviour
 
     private void Start()
     {
-        skillTreePanel.SetActive(false); 
+        if (skillTreePanel != null)
+            skillTreePanel.SetActive(false); 
+
+        if (treeContainer != null)
+            allTreeNodes = treeContainer.GetComponentsInChildren<SkillTreeNode>(true);
     }
 
     private void Update()
     {
-        // Hardcoded check for the Right Stick press (R3) on the currently active gamepad
         if (Gamepad.current != null && Gamepad.current.rightStickButton.wasPressedThisFrame)
         {
             SceneManager.LoadScene("AK_LevelDesign");
@@ -73,33 +74,31 @@ public class ComboUIManager : MonoBehaviour
     {
         skillTreePanel.SetActive(true);
 
-        // Switch Action Map to UI to pause gameplay controls
         if (inputActions != null)
         {
             inputActions.FindActionMap("Gameplay").Disable();
             inputActions.FindActionMap("UI").Enable();
         }
 
-        PopulateAvailableAttacks();
+        RefreshAllNodes();
         LoadComboFromPlayer();
 
-        // Wait 1 frame so Unity updates UI elements before setting EventSystem focus
         StartCoroutine(SetInitialUIFocus());
     }
 
     private IEnumerator SetInitialUIFocus()
     {
-        yield return null; // Wait for layout rebuild
+        yield return null; // Wait 1 frame for UI updates
 
-        EventSystem.current.SetSelectedGameObject(null); // Clear previous selection
+        EventSystem.current.SetSelectedGameObject(null);
 
-        if (availableMovesContainer.childCount > 0)
+        if (startingSelectedNode != null)
         {
-            EventSystem.current.SetSelectedGameObject(availableMovesContainer.GetChild(0).gameObject);
+            EventSystem.current.SetSelectedGameObject(startingSelectedNode.gameObject);
         }
-        else if (comboSlots.Length > 0)
+        else if (allTreeNodes != null && allTreeNodes.Length > 0)
         {
-            EventSystem.current.SetSelectedGameObject(comboSlots[0].gameObject);
+            EventSystem.current.SetSelectedGameObject(allTreeNodes[0].gameObject);
         }
     }
 
@@ -115,44 +114,22 @@ public class ComboUIManager : MonoBehaviour
         }
     }
 
-    public void PopulateAvailableAttacks()
+    public void RefreshAllNodes()
     {
-        // Destroy existing buttons immediately so we can read child count correctly
-        foreach (Transform child in availableMovesContainer) 
+        if (allTreeNodes == null && treeContainer != null)
+            allTreeNodes = treeContainer.GetComponentsInChildren<SkillTreeNode>(true);
+
+        if (allTreeNodes == null) return;
+
+        foreach (SkillTreeNode node in allTreeNodes)
         {
-            Destroy(child.gameObject);
-        }
-
-        List<Selectable> createdButtons = new List<Selectable>();
-
-        foreach (AttackData attack in unlockedAttacks)
-        {
-            GameObject btnObj = Instantiate(moveButtonPrefab, availableMovesContainer);
-            UIAttackButton attackBtn = btnObj.GetComponent<UIAttackButton>();
-            attackBtn.Initialize(attack);
-
-            Selectable sel = btnObj.GetComponent<Selectable>();
-            if (sel != null) createdButtons.Add(sel);
-        }
-
-        // Connect automatic navigation between generated buttons
-        SetupExplicitNavigation(createdButtons);
-    }
-
-    private void SetupExplicitNavigation(List<Selectable> moveButtons)
-    {
-        // Wire D-pad navigation between instantiated moves and combo slots
-        for (int i = 0; i < moveButtons.Count; i++)
-        {
-            Navigation nav = moveButtons[i].navigation;
-            nav.mode = Navigation.Mode.Automatic; // Ensures D-Pad auto-detects adjacent UI
-            moveButtons[i].navigation = nav;
+            node.UpdateVisuals();
         }
     }
 
     public void LoadComboFromPlayer()
     {
-        if (playerCombatStyle.lightComboSequence == null) return;
+        if (playerCombatStyle == null || playerCombatStyle.lightComboSequence == null) return;
 
         for (int i = 0; i < comboSlots.Length; i++)
         {
@@ -167,31 +144,34 @@ public class ComboUIManager : MonoBehaviour
         }
     }
 
-    public void TryAddAttackToCombo(AttackData attack)
+    public void TryEquipToSpecificSlot(AttackData attack, int slotIndex)
     {
-        foreach (UIComboSlot slot in comboSlots)
+        // Verify the index is valid for our 4 slots
+        if (slotIndex >= 0 && slotIndex < comboSlots.Length)
         {
-            if (slot.IsEmpty())
-            {
-                slot.SetAttack(attack);
-                SaveComboToPlayer();
-                return;
-            }
+            comboSlots[slotIndex].SetAttack(attack);
+            SaveComboToPlayer();
         }
     }
 
     public void SaveComboToPlayer()
     {
-        List<AttackData> newCombo = new List<AttackData>();
+        if (playerCombatStyle == null) return;
 
-        foreach (UIComboSlot slot in comboSlots)
+        AttackData[] newCombo = new AttackData[comboSlots.Length];
+
+        for (int i = 0; i < comboSlots.Length; i++)
         {
-            if (!slot.IsEmpty())
+            if (!comboSlots[i].IsEmpty())
             {
-                newCombo.Add(slot.currentAttack);
+                newCombo[i] = comboSlots[i].currentAttack;
+            }
+            else
+            {
+                newCombo[i] = null; // Preserves the empty space
             }
         }
 
-        playerCombatStyle.lightComboSequence = newCombo.ToArray();
+        playerCombatStyle.lightComboSequence = newCombo;
     }
 }
