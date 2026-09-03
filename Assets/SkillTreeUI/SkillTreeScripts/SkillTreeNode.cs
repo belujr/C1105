@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 public class SkillTreeNode : MonoBehaviour, ISelectHandler
 {
     [Header("Combo Binding")]
-    [Tooltip("Enter 1, 2, 3, or 4 based on which branch this is.")]
     public int targetComboSlot = 1; 
 
     [Header("Attack Settings")]
@@ -66,7 +65,6 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler
 
         if (isUnlocked && attackData != null)
         {
-            // Subtract 1 to convert your 1-4 Inspector value to the 0-3 array index
             ComboUIManager.Instance.TryEquipToSpecificSlot(attackData, targetComboSlot - 1);
         }
     }
@@ -93,6 +91,15 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler
         {
             buttonImage.color = Color.gray;
             button.interactable = false;
+        }
+    }
+
+    public void AnimateLineToParent()
+    {
+        UILineConnector connector = GetComponent<UILineConnector>();
+        if (connector != null)
+        {
+            connector.AnimateLine();
         }
     }
 }

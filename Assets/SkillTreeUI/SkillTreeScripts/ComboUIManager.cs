@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Collections;
@@ -19,9 +18,9 @@ public class ComboUIManager : MonoBehaviour
     public CombatStyle playerCombatStyle; 
 
     [Header("UI References")]
-    public UIComboSlot[] comboSlots; // Contains 4 slot elements now
-    public Transform treeContainer; // Main parent containing your 4 tree branches
-    public SkillTreeNode startingSelectedNode; // Initial node focused when menu opens
+    public UIComboSlot[] comboSlots; 
+    public Transform treeContainer; 
+    public SkillTreeNode startingSelectedNode; 
 
     private SkillTreeNode[] allTreeNodes;
 
@@ -82,13 +81,14 @@ public class ComboUIManager : MonoBehaviour
 
         RefreshAllNodes();
         LoadComboFromPlayer();
+        AnimateAllLines(); // Trigger line animations
 
         StartCoroutine(SetInitialUIFocus());
     }
 
     private IEnumerator SetInitialUIFocus()
     {
-        yield return null; // Wait 1 frame for UI updates
+        yield return null; 
 
         EventSystem.current.SetSelectedGameObject(null);
 
@@ -127,6 +127,16 @@ public class ComboUIManager : MonoBehaviour
         }
     }
 
+    public void AnimateAllLines()
+    {
+        if (allTreeNodes == null) return;
+
+        foreach (SkillTreeNode node in allTreeNodes)
+        {
+            node.AnimateLineToParent();
+        }
+    }
+
     public void LoadComboFromPlayer()
     {
         if (playerCombatStyle == null || playerCombatStyle.lightComboSequence == null) return;
@@ -146,7 +156,6 @@ public class ComboUIManager : MonoBehaviour
 
     public void TryEquipToSpecificSlot(AttackData attack, int slotIndex)
     {
-        // Verify the index is valid for our 4 slots
         if (slotIndex >= 0 && slotIndex < comboSlots.Length)
         {
             comboSlots[slotIndex].SetAttack(attack);
@@ -168,7 +177,7 @@ public class ComboUIManager : MonoBehaviour
             }
             else
             {
-                newCombo[i] = null; // Preserves the empty space
+                newCombo[i] = null; 
             }
         }
 
