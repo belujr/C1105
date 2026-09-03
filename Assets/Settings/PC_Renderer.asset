@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: GrassDataRendererFeature
   m_EditorClassIdentifier: Assembly-CSharp::GrassDataRendererFeature
   m_Active: 1
-  heightMapLayer:
+  mixedLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  grassOnlyLayer:
     serializedVersion: 2
     m_Bits: 128
+  flowerOnlyLayer:
+    serializedVersion: 2
+    m_Bits: 512
   heightMapMat: {fileID: 2100000, guid: 95d63adac2015d142aac17b9b535fd20, type: 2}
   computeShader: {fileID: 7200000, guid: 6faaeebb3c9e1434a9a262ec25b9c479, type: 3}
 --- !u!114 &11400000

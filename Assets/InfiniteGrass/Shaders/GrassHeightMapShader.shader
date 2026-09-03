@@ -1,20 +1,15 @@
 Shader "InfiniteGrass/GrassHeightMapShader"
 {
-    Properties
-    {
-    }
+    Properties { }
     SubShader
     {
-        Tags { 
-            "RenderType"="Opaque"
-        }
+        Tags { "RenderType"="Opaque" }
 
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-
             #include "UnityCG.cginc"
 
             struct appdata
@@ -30,6 +25,7 @@ Shader "InfiniteGrass/GrassHeightMapShader"
             };
 
             float2 _BoundsYMinMax;
+            float4 _SpawnAllowed; // Passed from the C# Renderer Feature
 
             float Remap(float In, float2 InMinMax, float2 OutMinMax)
             {
@@ -40,20 +36,19 @@ Shader "InfiniteGrass/GrassHeightMapShader"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-
                 float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
-
-                float rChannel = Remap(worldPos.y, _BoundsYMinMax, float2(0, 1)); //We store here the altitude
-                float gChannel = v.color.r; //We store here the mask from the RED in the vertex color
-
+                
+                float rChannel = Remap(worldPos.y, _BoundsYMinMax, float2(0, 1)); 
+                float gChannel = v.color.r; 
                 o.color = float2(rChannel, gChannel);
 
                 return o;
             }
 
-            float2 frag (v2f i) : SV_Target
+            float4 frag (v2f i) : SV_Target
             {
-                return i.color;
+                // R = Altitude, G = Grass Allowed, B = Flower Allowed, A = 1
+                return float4(i.color.x, i.color.y * _SpawnAllowed.x, i.color.y * _SpawnAllowed.y, 1.0);
             }
             ENDCG
         }
