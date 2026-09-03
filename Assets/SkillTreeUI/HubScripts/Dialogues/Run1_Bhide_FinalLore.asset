@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28ec8b4c43df9884dab1e56106bf74dc, type: 3}
+  m_Name: Run1_Bhide_FinalLore
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueSequence
+  lines:
+  - speakerName: Player
+    text: Go on, then, tell me what am I doing here, actually, tell me what AM I.
+  - speakerName: Bhide
+    text: "Man how does C1 manage to conjure every vessel a dumber variation of the
+      previous one\u2026."
+  - speakerName: Player
+    text: That. That right there. Vessel. What do you mean vessel? What am I?
+  - speakerName: Bhide
+    text: "Basically, you\u2019re a fighter for C1 as he is too weak to fight on
+      his own\u2026But at one time, He was the most powerful being to be known. He
+      held this world together for atleast a couple of centuries. He was the Greatest
+      Caretaker among them."
+  - speakerName: Player
+    text: What is a Caretaker-
+  - speakerName: C1
+    text: WHAT ARE YOU STILL DOING HERE? GET OUT THERE AND GET KILLING!
+  - speakerName: Bhide
+    text: You better get going
