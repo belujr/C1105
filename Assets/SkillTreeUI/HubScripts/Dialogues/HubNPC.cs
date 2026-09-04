@@ -11,11 +11,9 @@ public class HubNPC : MonoBehaviour
     public GameObject interactPromptUI;
     
     [Header("Input Data Reference")]
-    [Tooltip("Drag the 'Interact' action from your PlayerControls asset here.")]
     public InputActionReference interactActionRef;
     
     [Header("Dialogue Data")]
-    [Tooltip("Index 0 = Run 1. Index 1 = Run 2...")]
     public List<DialogueSequence> dialoguesByRun;
     public DialogueSequence defaultAmbientDialogue;
 
@@ -54,7 +52,6 @@ public class HubNPC : MonoBehaviour
 
     private void Update()
     {
-        // Check if the assigned Interact action asset was pressed this frame
         bool interactPressed = interactActionRef != null && 
                                interactActionRef.action != null && 
                                interactActionRef.action.WasPressedThisFrame();
@@ -67,6 +64,7 @@ public class HubNPC : MonoBehaviour
 
     private void Interact()
     {
+        Debug.Log($"Interacted with {npcRole}. Current Narrative Manager Step: {HubNarrativeManager.Instance.run1ProgressStep}");
         HubNarrativeManager.Instance.ProcessNPCInteraction(this);
         onInteracted?.Invoke();
     }

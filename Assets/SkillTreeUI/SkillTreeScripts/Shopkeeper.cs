@@ -3,26 +3,30 @@ using UnityEngine.InputSystem;
 
 public class Shopkeeper : MonoBehaviour
 {
-    [Header("Input")]
-    public InputActionReference interactAction; // Drag your Gameplay/Interact action here
+    [Header("Input Data References")]
+    [Tooltip("Drag the 'Interact' action from your PlayerControls asset here.")]
+    public InputActionReference interactActionRef;
+    [Tooltip("Drag your 'Back/Cancel' action from your PlayerControls asset here.")]
+    public InputActionReference backActionRef;
 
     private bool isPlayerInRange = false;
 
     private void OnEnable()
     {
-        if (interactAction != null)
-        {
-            interactAction.action.Enable();
-            interactAction.action.performed += OnInteractPressed;
-        }
+        if (interactActionRef != null && interactActionRef.action != null)
+            interactActionRef.action.Enable();
+            
+        if (backActionRef != null && backActionRef.action != null)
+            backActionRef.action.Enable();
     }
 
     private void OnDisable()
     {
-        if (interactAction != null)
-        {
-            interactAction.action.performed -= OnInteractPressed;
-        }
+        if (interactActionRef != null && interactActionRef.action != null)
+            interactActionRef.action.Disable();
+            
+        if (backActionRef != null && backActionRef.action != null)
+            backActionRef.action.Disable();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -41,18 +45,57 @@ public class Shopkeeper : MonoBehaviour
         }
     }
 
-    private void OnInteractPressed(InputAction.CallbackContext context)
+    private void Update()
     {
-        if (!isPlayerInRange) return;
+        // 1. Handle Back button press when the Shop is currently open
+        bool backPressed = backActionRef != null && 
+                           backActionRef.action != null && 
+                           backActionRef.action.WasPressedThisFrame();
 
-        // Toggle menu state open or closed when Y is pressed near the shopkeeper
-        if (ComboUIManager.Instance.skillTreePanel.activeSelf)
+        if (backPressed && ComboUIManager.Instance != null && ComboUIManager.Instance.skillTreePanel != null && ComboUIManager.Instance.skillTreePanel.activeSelf)
         {
             ComboUIManager.Instance.CloseMenu();
+
+            // Safely transition narrative step from 5 to 6 so Bhide's final lore is unlocked
+            if (HubNarrativeManager.Instance != null && HubNarrativeManager.Instance.currentRunNumber == 1)
+            {
+                if (HubNarrativeManager.Instance.run1ProgressStep == 5)
+                {
+                    HubNarrativeManager.Instance.run1ProgressStep = 6;
+                    Debug.Log("Back button pressed: Shop closed, narrative advanced to Step 6.");
+                }
+            }
+            return;
         }
-        else
+
+        // 2. Handle Interact (Y) button press when player is in the shop range
+        if (!isPlayerInRange) return;
+
+        bool interactPressed = interactActionRef != null && 
+                               interactActionRef.action != null && 
+                               interactActionRef.action.WasPressedThisFrame();
+
+        if (!interactPressed) return;
+
+        if (DialogueUI.Instance != null && DialogueUI.Instance.dialoguePanel != null && DialogueUI.Instance.dialoguePanel.activeSelf)
         {
-            ComboUIManager.Instance.OpenMenu();
+            return;
+        }
+
+        if (HubNarrativeManager.Instance != null && HubNarrativeManager.Instance.currentRunNumber == 1)
+        {
+            if (HubNarrativeManager.Instance.run1ProgressStep < 5)
+            {
+                return; 
+            }
+        }
+
+        if (ComboUIManager.Instance != null && ComboUIManager.Instance.skillTreePanel != null)
+        {
+            if (!ComboUIManager.Instance.skillTreePanel.activeSelf)
+            {
+                ComboUIManager.Instance.OpenMenu();
+            }
         }
     }
 }
