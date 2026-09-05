@@ -139,11 +139,13 @@ public class ComboUIManager : MonoBehaviour
 
     public void LoadComboFromPlayer()
     {
-        if (playerCombatStyle == null || playerCombatStyle.lightComboSequence == null) return;
+        if (playerCombatStyle == null) return;
 
         for (int i = 0; i < comboSlots.Length; i++)
         {
-            if (i < playerCombatStyle.lightComboSequence.Length && playerCombatStyle.lightComboSequence[i] != null)
+            if (playerCombatStyle.lightComboSequence != null && 
+                i < playerCombatStyle.lightComboSequence.Length && 
+                playerCombatStyle.lightComboSequence[i] != null)
             {
                 comboSlots[i].SetAttack(playerCombatStyle.lightComboSequence[i]);
             }
