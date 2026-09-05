@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d18c865b5884514ca85320db7c1ae7a, type: 3}
+  m_Name: ZombieMinionData
+  m_EditorClassIdentifier: Assembly-CSharp::MinionEnemyDataSO
+  enemyName: ZombieMinion
+  prefabToSpawn: {fileID: 0}
+  maxHealth: 50
+  moveSpeed: 3.5
+  rotationSpeed: 120
+  detectionRange: 10
+  attackStopDistance: 2
+  animationProfile: {fileID: 11400000, guid: 5b76db9885b7046438d01d2761e96629, type: 2}
+  availableAttacks:
+  - {fileID: 11400000, guid: c6b1cbe007a55bc48870d11902b02583, type: 2}
+  circleRadius: 4
+  retreatDuration: 1.5

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa89bd14fcd1f0c44bf61b17bafb2933, type: 3}
+  m_Name: Leg Sweep
+  m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.AttackReactionData
+  attackID: 18
+  orientTowardsAttacker: 1
+  canFallDown: 1
+  canBeInterrupted: 0
+  isAirborneLaunch: 0
+  launchUpwardForce: 5
+  customStandUpAnimation: {fileID: 11400000, guid: 67adefd37ef6b7f43a8d0917af46774b, type: 2}
+  reactionFront: {fileID: 11400000, guid: bcd56c2e2a140964a8255fc8a2ed7f52, type: 2}
+  reactionBack: {fileID: 11400000, guid: 9627be5412a31ab46be040eee2178670, type: 2}
+  reactionLeft: {fileID: 11400000, guid: 6a8f935b1f84af24ab707da5495ff328, type: 2}
+  reactionRight: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}

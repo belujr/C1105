@@ -14,6 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
   idleClip: {fileID: -203655887218126122, guid: 11d57b3b59b33c446b6d86a514fd82af, type: 3}
   idleTransitionDuration: 0.15
+  walkClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
+  walkTransitionDuration: 0.15
+  runClip: {fileID: -203655887218126122, guid: 56c3e5b4a8c32694fa872c31dfc3691d, type: 3}
+  runTransitionDuration: 0.15
+  strafeLeftClip: {fileID: -203655887218126122, guid: e4f1add906ff34943b5caa679aa11c99, type: 3}
+  strafeRightClip: {fileID: -203655887218126122, guid: 8a896a1ca835f514db335f06b322c149, type: 3}
+  landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  landingTransitionDuration: 0.1
+  landingPlaybackSpeed: 1
   deathClip: {fileID: -203655887218126122, guid: f38790ce837900e4db260f296137a8db, type: 3}
   deathTransitionDuration: 0.15
   deathPlaybackSpeed: 3
@@ -21,12 +30,15 @@ MonoBehaviour:
   standUpTransitionDuration: 0.15
   standUpPlaybackSpeed: 3
   standUpToIdleTransitionDuration: 0.25
+  namedAttacks: []
   attackReactions:
   - {fileID: 11400000, guid: 20c3b58b8335b484b8db600c7d44ca12, type: 2}
   - {fileID: 11400000, guid: 361bccece8cb182419460f1e0dda1319, type: 2}
   - {fileID: 11400000, guid: d8021ea590a8abc4baa9bb1a64c65ae2, type: 2}
   - {fileID: 11400000, guid: 6c3e9c91e17df3b46a3da2ac19612f34, type: 2}
-  defaultHitFront: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
-  defaultHitBack: {fileID: 11400000, guid: 9627be5412a31ab46be040eee2178670, type: 2}
-  defaultHitLeft: {fileID: 11400000, guid: 6a8f935b1f84af24ab707da5495ff328, type: 2}
-  defaultHitRight: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}
+  - {fileID: 11400000, guid: e647349731822be44ba9b380a3344083, type: 2}
+  - {fileID: 11400000, guid: 44d1420f3fcdd2e4dbe89e34175d79a3, type: 2}
+  defaultHitFront: {fileID: 0}
+  defaultHitBack: {fileID: 0}
+  defaultHitLeft: {fileID: 0}
+  defaultHitRight: {fileID: 0}

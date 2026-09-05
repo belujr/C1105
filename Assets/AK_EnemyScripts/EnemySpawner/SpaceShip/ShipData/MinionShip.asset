@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9da761a1eda6c9948b42c7347c4889b6, type: 3}
+  m_Name: MinionShip
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceshipData
+  shipTypeName: Medium Dropper
+  shipPrefab: {fileID: 0}
+  enemyPrefabs:
+  - {fileID: 7572696427137771666, guid: 83cb22393b0345a4e95ff8445f41981d, type: 3}
+  payloadCapacity: 4
+  flyInSpeed: 30
+  flyOutSpeed: 30
+  dropInterval: 0.5
+  dropScatterRadius: 3

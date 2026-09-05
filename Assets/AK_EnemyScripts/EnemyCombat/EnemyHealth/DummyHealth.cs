@@ -10,11 +10,18 @@ public class DummyHealth : MonoBehaviour
     private float currentHP;
 
     [Header("Dummy Settings")]
-    [Tooltip("If checked, HP automatically refills to full after dying.")]
+    [Tooltip("If checked, HP automatically refills to full after dying and the enemy revives (Dummies stay in scene, non-dummies despawn/pool).")]
     [SerializeField] public bool isDummy = true;
 
     [Tooltip("Cooldown time in seconds before resetting HP.")]
     [SerializeField] private float reviveCooldown = 2.0f;
+
+    [Header("Spaceship Beacon Integration")]
+    [Tooltip("If checked, this enemy's death counts toward the Spaceship Beacon kill quota.")]
+    [SerializeField] private bool countAsDeathBodyInSpaceshipBeacon = true;
+
+    [Tooltip("Time in seconds to wait after dying before returning the enemy to the object pool (Only applies if isDummy is false).")]
+    [SerializeField] private float poolReturnDelay = 3.0f;
 
     public float MaxHP => maxHP;
     public float MaxHp => maxHP;
@@ -24,8 +31,7 @@ public class DummyHealth : MonoBehaviour
     public bool IsDead { get; private set; } = false;
     public float ReviveCooldown => reviveCooldown;
 
-    // Events for controllers or UI to listen to
-    public event Action<float, float> OnHealthChanged; // passes (currentHP, maxHP)
+    public event Action<float, float> OnHealthChanged; 
     public event Action OnDeath;
     public event Action OnRevive;
 
@@ -34,45 +40,82 @@ public class DummyHealth : MonoBehaviour
         currentHP = maxHP;
     }
 
-    /// <summary>
-    /// Applies damage to the dummy health pool.
-    /// </summary>
     public void TakeDamage(float amount)
     {
         if (IsDead) return;
 
         currentHP = Mathf.Clamp(currentHP - amount, 0f, maxHP);
         OnHealthChanged?.Invoke(currentHP, maxHP);
-        Debug.Log($"[DummyHealth] Took {amount} damage. Current HP: {currentHP}/{maxHP}");
 
+        StartCoroutine(HitStopRoutine(0.05f));
+        
         if (currentHP <= 0f)
         {
             Die();
         }
     }
 
+    private IEnumerator HitStopRoutine(float duration)
+    {
+        float originalTimeScale = Time.timeScale;
+        Time.timeScale = 0.0f; 
+        
+        yield return new WaitForSecondsRealtime(duration);
+        
+        Time.timeScale = originalTimeScale;
+    }
+
+    public void Revive()
+    {
+        currentHP = maxHP;
+        IsDead = false;
+      
+        OnHealthChanged?.Invoke(currentHP, maxHP);
+        OnRevive?.Invoke();
+    }
+
     private void Die()
     {
         if (IsDead) return;
         IsDead = true;
-        Debug.Log("[DummyHealth] Dummy HP reached 0. Triggering Death.");
+
+        if (countAsDeathBodyInSpaceshipBeacon)
+        {
+            if (isDummy)
+            {
+                // Scene dummies route through the spawner manager registry
+                BeaconSpawnerManager spawnerManager = FindObjectOfType<BeaconSpawnerManager>();
+                if (spawnerManager != null)
+                {
+                    spawnerManager.RegisterOnlyKill(gameObject);
+                }
+            }
+            else
+            {
+                // Pooled minions bypass the manager registry and report directly to BeaconHealth
+                BeaconHealth beacon = FindObjectOfType<BeaconHealth>();
+                if (beacon != null)
+                {
+                    beacon.RegisterEnemyKilled();
+                }
+            }
+        }
+
         OnDeath?.Invoke();
 
-        if (isDummy)
+        if (!isDummy && GetComponent<BaseEnemyBrain>() == null)
         {
-            StartCoroutine(ReviveRoutine());
+            StartCoroutine(ReturnToPoolAfterDelayRoutine(poolReturnDelay));
         }
     }
 
-    private IEnumerator ReviveRoutine()
+    private IEnumerator ReturnToPoolAfterDelayRoutine(float delay)
     {
-        yield return new WaitForSeconds(reviveCooldown);
+        yield return new WaitForSeconds(delay);
 
-        currentHP = maxHP;
-        IsDead = false;
-        Debug.Log("[DummyHealth] Cooldown complete. HP reset to 100.");
-        
-        OnHealthChanged?.Invoke(currentHP, maxHP);
-        OnRevive?.Invoke();
+        if (EnemyObjectPool.Instance != null)
+        {
+            EnemyObjectPool.Instance.ReturnToPool(gameObject);
+        }
     }
 }

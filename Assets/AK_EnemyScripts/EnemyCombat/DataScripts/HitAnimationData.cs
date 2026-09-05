@@ -6,11 +6,11 @@ namespace CombatSystem.Data
     public class HitAnimationData : ScriptableObject
     {
         [Header("Animation Settings")]
-        [Tooltip("The Mixamo animation clip for this hit reaction.")]
+        [Tooltip("The Mixamo animation clip for this reaction.")]
         public AnimationClip clip;
 
-        [Tooltip("How fast the Playables graph crossfades into this animation (in seconds).")]
-        public float transitionDuration = 0.1f;
+        [Tooltip("How fast the Playables graph crossfades into this animation (in seconds). Set low (0.05) for snappy response.")]
+        public float transitionDuration = 0.05f;
 
         [Tooltip("Playback speed multiplier for this clip.")]
         public float playbackSpeed = 1.0f;

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using CombatSystem.Data;
 using CombatSystem.Animation;
 
@@ -14,10 +13,12 @@ namespace CombatSystem.Controllers
         [Header("Animation Profile")]
         [SerializeField] private EnemyAnimProfile animProfile;
 
-        [Header("Combo Tracking & Hit Filtering")]
-        [SerializeField] private float hitCooldown = 0.18f;
+        [Header("Combat Feel & Impact")]
+        [SerializeField] private float hitStopDuration = 0.04f;
+
+        [Header("Hit Filtering")]
+        [SerializeField] private float hitCooldown = 0.02f;
         [SerializeField] private float comboWindow = 0.45f;
-        [SerializeField] private float heavyAttackKnockbackThreshold = 3.5f;
 
         private EnemyAnimationEngine animEngine;
         private CharacterController characterController;
@@ -27,18 +28,22 @@ namespace CombatSystem.Controllers
         private bool isDead = false;
         private bool isGettingUp = false;
         private bool isAirborne = false;
-        private bool diedFromAirborneHit = false; // Tracks if killed by an uppercut/launcher
         private float verticalVelocity = 0f;
+
+        public bool IsGettingUp => isGettingUp;
 
         private int currentComboIndex = 0;
         private float lastHitTime = -999f;
         private float lastRealHitTime = -999f;
+        private Coroutine activeRoutine = null;
 
         private void Awake()
         {
             animEngine = GetComponent<EnemyAnimationEngine>();
             characterController = GetComponent<CharacterController>();
             dummyHealth = GetComponent<DummyHealth>();
+
+            if (animProfile != null) animProfile.InitializeDictionary();
         }
 
         private void OnEnable()
@@ -64,55 +69,55 @@ namespace CombatSystem.Controllers
             PlayIdle();
         }
 
+        private void HandleRevive()
+        {
+            isDead = false;
+            isGettingUp = false;
+            isHitStunned = false;
+            isAirborne = false;
+            if (activeRoutine != null) StopCoroutine(activeRoutine);
+            PlayIdle();
+        }
+
         public void PlayIdle()
         {
             if (isDead) return;
             currentComboIndex = 0;
-            diedFromAirborneHit = false;
             if (animProfile != null && animProfile.idleClip != null)
             {
                 animEngine.PlayAnimation(animProfile.idleClip, animProfile.idleTransitionDuration, 1.0f);
             }
         }
 
-        public void ProcessHit(HitData hitData, HitDirection direction, AudioClip hitSfx, float knockbackForce)
+        public void ProcessHit(HitData hitData, HitDirection direction, int damage, float knockbackForce)
         {
-            if (isDead) return;
+            if (isDead || isGettingUp) return;
 
             if (Time.time - lastRealHitTime < hitCooldown) return;
             lastRealHitTime = Time.time;
 
-            if (isGettingUp)
-            {
-                StopAllCoroutines();
-                isGettingUp = false;
-                isDead = false;
-            }
+            if (isHitStunned && activeRoutine != null) StopCoroutine(activeRoutine);
 
-            if (isHitStunned)
-            {
-                StopAllCoroutines();
-            }
-
-            StartCoroutine(HitReactionRoutine(hitData, direction, hitSfx, knockbackForce));
+            activeRoutine = StartCoroutine(HitReactionRoutine(hitData, direction, damage, knockbackForce));
         }
 
-        private IEnumerator HitReactionRoutine(HitData hitData, HitDirection direction, AudioClip hitSfx, float knockbackForce)
+        private IEnumerator HitReactionRoutine(HitData hitData, HitDirection direction, int damage, float knockbackForce)
         {
+            float elapsedHitStop = 0f;
+            while (elapsedHitStop < hitStopDuration)
+            {
+                elapsedHitStop += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
             isHitStunned = true;
 
-            AttackReactionData matchedReaction = null;
-            if (knockbackForce >= heavyAttackKnockbackThreshold)
-            {
-                matchedReaction = FindReactionByKnockback(knockbackForce);
-            }
-            else
-            {
-                matchedReaction = GetNextLightComboReaction();
-            }
+            AttackReactionData matchedReaction = animProfile != null ? animProfile.GetReaction(damage) : null;
+            if (matchedReaction == null) matchedReaction = GetNextLightComboReaction();
 
             HitAnimationData hitAnim = null;
             bool launchAirborne = false;
+            bool canTrip = false;
             float upwardForce = 0f;
             bool orientToAttacker = false;
 
@@ -123,13 +128,11 @@ namespace CombatSystem.Controllers
 
                 hitAnim = GetReactionAnimation(matchedReaction, direction);
                 launchAirborne = matchedReaction.isAirborneLaunch;
+                canTrip = matchedReaction.canFallDown;
                 upwardForce = matchedReaction.launchUpwardForce;
             }
 
-            if (hitAnim == null || hitAnim.clip == null)
-            {
-                hitAnim = GetDefaultHitAnimation(direction);
-            }
+            if (hitAnim == null || hitAnim.clip == null) hitAnim = GetDefaultHitAnimation(direction);
 
             if (hitAnim == null || hitAnim.clip == null)
             {
@@ -138,23 +141,14 @@ namespace CombatSystem.Controllers
                 yield break;
             }
 
-            // Mark if this specific attack is an airborne launcher (Uppercut)
-            if (launchAirborne)
-            {
-                diedFromAirborneHit = true;
-            }
-
             if (orientToAttacker)
             {
                 Vector3 lookDir = (hitData.hitPoint - transform.position);
                 lookDir.y = 0f;
-                if (lookDir.sqrMagnitude > 0.001f)
-                {
-                    transform.rotation = Quaternion.LookRotation(lookDir.normalized);
-                }
+                if (lookDir.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(lookDir.normalized);
             }
 
-            animEngine.PlayAnimation(hitAnim.clip, 0.01f, hitAnim.playbackSpeed);
+            animEngine.PlayAnimation(hitAnim.clip, 0.0f, hitAnim.playbackSpeed);
 
             Vector3 knockbackDir = (transform.position - hitData.hitPoint).normalized;
             knockbackDir.y = 0f;
@@ -175,7 +169,6 @@ namespace CombatSystem.Controllers
 
                 elapsed += Time.deltaTime;
                 float normalizedTime = Mathf.Clamp01(elapsed / animDuration);
-
                 float curveValue = hitAnim.knockbackCurve.Evaluate(normalizedTime);
                 float currentMoveStep = curveValue * hitAnim.knockbackDistance * knockbackForce * Time.deltaTime;
 
@@ -199,57 +192,41 @@ namespace CombatSystem.Controllers
                 yield return null;
             }
 
+            if (dummyHealth != null && dummyHealth.IsDead)
+            {
+                activeRoutine = StartCoroutine(GroundedDeathAndReviveRoutine());
+                yield break;
+            }
+
+            if (canTrip && matchedReaction != null && matchedReaction.customStandUpAnimation != null && matchedReaction.customStandUpAnimation.clip != null)
+            {
+                activeRoutine = StartCoroutine(NonLethalTripGetUpRoutine(matchedReaction));
+                yield break;
+            }
+
             isHitStunned = false;
             PlayIdle();
         }
 
-        private void HandleDeath()
-        {
-            isDead = true;
-            isGettingUp = false;
-            StopAllCoroutines();
-
-            // SUPPRESS DEATH ANIMATION IF KILLED BY AN UPPERCUT / LAUNCHER
-            // This allows the dummy to stay in its awesome flying/uppercut reaction pose instead of cutting to a stiff death pose.
-            if (!diedFromAirborneHit && animProfile != null && animProfile.deathClip != null)
-            {
-                animEngine.PlayAnimation(animProfile.deathClip, animProfile.deathTransitionDuration, animProfile.deathPlaybackSpeed);
-            }
-        }
-
-        private void HandleRevive()
-        {
-            StartCoroutine(ReviveStandUpRoutine());
-        }
-
-        private IEnumerator ReviveStandUpRoutine()
+        private IEnumerator NonLethalTripGetUpRoutine(AttackReactionData tripReaction)
         {
             isGettingUp = true;
-            diedFromAirborneHit = false;
+            yield return new WaitForSeconds(0.2f);
 
-            if (animProfile != null && animProfile.standUpClip != null)
+            AnimationClip getUpClip = tripReaction.customStandUpAnimation.clip;
+            float transition = tripReaction.customStandUpAnimation.transitionDuration;
+            float speed = tripReaction.customStandUpAnimation.playbackSpeed;
+
+            if (getUpClip != null)
             {
-                animEngine.PlayAnimation(animProfile.standUpClip, animProfile.standUpTransitionDuration, animProfile.standUpPlaybackSpeed);
-                
-                float getUpDuration = animProfile.standUpClip.length / Mathf.Max(0.01f, animProfile.standUpPlaybackSpeed);
-                float vulnerabilityThreshold = getUpDuration * 0.4f; 
-                yield return new WaitForSeconds(vulnerabilityThreshold);
-
-                isDead = false; 
-
-                float remainingTime = getUpDuration - vulnerabilityThreshold;
-                float blendDuration = Mathf.Min(remainingTime, animProfile.standUpToIdleTransitionDuration);
-                float waitBeforeBlend = Mathf.Max(0f, remainingTime - blendDuration);
-
-                yield return new WaitForSeconds(waitBeforeBlend);
-
-                animEngine.PlayAnimation(animProfile.idleClip, blendDuration, 1.0f);
-
-                yield return new WaitForSeconds(blendDuration);
+                animEngine.PlayAnimation(getUpClip, transition, speed);
+                float getUpDuration = getUpClip.length / Mathf.Max(0.01f, speed);
+                yield return new WaitForSeconds(getUpDuration - animProfile.standUpToIdleTransitionDuration);
+                animEngine.PlayAnimation(animProfile.idleClip, animProfile.standUpToIdleTransitionDuration, 1.0f);
+                yield return new WaitForSeconds(animProfile.standUpToIdleTransitionDuration);
             }
 
             isGettingUp = false;
-            isDead = false;
             PlayIdle();
         }
 
@@ -257,40 +234,73 @@ namespace CombatSystem.Controllers
         {
             if (animProfile == null || animProfile.attackReactions == null || animProfile.attackReactions.Count == 0) return null;
 
-            if (Time.time - lastHitTime <= comboWindow)
-            {
-                currentComboIndex++;
-                if (currentComboIndex >= animProfile.attackReactions.Count) currentComboIndex = 0;
-            }
-            else
-            {
-                currentComboIndex = 0;
-            }
+            if (Time.time - lastHitTime > comboWindow) currentComboIndex = 0;
+
+            int lightCount = Mathf.Min(2, animProfile.attackReactions.Count);
+            AttackReactionData reactionToPlay = animProfile.attackReactions[currentComboIndex % lightCount];
+
+            currentComboIndex++;
+            if (currentComboIndex >= lightCount) currentComboIndex = 0;
 
             lastHitTime = Time.time;
-            return animProfile.attackReactions[currentComboIndex];
+            return reactionToPlay;
         }
 
-        private AttackReactionData FindReactionByKnockback(float incomingKnockback)
+        private void HandleDeath()
         {
-            if (animProfile == null || animProfile.attackReactions == null || animProfile.attackReactions.Count == 0) return null;
+            if (isDead) return;
+            isDead = true;
+            isGettingUp = false;
+            
+            if (activeRoutine != null) StopCoroutine(activeRoutine);
+            activeRoutine = StartCoroutine(GroundedDeathAndReviveRoutine());
+        }
 
-            AttackReactionData closestReaction = null;
-            float smallestDifference = Mathf.Infinity;
+        private IEnumerator GroundedDeathAndReviveRoutine()
+        {
+            isDead = true;
 
-            foreach (var reaction in animProfile.attackReactions)
+            if (animProfile != null && animProfile.deathClip != null)
             {
-                if (reaction != null)
-                {
-                    float difference = Mathf.Abs(reaction.targetKnockbackForce - incomingKnockback);
-                    if (difference < smallestDifference)
-                    {
-                        smallestDifference = difference;
-                        closestReaction = reaction;
-                    }
-                }
+                animEngine.PlayAnimation(animProfile.deathClip, animProfile.deathTransitionDuration, animProfile.deathPlaybackSpeed);
             }
-            return closestReaction;
+
+            float cooldownTime = dummyHealth != null ? dummyHealth.ReviveCooldown : 2.0f;
+            yield return new WaitForSeconds(cooldownTime);
+
+            if (dummyHealth != null && dummyHealth.isDummy)
+            {
+                isGettingUp = true;
+
+                AnimationClip standUpClipToUse = animProfile.standUpClip;
+                float standUpTransitionToUse = animProfile.standUpTransitionDuration;
+                float standUpSpeedToUse = animProfile.standUpPlaybackSpeed;
+
+                dummyHealth.Revive(); 
+
+                if (standUpClipToUse != null)
+                {
+                    animEngine.PlayAnimation(standUpClipToUse, standUpTransitionToUse, standUpSpeedToUse);
+                    float getUpDuration = standUpClipToUse.length / Mathf.Max(0.01f, standUpSpeedToUse);
+                    yield return new WaitForSeconds(getUpDuration - animProfile.standUpToIdleTransitionDuration);
+                    animEngine.PlayAnimation(animProfile.idleClip, animProfile.standUpToIdleTransitionDuration, 1.0f);
+                    yield return new WaitForSeconds(animProfile.standUpToIdleTransitionDuration);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(0.5f);
+                }
+
+                isGettingUp = false;
+                PlayIdle();
+            }
+        }
+
+        private IEnumerator AnticipationAndExecuteRoutine(AnimationClip anticipationClip, AnimationClip mainClip, float windUpTime)
+        {
+            if (anticipationClip != null) animEngine.PlayAnimation(anticipationClip, 0.0f, 1.0f);
+            yield return new WaitForSeconds(windUpTime);
+            if (mainClip != null) animEngine.PlayAnimation(mainClip, 0.0f, 1.0f);
         }
 
         private HitAnimationData GetReactionAnimation(AttackReactionData reaction, HitDirection direction)
@@ -308,7 +318,6 @@ namespace CombatSystem.Controllers
         private HitAnimationData GetDefaultHitAnimation(HitDirection direction)
         {
             if (animProfile == null) return null;
-
             switch (direction)
             {
                 case HitDirection.Front: return animProfile.defaultHitFront;

@@ -18,25 +18,40 @@ public class EnemyHurtbox : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        if (dummyController == null) dummyController = GetComponentInParent<EnemyDummyController>();
-        if (dummyHealth == null) dummyHealth = GetComponentInParent<DummyHealth>();
+        if (dummyController == null)
+        {
+            dummyController = GetComponentInParent<EnemyDummyController>();
+        }
+        if (dummyHealth == null)
+        {
+            dummyHealth = GetComponentInParent<DummyHealth>();
+        }
     }
 
     public void TakeDamage(int damage, Vector3 hitPoint, Vector3 hitNormal, float knockbackForce, AudioClip hitSfx)
     {
-        // 1. Apply damage to our new DummyHealth script
+        // I-FRAMES CHECK: If the dummy is dead on the ground or actively waking up, ignore damage entirely!
+        if (dummyController != null && (dummyController.IsGettingUp || (dummyHealth != null && dummyHealth.IsDead)))
+        {
+            return;
+        }
+
+        // 1. Apply damage to health system
         if (dummyHealth != null)
         {
             dummyHealth.TakeDamage(damage);
         }
 
-        // 2. Process hit reaction and knockback
-        HitData hitData = new HitData(damage, hitPoint, hitNormal, knockbackForce, 0.15f, null);
+        // 2. Pack parameters into HitData
+        HitData hitData = new HitData(damage, hitPoint, hitNormal, knockbackForce, 0.0f, null);
+
+        // 3. Calculate local hit direction
         HitDirection hitDirection = CalculateHitDirection(hitData);
 
+        // 4. Forward to dummy controller using damage as the attackID
         if (dummyController != null)
         {
-            dummyController.ProcessHit(hitData, hitDirection, hitSfx, knockbackForce);
+            dummyController.ProcessHit(hitData, hitDirection, damage, knockbackForce);
         }
     }
 

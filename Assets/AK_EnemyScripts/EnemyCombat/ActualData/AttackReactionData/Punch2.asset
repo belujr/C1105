@@ -12,13 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa89bd14fcd1f0c44bf61b17bafb2933, type: 3}
   m_Name: Punch2
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.AttackReactionData
-  attackId: 1
-  targetKnockbackForce: 1
+  attackID: 12
   orientTowardsAttacker: 1
   isAirborneLaunch: 0
   launchUpwardForce: 5
   customStandUpAnimation: {fileID: 0}
   reactionFront: {fileID: 11400000, guid: e7b60262c8f64ad4f974febd5ac52762, type: 2}
-  reactionBack: {fileID: 11400000, guid: 9627be5412a31ab46be040eee2178670, type: 2}
-  reactionLeft: {fileID: 11400000, guid: 6a8f935b1f84af24ab707da5495ff328, type: 2}
-  reactionRight: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}
+  reactionBack: {fileID: 11400000, guid: e7b60262c8f64ad4f974febd5ac52762, type: 2}
+  reactionLeft: {fileID: 11400000, guid: e7b60262c8f64ad4f974febd5ac52762, type: 2}
+  reactionRight: {fileID: 11400000, guid: e7b60262c8f64ad4f974febd5ac52762, type: 2}
