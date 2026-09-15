@@ -3,6 +3,10 @@ using UnityEngine.InputSystem;
 
 public class Shopkeeper : MonoBehaviour
 {
+    [Header("Narrative Unlock Requirement")]
+    [Tooltip("Assign Bhide's dialogue sequence asset here. The shop will stay locked until this sequence is played.")]
+    public DialogueSequence requiredDialogueToUnlock;
+
     [Header("Input Data References")]
     [Tooltip("Drag the 'Interact' action from your PlayerControls asset here.")]
     public InputActionReference interactActionRef;
@@ -25,7 +29,7 @@ public class Shopkeeper : MonoBehaviour
         if (interactActionRef != null && interactActionRef.action != null)
             interactActionRef.action.Disable();
             
-        if (backActionRef != null && backActionRef.action != null)
+        if (backActionRef != null && backActionRef.action.WasPressedThisFrame()) { }
             backActionRef.action.Disable();
     }
 
@@ -47,7 +51,7 @@ public class Shopkeeper : MonoBehaviour
 
     private void Update()
     {
-        // 1. Handle Back button press when the Shop is currently open
+        // 1. Handle Back/Cancel button press when the Shop UI is active
         bool backPressed = backActionRef != null && 
                            backActionRef.action != null && 
                            backActionRef.action.WasPressedThisFrame();
@@ -55,20 +59,10 @@ public class Shopkeeper : MonoBehaviour
         if (backPressed && ComboUIManager.Instance != null && ComboUIManager.Instance.skillTreePanel != null && ComboUIManager.Instance.skillTreePanel.activeSelf)
         {
             ComboUIManager.Instance.CloseMenu();
-
-            // Safely transition narrative step from 5 to 6 so Bhide's final lore is unlocked
-            if (HubNarrativeManager.Instance != null && HubNarrativeManager.Instance.currentRunNumber == 1)
-            {
-                if (HubNarrativeManager.Instance.run1ProgressStep == 5)
-                {
-                    HubNarrativeManager.Instance.run1ProgressStep = 6;
-                    Debug.Log("Back button pressed: Shop closed, narrative advanced to Step 6.");
-                }
-            }
             return;
         }
 
-        // 2. Handle Interact (Y) button press when player is in the shop range
+        // 2. Handle Interact button press when player is in physical range
         if (!isPlayerInRange) return;
 
         bool interactPressed = interactActionRef != null && 
@@ -77,25 +71,36 @@ public class Shopkeeper : MonoBehaviour
 
         if (!interactPressed) return;
 
+        // Block interaction if dialogue UI is active
         if (DialogueUI.Instance != null && DialogueUI.Instance.dialoguePanel != null && DialogueUI.Instance.dialoguePanel.activeSelf)
         {
             return;
         }
 
-        if (HubNarrativeManager.Instance != null && HubNarrativeManager.Instance.currentRunNumber == 1)
-        {
-            if (HubNarrativeManager.Instance.run1ProgressStep < 5)
-            {
-                return; 
-            }
-        }
+        TryOpenShop();
+    }
 
-        if (ComboUIManager.Instance != null && ComboUIManager.Instance.skillTreePanel != null)
+    /// <summary>
+    /// Opens the shop menu if unlocked. Can be called directly via UnityEvents or NPC interactions.
+    /// </summary>
+    public void TryOpenShop()
+    {
+        if (IsUnlocked())
         {
-            if (!ComboUIManager.Instance.skillTreePanel.activeSelf)
+            if (ComboUIManager.Instance != null)
             {
                 ComboUIManager.Instance.OpenMenu();
             }
         }
+        else
+        {
+            Debug.Log($"Shopkeeper is locked. Complete dialogue sequence '{requiredDialogueToUnlock.name}' first.");
+        }
+    }
+
+    public bool IsUnlocked()
+    {
+        if (requiredDialogueToUnlock == null) return true;
+        return HubNarrativeManager.Instance != null && HubNarrativeManager.Instance.IsSequenceCompleted(requiredDialogueToUnlock);
     }
 }

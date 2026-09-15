@@ -5674,6 +5674,7 @@ SkinnedMeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 0a8b9939ed904a247918758b0f0df03f, type: 2}
+  - {fileID: 2100000, guid: bb0ffcb435df5314ba9f7926eb505d25, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5989,6 +5990,7 @@ GameObject:
   - component: {fileID: 5398904590750455095}
   - component: {fileID: 5916122097071869876}
   - component: {fileID: 7464173089479520648}
+  - component: {fileID: 8144515398020476721}
   m_Layer: 8
   m_Name: HUBPlayer
   m_TagString: Player
@@ -6030,7 +6032,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3180492266478729470}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -6047,8 +6049,7 @@ MeshRenderer:
   m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_Materials: []
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6325,6 +6326,22 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &8144515398020476721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3180492266478729470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcb49f1896ddecf429d3e4e1ce70c755, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDissolveController
+  dissolveDuration: 1.5
+  targetRenderer: {fileID: 8325574093885897424}
+  dissolveMaterial: {fileID: 2100000, guid: bb0ffcb435df5314ba9f7926eb505d25, type: 2}
+  mainMaterial: {fileID: 2100000, guid: 0a8b9939ed904a247918758b0f0df03f, type: 2}
 --- !u!1 &3234625285231217787
 GameObject:
   m_ObjectHideFlags: 0
@@ -6532,7 +6549,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6248875349271513464
 Transform:
   m_ObjectHideFlags: 0
