@@ -178,7 +178,7 @@ MonoBehaviour:
   parentNode: {fileID: 852332456}
   navUp: {fileID: 852332457}
   navDown: {fileID: 0}
-  navLeft: {fileID: 0}
+  navLeft: {fileID: 1012831457}
   navRight: {fileID: 0}
   isUnlocked: 1
 --- !u!114 &4597404
@@ -401,7 +401,7 @@ MonoBehaviour:
   parentTransform: {fileID: 852332454}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &54151961
 GameObject:
   m_ObjectHideFlags: 0
@@ -684,7 +684,7 @@ MonoBehaviour:
   parentTransform: {fileID: 624105843}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &59674331
 GameObject:
   m_ObjectHideFlags: 0
@@ -8707,7 +8707,7 @@ MonoBehaviour:
   parentTransform: {fileID: 1100511392}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &582158798
 GameObject:
   m_ObjectHideFlags: 0
@@ -8990,7 +8990,7 @@ MonoBehaviour:
   parentTransform: {fileID: 1100511392}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &624105842
 GameObject:
   m_ObjectHideFlags: 0
@@ -9162,7 +9162,7 @@ MonoBehaviour:
   parentTransform: {fileID: 4949176905182818100}
   thickness: 4
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.2
+  drawDuration: 0.5
 --- !u!1 &637077352 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3455292422214010178, guid: 8da240d87a17d1143bb9a9faa671ed9f, type: 3}
@@ -9646,7 +9646,7 @@ MonoBehaviour:
   parentTransform: {fileID: 4974828417293123622}
   thickness: 4
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &865239209
 GameObject:
   m_ObjectHideFlags: 0
@@ -10375,7 +10375,7 @@ MonoBehaviour:
   parentTransform: {fileID: 852332454}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &1024459702
 GameObject:
   m_ObjectHideFlags: 0
@@ -10772,7 +10772,7 @@ MonoBehaviour:
   parentTransform: {fileID: 4545398596714725050}
   thickness: 4
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &1143789872
 GameObject:
   m_ObjectHideFlags: 0
@@ -11363,7 +11363,7 @@ MonoBehaviour:
   parentTransform: {fileID: 1776400711}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &1172371081 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6512510688612296998, guid: 8da240d87a17d1143bb9a9faa671ed9f, type: 3}
@@ -12356,8 +12356,8 @@ MonoBehaviour:
   parentNode: {fileID: 582158801}
   navUp: {fileID: 582158800}
   navDown: {fileID: 0}
-  navLeft: {fileID: 1776400715}
-  navRight: {fileID: 852332457}
+  navLeft: {fileID: 0}
+  navRight: {fileID: 0}
   isUnlocked: 1
 --- !u!114 &1445790357
 MonoBehaviour:
@@ -12522,7 +12522,7 @@ MonoBehaviour:
   parentTransform: {fileID: 582158799}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &1461249801
 GameObject:
   m_ObjectHideFlags: 0
@@ -28211,7 +28211,7 @@ MonoBehaviour:
   parentTransform: {fileID: 1689513714587671732}
   thickness: 4
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!1 &1786436254
 GameObject:
   m_ObjectHideFlags: 0
@@ -33689,7 +33689,7 @@ MonoBehaviour:
   navUp: {fileID: 1776400715}
   navDown: {fileID: 0}
   navLeft: {fileID: 1171804395}
-  navRight: {fileID: 1100511395}
+  navRight: {fileID: 0}
   isUnlocked: 1
 --- !u!114 &2132794305
 MonoBehaviour:
@@ -33911,7 +33911,7 @@ MonoBehaviour:
   parentTransform: {fileID: 1776400711}
   thickness: 3
   lineColor: {r: 1, g: 1, b: 1, a: 1}
-  drawDuration: 0.35
+  drawDuration: 0.5
 --- !u!222 &1184477959728125015
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -33987,6 +33987,7 @@ GameObject:
   - component: {fileID: 7767409396469958106}
   - component: {fileID: 7767409396469958107}
   - component: {fileID: 7767409396469958108}
+  - component: {fileID: 7767409396469958109}
   m_Layer: 5
   m_Name: Combo 2
   m_TagString: Untagged
@@ -34132,6 +34133,7 @@ GameObject:
   - component: {fileID: 4876630404800767960}
   - component: {fileID: 4876630404800767961}
   - component: {fileID: 4876630404800767962}
+  - component: {fileID: 4876630404800767963}
   m_Layer: 5
   m_Name: Combo 1
   m_TagString: Untagged
@@ -34214,6 +34216,26 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &4876630404800767963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4442915200857130526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51ff13b89992b934984da1e4099dcd3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillTreeNode
+  targetComboSlot: 1
+  attackData: {fileID: 0}
+  parentNode: {fileID: 0}
+  navUp: {fileID: 0}
+  navDown: {fileID: 1776400715}
+  navLeft: {fileID: 0}
+  navRight: {fileID: 1308696441540223374}
+  isUnlocked: 1
 --- !u!224 &4949176905182818100
 RectTransform:
   m_ObjectHideFlags: 0
@@ -34456,6 +34478,26 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &7767409396469958109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1571267952116671504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51ff13b89992b934984da1e4099dcd3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillTreeNode
+  targetComboSlot: 1
+  attackData: {fileID: 0}
+  parentNode: {fileID: 0}
+  navUp: {fileID: 0}
+  navDown: {fileID: 1100511395}
+  navLeft: {fileID: 4201656484088103808}
+  navRight: {fileID: 7509532048095797010}
+  isUnlocked: 1
 --- !u!1 &7959336344547685790
 GameObject:
   m_ObjectHideFlags: 0
@@ -34471,6 +34513,7 @@ GameObject:
   - component: {fileID: 7959336344547685791}
   - component: {fileID: 7959336344547685792}
   - component: {fileID: 7959336344547685793}
+  - component: {fileID: 7959336344547685794}
   m_Layer: 5
   m_Name: Combo 4
   m_TagString: Untagged
@@ -34526,6 +34569,26 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &7959336344547685794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7959336344547685790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51ff13b89992b934984da1e4099dcd3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillTreeNode
+  targetComboSlot: 1
+  attackData: {fileID: 0}
+  parentNode: {fileID: 0}
+  navUp: {fileID: 0}
+  navDown: {fileID: 624105846}
+  navLeft: {fileID: 7509532048095797010}
+  navRight: {fileID: 0}
+  isUnlocked: 1
 --- !u!1 &8056966148423768716
 GameObject:
   m_ObjectHideFlags: 0
@@ -34541,6 +34604,7 @@ GameObject:
   - component: {fileID: 8056966148423768717}
   - component: {fileID: 8056966148423768718}
   - component: {fileID: 8056966148423768719}
+  - component: {fileID: 8056966148423768720}
   m_Layer: 5
   m_Name: Combo 3
   m_TagString: Untagged
@@ -34596,6 +34660,26 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &8056966148423768720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8056966148423768716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51ff13b89992b934984da1e4099dcd3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillTreeNode
+  targetComboSlot: 1
+  attackData: {fileID: 0}
+  parentNode: {fileID: 0}
+  navUp: {fileID: 0}
+  navDown: {fileID: 852332457}
+  navLeft: {fileID: 1308696441540223374}
+  navRight: {fileID: 7607162126730457088}
+  isUnlocked: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
