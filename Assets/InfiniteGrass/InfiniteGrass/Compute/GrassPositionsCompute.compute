@@ -7,6 +7,19 @@ float _MaxDrawDistance;
 float _TextureUpdateThreshold;
 float _FullDensityDistance;
 
+// Terrain Variables (Grass)
+Texture2D<float4> _TerrainSplatmap;
+float4 _TerrainPosSize; // x: pos.x, y: pos.z, z: size.x, w: size.z
+int _TerrainSplatChannel;
+
+// Terrain Variables (Flower)
+Texture2D<float4> _FlowerTerrainSplatmap;
+int _FlowerTerrainSplatChannel;
+
+// Terrain Variables (Mixed)
+Texture2D<float4> _MixedTerrainSplatmap;
+int _MixedTerrainSplatChannel;
+
 int2 _GridStartIndex;
 float3 _CameraPosition;
 float2 _CenterPos;
@@ -50,9 +63,24 @@ void CSGrass(uint3 id : SV_DispatchThreadID)
     
     float4 heightMap = _GrassHeightMapRT.SampleLevel(pointClampSampler, uv, 0);
     float grassMaskValue = _GrassMaskMapRT.SampleLevel(linearClampSampler, uv, 0).r;
-    bool inGrassMask = saturate(random(currentIndex.x * 9421 + currentIndex.y) - 0.001) >= grassMaskValue;
     
-    if (heightMap.a > 0.99 && heightMap.g > 0.5 && inGrassMask)
+    // Calculate Terrain Splatmap UV using World Position
+    float2 terrainUV = (positionXZ - _TerrainPosSize.xy) / _TerrainPosSize.zw;
+
+    // Sample Grass Layer
+    float4 splatColor = _TerrainSplatmap.SampleLevel(linearClampSampler, terrainUV, 0);
+    float grassWeight = splatColor[_TerrainSplatChannel]; 
+
+    // Sample Mixed Layer
+    float4 mixedSplatColor = _MixedTerrainSplatmap.SampleLevel(linearClampSampler, terrainUV, 0);
+    float mixedWeight = mixedSplatColor[_MixedTerrainSplatChannel];
+
+    // Combine them! Grass spawns if either Grass OR Mixed layer is painted.
+    float combinedWeight = grassWeight + mixedWeight;
+
+    bool inGrassMask = saturate(random(currentIndex.x * 9421 + currentIndex.y) - 0.001) >= grassMaskValue;
+
+    if (heightMap.a > 0.99 && heightMap.g > 0.5 && inGrassMask && combinedWeight > 0.3)
     {
         float3 positionWS = float3(positionXZ.x, Remap(heightMap.r, float2(0, 1), float2(_BoundsMin.y, _BoundsMax.y)), positionXZ.y);
         uint d = 1 << uint(floor(length(_CameraPosition - positionWS) / _FullDensityDistance));
@@ -73,21 +101,21 @@ void CSFlower(uint3 id : SV_DispatchThreadID)
     float2 positionXZ = currentIndex * _Spacing;
 
     float2 toPosXZ = positionXZ - _CameraPosition.xz;
-float dist = length(toPosXZ);
+    float dist = length(toPosXZ);
 
-// Only check culling if the point isn't directly inside the camera
-if (dist > 2.0) 
-{
-    // Normalize the camera's forward XZ vector
-    float2 camForwardXZ = normalize(_CameraForward.xz);
+    // Only check culling if the point isn't directly inside the camera
+    if (dist > 2.0) 
+    {
+        // Normalize the camera's forward XZ vector
+        float2 camForwardXZ = normalize(_CameraForward.xz);
+        
+        // Dot product compares the two directions. 
+        float dotForward = dot(toPosXZ / dist, camForwardXZ);
+        
+        // Instantly kill this GPU thread if the point is behind the camera
+        if (dotForward < -0.4) return;
+    }
     
-    // Dot product compares the two directions. 
-    // A value of -1 is directly behind. -0.4 provides a safe buffer for wide FOV screens.
-    float dotForward = dot(toPosXZ / dist, camForwardXZ);
-    
-    // Instantly kill this GPU thread if the point is behind the camera
-    if (dotForward < -0.4) return;
-}
     positionXZ += (float2(random(currentIndex.x * 5542 + currentIndex.y), random(currentIndex.y * 9824 + currentIndex.x)) * 2 - 1) * _Spacing;
     
     float2 uv = (positionXZ - _CenterPos) / (_TextureUpdateThreshold + _MaxDrawDistance); uv = uv * 0.5 + 0.5;
@@ -95,8 +123,22 @@ if (dist > 2.0)
     float4 heightMap = _GrassHeightMapRT.SampleLevel(pointClampSampler, uv, 0);
     float flowerMaskValue = _FlowerMaskMapRT.SampleLevel(linearClampSampler, uv, 0).r;
     bool inFlowerMask = saturate(random(currentIndex.x * 7421 + currentIndex.y) - 0.001) >= flowerMaskValue;
+
+    // Calculate Terrain Splatmap UV
+    float2 terrainUV = (positionXZ - _TerrainPosSize.xy) / _TerrainPosSize.zw;
     
-    if (heightMap.a > 0.99 && heightMap.b > 0.5 && inFlowerMask)
+    // Sample Flower Layer
+    float4 splatColor = _FlowerTerrainSplatmap.SampleLevel(linearClampSampler, terrainUV, 0);
+    float flowerWeight = splatColor[_FlowerTerrainSplatChannel];
+    
+    // Sample Mixed Layer
+    float4 mixedSplatColor = _MixedTerrainSplatmap.SampleLevel(linearClampSampler, terrainUV, 0);
+    float mixedWeight = mixedSplatColor[_MixedTerrainSplatChannel];
+    
+    // Combine them! Flowers spawn if either Flower OR Mixed layer is painted.
+    float combinedWeight = flowerWeight + mixedWeight;
+    
+    if (heightMap.a > 0.99 && heightMap.b > 0.5 && inFlowerMask && combinedWeight > 0.3)
     {
         float3 positionWS = float3(positionXZ.x, Remap(heightMap.r, float2(0, 1), float2(_BoundsMin.y, _BoundsMax.y)), positionXZ.y);
         uint d = 1 << uint(floor(length(_CameraPosition - positionWS) / _FullDensityDistance));

@@ -7,7 +7,7 @@ public struct FlowerSettings
 {
     public Mesh mesh;
     public float yOffset;
-    public Material[] materials; // Array to hold Petal/Stem materials
+    public Material[] materials;
 }
 [ExecuteAlways]
 public class InfiniteGrassRenderer : MonoBehaviour
@@ -38,6 +38,15 @@ public class InfiniteGrassRenderer : MonoBehaviour
     public float flowerSpacing = 1.0f;
     public float flowerDrawDistance = 150f;
     public float flowerFullDensityDistance = 30f;
+
+    [Header("Terrain Integration")]
+    public Terrain targetTerrain;
+    [Tooltip("Layer index for Grass ONLY")]
+    public int grassTerrainLayerIndex = 0;
+    [Tooltip("Layer index for Flowers ONLY")]
+    public int flowerTerrainLayerIndex = 1;
+    [Tooltip("Layer index for Grass AND Flowers together")]
+    public int mixedTerrainLayerIndex = 2;
 
     [Header("Debug")]
     public bool previewVisibleGrassCount = false;
@@ -87,6 +96,47 @@ public class InfiniteGrassRenderer : MonoBehaviour
         Vector2 centerPos = new Vector2(Mathf.Floor(mainCam.transform.position.x / textureUpdateThreshold) * textureUpdateThreshold, Mathf.Floor(mainCam.transform.position.z / textureUpdateThreshold) * textureUpdateThreshold);
         float maxDraw = GetMaxDrawDistance();
 
+        if (targetTerrain != null && targetTerrain.terrainData != null)
+        {
+            Texture2D[] alphamaps = targetTerrain.terrainData.alphamapTextures;
+
+            // Grass Terrain Setup
+            int grassMapIndex = grassTerrainLayerIndex / 4;
+            int grassChannelIndex = grassTerrainLayerIndex % 4;
+
+            if (grassMapIndex < alphamaps.Length)
+            {
+                Shader.SetGlobalTexture("_TerrainSplatmap", alphamaps[grassMapIndex]);
+                Shader.SetGlobalVector("_TerrainPosSize", new Vector4(
+                    targetTerrain.transform.position.x,
+                    targetTerrain.transform.position.z,
+                    targetTerrain.terrainData.size.x,
+                    targetTerrain.terrainData.size.z
+                ));
+                Shader.SetGlobalInt("_TerrainSplatChannel", grassChannelIndex);
+            }
+
+            // Flower Terrain Setup
+            int flowerMapIndex = flowerTerrainLayerIndex / 4;
+            int flowerChannelIndex = flowerTerrainLayerIndex % 4;
+
+            if (flowerMapIndex < alphamaps.Length)
+            {
+                Shader.SetGlobalTexture("_FlowerTerrainSplatmap", alphamaps[flowerMapIndex]);
+                Shader.SetGlobalInt("_FlowerTerrainSplatChannel", flowerChannelIndex);
+            }
+
+            // Mixed Terrain Setup
+            int mixedMapIndex = mixedTerrainLayerIndex / 4;
+            int mixedChannelIndex = mixedTerrainLayerIndex % 4;
+
+            if (mixedMapIndex < alphamaps.Length)
+            {
+                Shader.SetGlobalTexture("_MixedTerrainSplatmap", alphamaps[mixedMapIndex]);
+                Shader.SetGlobalInt("_MixedTerrainSplatChannel", mixedChannelIndex);
+            }
+        }
+
         if (tBuffer == null) tBuffer = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.Raw);
 
         if (grassMaterial != null)
@@ -110,14 +160,12 @@ public class InfiniteGrassRenderer : MonoBehaviour
 
         if (flowerSettings != null && flowerSettings.Length > 0)
         {
-            // 1. Calculate total submeshes across all flowers
             int totalSubmeshes = 0;
             for (int i = 0; i < flowerSettings.Length; i++)
             {
                 if (flowerSettings[i].mesh != null) totalSubmeshes += flowerSettings[i].mesh.subMeshCount;
             }
 
-            // 2. Reallocate list if necessary
             if (flowerArgsBuffers == null || flowerArgsBuffers.Count != totalSubmeshes)
             {
                 if (flowerArgsBuffers != null) foreach (var buf in flowerArgsBuffers) buf?.Release();
@@ -126,7 +174,6 @@ public class InfiniteGrassRenderer : MonoBehaviour
                     flowerArgsBuffers.Add(new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments));
             }
 
-            // 3. Draw each submesh
             int bufferIndex = 0;
             for (int i = 0; i < flowerSettings.Length; i++)
             {
@@ -143,7 +190,6 @@ public class InfiniteGrassRenderer : MonoBehaviour
                     ComputeBuffer currentBuffer = flowerArgsBuffers[bufferIndex];
                     currentBuffer.SetData(args);
 
-                    // Use assigned material, or fallback to global flowerMaterial
                     Material matToUse = flowerMaterial;
                     if (flowerSettings[i].materials != null && submesh < flowerSettings[i].materials.Length && flowerSettings[i].materials[submesh] != null)
                     {

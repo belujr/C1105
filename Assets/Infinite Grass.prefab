@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8383303331917186552
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7358388444537829714}
+  - component: {fileID: 275689265359228522}
+  m_Layer: 10
+  m_Name: Infinite Grass
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7358388444537829714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383303331917186552}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.0058, y: 0.28, z: 1.24687}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &275689265359228522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383303331917186552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b9710df3aa110a4b976b7e343484e17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfiniteGrassRenderer
+  grassMaterial: {fileID: 2100000, guid: 851879c6d723afb4a8aaa2242cee777c, type: 2}
+  spacing: 0.1
+  drawDistance: 100
+  fullDensityDistance: 54
+  grassMeshSubdivision: 2
+  textureUpdateThreshold: 10
+  maxBufferCount: 2
+  flowerMaterial: {fileID: 2100000, guid: 0b54f8f75c535b649b47e924980e8e04, type: 2}
+  flowerSettings:
+  - mesh: {fileID: -125435165217083709, guid: 3eed5eed75e0ad843bad4fa89093a157, type: 3}
+    yOffset: 0.27
+    materials: []
+  flowerSpacing: 0.2
+  flowerDrawDistance: 150
+  flowerFullDensityDistance: 357
+  targetTerrain: {fileID: 0}
+  grassTerrainLayerIndex: 0
+  flowerTerrainLayerIndex: 1
+  mixedTerrainLayerIndex: 2
+  previewVisibleGrassCount: 0
