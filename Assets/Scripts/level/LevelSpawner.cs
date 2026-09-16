@@ -14,10 +14,22 @@ public class LevelSpawner : MonoBehaviour
         // 2. Find the empty GameObject tagged "PlayerSpawn"
         GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
 
-        // 3. Spawn the player at that exact position and rotation
+        // 3. Spawn the player and assign it to the camera
         if (spawnPoint != null)
         {
-            Instantiate(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+            // Store the spawned clone in a variable
+            GameObject spawnedPlayer = Instantiate(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+
+            // Find the IsoCameraRig in the scene and set its target
+            IsoCameraRig camRig = FindObjectOfType<IsoCameraRig>();
+            if (camRig != null)
+            {
+                camRig.SetTarget(spawnedPlayer.transform);
+            }
+            else
+            {
+                Debug.LogWarning("Could not find the IsoCameraRig in the scene!");
+            }
         }
         else
         {
