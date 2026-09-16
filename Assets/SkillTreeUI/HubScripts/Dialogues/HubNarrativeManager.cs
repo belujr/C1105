@@ -7,23 +7,32 @@ public class HubNarrativeManager : MonoBehaviour
 {
     public static HubNarrativeManager Instance;
 
-    [Header("Run Data")]
-    public int currentRunNumber = 1; 
-    public int run1ProgressStep = 0; 
+    [Header("Save Keys")]
+    private const string SAVE_RUN_KEY = "Narrative_CurrentRunNumber";
+    private const string SAVE_STEP_KEY = "Narrative_Run1ProgressStep";
+    private const string SAVE_SEQUENCES_KEY = "Narrative_CompletedSequences";
+
+    [Header("Legacy Progress Tracking")]
+    public int run1ProgressStep = 0; // Maintained for backward compatibility with Shopkeeper.cs
+
+    [Header("Run Configuration")]
+    public int currentRunNumber = 1;
+    public List<RunNarrativeData> runNarratives = new List<RunNarrativeData>();
 
     [Header("VFX & Spawn")]
     public GameObject vesselConjureVFX;
     public Transform spawnPoint;
     public GameObject playerPrefab;
 
-    [Header("UI Windows")]
-    public GameObject upgradeShopUI;
-    public DialogueSequence bhideFinalLoreSequence;
+    private HashSet<DialogueSequence> completedSequences = new HashSet<DialogueSequence>();
 
-    private void Awake() 
-    { 
-        if (Instance == null) Instance = this; 
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // Load progress before Start runs
+        LoadProgress();
     }
 
     private void Start()
@@ -35,20 +44,25 @@ public class HubNarrativeManager : MonoBehaviour
     {
         if (spawnPoint == null) yield break;
 
-        if (vesselConjureVFX != null) 
+        // 1. Play VFX
+        if (vesselConjureVFX != null)
             Instantiate(vesselConjureVFX, spawnPoint.position, Quaternion.identity);
-        
-        yield return new WaitForSeconds(1.5f);
-        
+
+        // 2. Instantiate Player & Trigger Dissolve
         GameObject activePlayer = null;
         if (playerPrefab != null)
         {
             activePlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+            PlayerDissolveController dissolveController = activePlayer.GetComponent<PlayerDissolveController>();
+            if (dissolveController != null)
+            {
+                dissolveController.TriggerDissolveIn();
+            }
         }
 
+        // 3. Attach Camera Rig
         if (activePlayer != null)
         {
-            // Fixed obsolete FindObjectOfType warning
             IsoCameraRig camRig = Object.FindFirstObjectByType<IsoCameraRig>();
             if (camRig != null)
             {
@@ -57,58 +71,168 @@ public class HubNarrativeManager : MonoBehaviour
             }
         }
 
-        string[] c1Lines = { "Go. Kill them all.", "You better be better than the previous one." };
-        DialogueLine c1Line = new DialogueLine { speakerName = "C1", text = c1Lines[Random.Range(0, c1Lines.Length)] };
+        // 4. Wait for dissolve completion
+        yield return new WaitForSeconds(1.5f);
 
-        DialogueUI.Instance.StartDynamicLines(new List<DialogueLine> { c1Line }, () => {
-            if (currentRunNumber == 1) run1ProgressStep = 1;
-            else run1ProgressStep = 7; 
-        });
+        // 5. Trigger Opening Step if configured for the current saved run
+        NarrativeStep openingStep = GetAutoTriggerStepForCurrentRun();
+        if (openingStep != null)
+        {
+            PlayNarrativeStep(openingStep);
+        }
     }
 
     public void ProcessNPCInteraction(HubNPC npc)
     {
-        if (currentRunNumber == 1)
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null)
         {
-            if (npc.npcRole == HubNPC.NPCType.Popatlal && run1ProgressStep == 1)
-            {
-                DialogueUI.Instance.StartSequence(npc.GetDialogueForCurrentRun(currentRunNumber), () => run1ProgressStep = 2);
-            }
-            else if (npc.npcRole == HubNPC.NPCType.Dmitri && run1ProgressStep == 2)
-            {
-                DialogueUI.Instance.StartSequence(npc.GetDialogueForCurrentRun(currentRunNumber), () => run1ProgressStep = 4);
-            }
-            else if (npc.npcRole == HubNPC.NPCType.Bhide && run1ProgressStep == 4)
-            {
-                DialogueUI.Instance.StartSequence(npc.GetDialogueForCurrentRun(currentRunNumber), () => run1ProgressStep = 5);
-            }
-            else if (npc.npcRole == HubNPC.NPCType.Bhide && run1ProgressStep == 6)
-            {
-                Debug.Log("Triggering Bhide Final Lore Sequence!");
-                DialogueUI.Instance.StartDynamicLines(new List<DialogueLine> {
-                    new DialogueLine { speakerName = "Player", text = "(Is this a grapple?)" }
-                }, () => {
-                    if (bhideFinalLoreSequence != null)
-                    {
-                        DialogueUI.Instance.StartSequence(bhideFinalLoreSequence, () => {
-                            run1ProgressStep = 7; 
-                            Debug.Log("Run 1 Tutorial sequence complete.");
-                        });
-                    }
-                    else
-                    {
-                        Debug.LogError("HubNarrativeManager: Bhide Final Lore Sequence is unassigned in the Inspector!");
-                    }
-                });
-            }
-            else
-            {
-                Debug.Log($"Interaction blocked for {npc.npcRole}. Current Run: {currentRunNumber}, Current Step: {run1ProgressStep}");
-            }
+            npc.PlayFallbackDialogue();
+            return;
+        }
+
+        // Search for an eligible step for this NPC
+        NarrativeStep validStep = currentRunData.steps.Find(step =>
+            step.triggerNPC == npc.npcRole &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
+
+        if (validStep != null)
+        {
+            PlayNarrativeStep(validStep);
         }
         else
         {
-            DialogueUI.Instance.StartSequence(npc.GetDialogueForCurrentRun(currentRunNumber));
+            npc.PlayFallbackDialogue();
         }
     }
+
+    private void PlayNarrativeStep(NarrativeStep step)
+    {
+        if (step.dialogueSequence == null) return;
+
+        DialogueUI.Instance.StartSequence(step.dialogueSequence, () =>
+        {
+            if (!completedSequences.Contains(step.dialogueSequence))
+            {
+                completedSequences.Add(step.dialogueSequence);
+                run1ProgressStep++; 
+                SaveProgress(); // Auto-save when step completes
+            }
+
+            step.onStepCompleted?.Invoke();
+            Debug.Log($"Completed & Saved Narrative Step: {step.stepLabel}");
+        });
+    }
+
+    private bool IsDependencySatisfied(NarrativeStep step)
+    {
+        if (step.dependency == null) return true;
+        return completedSequences.Contains(step.dependency);
+    }
+
+    private NarrativeStep GetAutoTriggerStepForCurrentRun()
+    {
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null) return null;
+
+        return currentRunData.steps.Find(step =>
+            step.autoTriggerOnRunStart &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
+    }
+
+    private RunNarrativeData GetCurrentRunData()
+    {
+        int runIndex = currentRunNumber - 1;
+        if (runIndex >= 0 && runIndex < runNarratives.Count)
+        {
+            return runNarratives[runIndex];
+        }
+        return null;
+    }
+
+    public bool IsSequenceCompleted(DialogueSequence sequence)
+    {
+        return completedSequences.Contains(sequence);
+    }
+
+    #region Save & Load System
+
+    public void AdvanceToNextRun()
+    {
+        currentRunNumber++;
+        SaveProgress();
+        Debug.Log($"Advanced to Run {currentRunNumber} and saved state.");
+    }
+
+    public void SaveProgress()
+    {
+        PlayerPrefs.SetInt(SAVE_RUN_KEY, currentRunNumber);
+        PlayerPrefs.SetInt(SAVE_STEP_KEY, run1ProgressStep);
+
+        // Serialize completed dialogue sequence asset names into a single string
+        List<string> savedNames = new List<string>();
+        foreach (DialogueSequence seq in completedSequences)
+        {
+            if (seq != null) savedNames.Add(seq.name);
+        }
+        
+        string joinedData = string.Join("|", savedNames);
+        PlayerPrefs.SetString(SAVE_SEQUENCES_KEY, joinedData);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadProgress()
+    {
+        currentRunNumber = PlayerPrefs.GetInt(SAVE_RUN_KEY, 1);
+        run1ProgressStep = PlayerPrefs.GetInt(SAVE_STEP_KEY, 0);
+
+        completedSequences.Clear();
+
+        string savedData = PlayerPrefs.GetString(SAVE_SEQUENCES_KEY, "");
+        if (string.IsNullOrEmpty(savedData)) return;
+
+        // Build a lookup map of all assigned DialogueSequences across all run steps
+        Dictionary<string, DialogueSequence> sequenceMap = new Dictionary<string, DialogueSequence>();
+        foreach (var run in runNarratives)
+        {
+            foreach (var step in run.steps)
+            {
+                if (step.dialogueSequence != null && !sequenceMap.ContainsKey(step.dialogueSequence.name))
+                    sequenceMap.Add(step.dialogueSequence.name, step.dialogueSequence);
+                if (step.dependency != null && !sequenceMap.ContainsKey(step.dependency.name))
+                    sequenceMap.Add(step.dependency.name, step.dependency);
+            }
+        }
+
+        // Reconstruct completedHashSet from saved string names
+        string[] names = savedData.Split('|');
+        foreach (string seqName in names)
+        {
+            if (sequenceMap.TryGetValue(seqName, out DialogueSequence sequence))
+            {
+                completedSequences.Add(sequence);
+            }
+        }
+    }
+
+    [ContextMenu("Reset Save Data (Debug)")]
+    public void ResetSaveData()
+    {
+        PlayerPrefs.DeleteKey(SAVE_RUN_KEY);
+        PlayerPrefs.DeleteKey(SAVE_STEP_KEY);
+        PlayerPrefs.DeleteKey(SAVE_SEQUENCES_KEY);
+        PlayerPrefs.Save();
+        
+        currentRunNumber = 1;
+        run1ProgressStep = 0;
+        completedSequences.Clear();
+        
+        Debug.Log("Narrative Save Data Reset.");
+    }
+
+    #endregion
 }
