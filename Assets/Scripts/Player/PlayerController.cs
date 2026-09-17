@@ -53,6 +53,7 @@ public class PlayerController : MonoBehaviour
 	public GrappleState GrappleState { get; private set; }
 	public AOEAttackState AOEAttackState { get; private set; }
 	public PowerPunchState PowerPunchState { get; private set; }
+	public PlayerHitState HitState { get; private set; }
 
 	public bool IsGravityEnabled { get; set; } = true;
 
@@ -79,6 +80,7 @@ public class PlayerController : MonoBehaviour
 		GrappleState = new GrappleState(this, InputHandler);
 		AOEAttackState = new AOEAttackState(this, InputHandler);
 		PowerPunchState = new PowerPunchState(this, InputHandler);
+		HitState = new PlayerHitState(this, InputHandler);
 	}
 
 	private void Start()
@@ -369,4 +371,11 @@ public class PlayerController : MonoBehaviour
 		Gizmos.color = new Color(1f, 0f, 0f, 0.8f);
 		Gizmos.DrawWireSphere(transform.position, stats.idealStrikeDistance);
 	}
+
+    // Add this anywhere inside PlayerController.cs
+    public void TakeHit(int animHash, float duration)
+    {
+        HitState.SetUp(animHash, duration);
+        TransitionToState(HitState);
+    }
 }

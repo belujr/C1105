@@ -11,6 +11,12 @@ public class GroundedState : PlayerState
 
         // Reset horizontal residual momentum upon touching the ground
         controller.VerticalVelocity = new Vector3(0f, controller.VerticalVelocity.y, 0f);
+
+        // FORCE the Animator back to Grounded in case we came from a disconnected Hit node!
+        if (controller.Animator != null)
+        {
+            controller.Animator.CrossFade("Grounded", 0.5f);
+        }
     }
 
     public override void LogicUpdate()

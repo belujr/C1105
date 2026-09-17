@@ -5,7 +5,9 @@ public enum TokenType
 {
     Melee,
     Disruption,
-    Heavy
+    Heavy,
+    AgileFlanker,
+    Ranged
 }
 
 public class GlobalTokenManager : MonoBehaviour
@@ -17,6 +19,8 @@ public class GlobalTokenManager : MonoBehaviour
     {
         public TokenType type;
         public int maxTokens;
+        [Tooltip("Minimum delay in seconds before a released token of this type can be re-assigned to any enemy.")]
+        public float tokenSwitchDelay;
         [Tooltip("Displays current active token holders in real-time.")]
         public int activeTokensCount;
     }
@@ -25,14 +29,16 @@ public class GlobalTokenManager : MonoBehaviour
     [SerializeField] 
     private List<TokenCategory> tokenCategories = new List<TokenCategory>
     {
-        new TokenCategory { type = TokenType.Melee, maxTokens = 2, activeTokensCount = 0 },
-        new TokenCategory { type = TokenType.Disruption, maxTokens = 1, activeTokensCount = 0 },
-        new TokenCategory { type = TokenType.Heavy, maxTokens = 1, activeTokensCount = 0 }
+        new TokenCategory { type = TokenType.Melee, maxTokens = 2, tokenSwitchDelay = 1.0f, activeTokensCount = 0 },
+        new TokenCategory { type = TokenType.Disruption, maxTokens = 1, tokenSwitchDelay = 1.5f, activeTokensCount = 0 },
+        new TokenCategory { type = TokenType.Heavy, maxTokens = 1, tokenSwitchDelay = 2.0f, activeTokensCount = 0 }
     };
 
     // Internal tracking dictionaries ensuring zero-GC lookups
     private Dictionary<TokenType, HashSet<Transform>> tokenHolders = new Dictionary<TokenType, HashSet<Transform>>();
     private Dictionary<TokenType, int> maxTokenLimits = new Dictionary<TokenType, int>();
+    private Dictionary<TokenType, float> tokenSwitchDelays = new Dictionary<TokenType, float>();
+    private Dictionary<TokenType, float> nextAvailableTimes = new Dictionary<TokenType, float>();
 
     private void Awake()
     {
@@ -54,13 +60,15 @@ public class GlobalTokenManager : MonoBehaviour
             {
                 maxTokenLimits.Add(category.type, category.maxTokens);
                 tokenHolders.Add(category.type, new HashSet<Transform>());
+                tokenSwitchDelays.Add(category.type, category.tokenSwitchDelay);
+                nextAvailableTimes.Add(category.type, 0f);
             }
         }
     }
 
     /// <summary>
     /// Attempts to acquire an attack token for a specific enemy transform.
-    /// Returns true if granted, false if capacity is maxed out.
+    /// Returns true if granted, false if capacity is maxed out or switch cooldown is active.
     /// </summary>
     public bool RequestToken(Transform enemyTransform, TokenType type)
     {
@@ -70,6 +78,9 @@ public class GlobalTokenManager : MonoBehaviour
         
         // If this enemy already holds the token, validate and return true
         if (holders.Contains(enemyTransform)) return true;
+
+        // Check if the global category switch delay is still active
+        if (Time.time < nextAvailableTimes[type]) return false;
 
         // Check if category capacity allows issuing a new token
         if (holders.Count < maxTokenLimits[type])
@@ -83,7 +94,7 @@ public class GlobalTokenManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Releases an attack token held by an enemy (e.g., on attack completion or interruption).
+    /// Releases an attack token held by an enemy and triggers the switch delay cooldown.
     /// </summary>
     public void ReleaseToken(Transform enemyTransform, TokenType type)
     {
@@ -94,6 +105,7 @@ public class GlobalTokenManager : MonoBehaviour
         {
             holders.Remove(enemyTransform);
             SyncInspectorCount(type, holders.Count);
+            nextAvailableTimes[type] = Time.time + tokenSwitchDelays[type];
         }
     }
 
@@ -110,6 +122,7 @@ public class GlobalTokenManager : MonoBehaviour
             {
                 holders.Remove(enemyTransform);
                 SyncInspectorCount(type, holders.Count);
+                nextAvailableTimes[type] = Time.time + tokenSwitchDelays[type];
             }
         }
     }

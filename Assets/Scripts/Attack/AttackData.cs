@@ -7,6 +7,10 @@ public class AttackData : ScriptableObject
 	[Tooltip("The icon picture for this attack (e.g. Punch1_Icon)")]
 	public Sprite attackIcon;
 
+	[Header("Identity")]
+[Tooltip("Unique ID used to match hit reactions or enemy custom dodges.")]
+public int attackID = 0; // <--- ADD THIS
+
 	[Header("Animation & Lunge")]
 	public string animationTriggerName = "Attack";
 	public float animationDuration = 0.5f;

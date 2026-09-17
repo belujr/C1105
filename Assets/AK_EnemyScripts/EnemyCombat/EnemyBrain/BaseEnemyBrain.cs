@@ -27,8 +27,8 @@ public abstract class BaseEnemyBrain : MonoBehaviour
     protected int currentStrafeDir = 1;
     protected float strafeTimer = 0f;
 
-    private float verticalVelocity = 0f;
-    private float gravity = -20f;
+ protected  float verticalVelocity = 0f;
+   protected  float gravity = -20f;
 
     protected virtual void Awake()
     {

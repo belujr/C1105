@@ -179,7 +179,7 @@ public class BeaconSpawnerManager : MonoBehaviour
                 DummyHealth health = enemy.GetComponent<DummyHealth>();
                 if (health != null)
                 {
-                    health.TakeDamage(99999f);
+                   health.TakeDamage(99999f, enemy.transform.position, Vector3.up);
                 }
                 else
                 {

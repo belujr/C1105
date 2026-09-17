@@ -28,7 +28,7 @@ public class EnemyHurtbox : MonoBehaviour, IDamageable
         }
     }
 
-    public void TakeDamage(int damage, Vector3 hitPoint, Vector3 hitNormal, float knockbackForce, AudioClip hitSfx)
+    public void TakeDamage(float damage, Vector3 hitPoint, Vector3 hitNormal, float knockbackForce = 1.5f, AudioClip hitSfx = null, int attackID = -1, bool isAOE = false)
     {
         // I-FRAMES CHECK: If the dummy is dead on the ground or actively waking up, ignore damage entirely!
         if (dummyController != null && (dummyController.IsGettingUp || (dummyHealth != null && dummyHealth.IsDead)))
@@ -36,14 +36,14 @@ public class EnemyHurtbox : MonoBehaviour, IDamageable
             return;
         }
 
-        // 1. Apply damage to health system
+        // 1. Apply damage to health system (passing attackID and isAOE to trigger the dodge bouncer)
         if (dummyHealth != null)
         {
-            dummyHealth.TakeDamage(damage);
+            dummyHealth.TakeDamage(damage, hitPoint, hitNormal, knockbackForce, hitSfx, attackID, isAOE);
         }
 
         // 2. Pack parameters into HitData
-        HitData hitData = new HitData(damage, hitPoint, hitNormal, knockbackForce, 0.0f, null);
+        HitData hitData = new HitData(Mathf.RoundToInt(damage), hitPoint, hitNormal, knockbackForce, 0.0f, null);
 
         // 3. Calculate local hit direction
         HitDirection hitDirection = CalculateHitDirection(hitData);
@@ -51,10 +51,9 @@ public class EnemyHurtbox : MonoBehaviour, IDamageable
         // 4. Forward to dummy controller using damage as the attackID
         if (dummyController != null)
         {
-            dummyController.ProcessHit(hitData, hitDirection, damage, knockbackForce);
+            dummyController.ProcessHit(hitData, hitDirection, Mathf.RoundToInt(damage), knockbackForce);
         }
     }
-
     private HitDirection CalculateHitDirection(HitData hitData)
     {
         Vector3 worldDirection = (hitData.hitPoint - transform.position);

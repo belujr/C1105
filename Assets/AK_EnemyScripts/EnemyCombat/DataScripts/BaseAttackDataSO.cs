@@ -13,15 +13,23 @@ public abstract class BaseAttackDataSO : ScriptableObject
 
     [Header("Combat Parameters")]
     [SerializeField] private float attackRange = 2.0f;
-    [SerializeField] private int damageAmount = 10; // Changed from float to int to match IDamageable contract
+    [SerializeField] private int damageAmount = 10;
     [SerializeField] private float hitStopDuration = 0.08f;
     [SerializeField] private float knockbackForce = 5.0f;
+    [SerializeField] private float stunDuration = 0.2f; // Configurable stun time per attack (e.g., 0.2 for punch 1, 0.25 for punch 2, 0.3 for kick)
 
     [Header("Audio Feedback")]
     [SerializeField] private AudioClip hitSound;
 
     [Header("Animation Profile Hook")]
     [SerializeField] private string animationClipName;
+
+    // Add this inside BaseAttackDataSO.cs (under the Animation Profile Hook section)
+    [Header("Player Reaction Hook")]
+    [Tooltip("The exact name of the Animator state the player should play when hit by this attack.")]
+    [SerializeField] private string playerReactionAnimName = "Hit_Light";
+
+    public string PlayerReactionAnimName => playerReactionAnimName;
 
     // Public Getters
     public string AttackName => attackName;
@@ -33,12 +41,9 @@ public abstract class BaseAttackDataSO : ScriptableObject
     public int DamageAmount => damageAmount;
     public float HitStopDuration => hitStopDuration;
     public float KnockbackForce => knockbackForce;
+    public float StunDuration => stunDuration;
     public AudioClip HitSound => hitSound;
     public string AnimationClipName => animationClipName;
 
-    /// <summary>
-    /// Polymorphic payload execution overridden by specific attack archetypes.
-    /// Interacts cleanly with studio-standard IDamageable contracts.
-    /// </summary>
     public abstract void ExecuteAttackPayload(Transform attacker, Transform target);
 }

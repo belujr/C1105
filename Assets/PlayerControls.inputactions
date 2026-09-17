@@ -104,15 +104,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "sceneswitch",
-                    "type": "Button",
-                    "id": "ffb8baf1-614b-4530-86e5-32174bc26af4",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -218,7 +209,7 @@
                 {
                     "name": "",
                     "id": "7cee4dea-ac3d-4a2f-a5a1-77761a6dae59",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -236,17 +227,6 @@
                     "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "4b9f1749-3db5-4de2-95d6-a1bb09f02efb",
-                    "path": "<Gamepad>/rightStickPress",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "sceneswitch",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -255,7 +235,7 @@
             "id": "8143b3b7-e5b7-4d6b-a386-5b3e725aba7e",
             "actions": [
                 {
-                    "name": "Cancel/Back",
+                    "name": "Cance/Back",
                     "type": "Button",
                     "id": "d762a861-2181-43db-a153-00a66c69795c",
                     "expectedControlType": "",
@@ -272,7 +252,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Cancel/Back",
+                    "action": "Cance/Back",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

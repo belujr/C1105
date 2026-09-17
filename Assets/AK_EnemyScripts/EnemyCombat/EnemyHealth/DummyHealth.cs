@@ -1,26 +1,21 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using CombatSystem.Data; 
+using CombatSystem.Animation; 
 
 public class DummyHealth : MonoBehaviour
 {
     [Header("Health Settings")]
-    [Tooltip("Maximum Health Points of the dummy.")]
     [SerializeField] private float maxHP = 100f;
     private float currentHP;
 
     [Header("Dummy Settings")]
-    [Tooltip("If checked, HP automatically refills to full after dying and the enemy revives (Dummies stay in scene, non-dummies despawn/pool).")]
     [SerializeField] public bool isDummy = true;
-
-    [Tooltip("Cooldown time in seconds before resetting HP.")]
     [SerializeField] private float reviveCooldown = 2.0f;
 
     [Header("Spaceship Beacon Integration")]
-    [Tooltip("If checked, this enemy's death counts toward the Spaceship Beacon kill quota.")]
     [SerializeField] private bool countAsDeathBodyInSpaceshipBeacon = true;
-
-    [Tooltip("Time in seconds to wait after dying before returning the enemy to the object pool (Only applies if isDummy is false).")]
     [SerializeField] private float poolReturnDelay = 3.0f;
 
     public float MaxHP => maxHP;
@@ -40,7 +35,7 @@ public class DummyHealth : MonoBehaviour
         currentHP = maxHP;
     }
 
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, float knockbackForce = 1.5f, AudioClip hitSound = null, int attackID = -1, bool isAOE = false)
     {
         if (IsDead) return;
 
@@ -83,7 +78,6 @@ public class DummyHealth : MonoBehaviour
         {
             if (isDummy)
             {
-                // Scene dummies route through the spawner manager registry
                 BeaconSpawnerManager spawnerManager = FindObjectOfType<BeaconSpawnerManager>();
                 if (spawnerManager != null)
                 {
@@ -92,7 +86,6 @@ public class DummyHealth : MonoBehaviour
             }
             else
             {
-                // Pooled minions bypass the manager registry and report directly to BeaconHealth
                 BeaconHealth beacon = FindObjectOfType<BeaconHealth>();
                 if (beacon != null)
                 {

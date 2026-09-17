@@ -8,14 +8,14 @@ public class CombatHitboxController : MonoBehaviour
     public Transform rightFist;
     public Transform leftFoot;
     public Transform rightFoot;
-    // --- NEW HITBOX TRANSFORMS ---
     public Transform leftElbow;
     public Transform rightElbow;
     public Transform leftKnee;
     public Transform rightKnee;
 
     [Header("Default Hitbox Settings")]
-    public float hitboxRadius = 0.4f;
+    [Tooltip("Keep this tight (e.g. 0.3f to 0.35f) to prevent ghost hits at long range.")]
+    public float hitboxRadius = 0.35f; 
     public LayerMask enemyLayer;
 
     private bool isHitStopping = false;
@@ -31,7 +31,6 @@ public class CombatHitboxController : MonoBehaviour
             case 1: currentActiveLimb = rightFist; break;
             case 2: currentActiveLimb = rightFoot; break;
             case 3: currentActiveLimb = leftFoot; break;
-            // --- NEW HITBOX INDICES ---
             case 4: currentActiveLimb = leftElbow; break;
             case 5: currentActiveLimb = rightElbow; break;
             case 6: currentActiveLimb = leftKnee; break;
@@ -62,7 +61,6 @@ public class CombatHitboxController : MonoBehaviour
 
         if (player == null) return;
 
-        // --- THE SMART DATA ROUTER ---
         if (player.CurrentState == player.AOEAttackState)
         {
             currentHit = player.specialAttackY;
@@ -85,9 +83,6 @@ public class CombatHitboxController : MonoBehaviour
         int finalDamage = Mathf.RoundToInt(currentHit.damage * player.CurrentChargeMultiplier);
         float finalKnockback = currentHit.knockbackForce * player.CurrentChargeMultiplier;
 
-        // ==========================================
-        // AOE COMBAT LOGIC
-        // ==========================================
         if (currentHit.isAOE)
         {
             int hits = Physics.OverlapSphereNonAlloc(player.transform.position, currentHit.aoeRadius, hitResults, enemyLayer);
@@ -110,24 +105,20 @@ public class CombatHitboxController : MonoBehaviour
                     if (damageable != null)
                     {
                         Vector3 hitPoint = enemyCol.ClosestPoint(player.transform.position);
-
                         Vector3 forceVector = (dirToEnemy * finalKnockback) + (Vector3.up * currentHit.verticalLift);
                         float finalForce = forceVector.magnitude > 0 ? forceVector.magnitude : finalKnockback;
 
-                        damageable.TakeDamage(finalDamage, hitPoint, forceVector.normalized, finalForce, currentHit.customHitSound);
+                        Vector3 hitDirection = forceVector.normalized;
+                        damageable.TakeDamage(finalDamage, hitPoint, hitDirection, finalForce, currentHit.customHitSound, currentHit.attackID, true);
                         validHitCount++;
                     }
                 }
             }
 
             if (currentHit.customVFX != null) currentHit.customVFX.Play();
-
             if (validHitCount > 0) TriggerJuice(currentHit);
             DisableHitbox();
         }
-        // ==========================================
-        // SNAPPY SINGLE-TARGET LOGIC
-        // ==========================================
         else
         {
             int hits = Physics.OverlapSphereNonAlloc(currentActiveLimb.position, hitboxRadius, hitResults, enemyLayer);
@@ -135,6 +126,8 @@ public class CombatHitboxController : MonoBehaviour
             for (int i = 0; i < hits; i++)
             {
                 Collider enemyCol = hitResults[i];
+                if (enemyCol.transform == transform) continue;
+
                 IDamageable damageable = enemyCol.GetComponent<IDamageable>();
 
                 if (damageable != null)
@@ -142,7 +135,7 @@ public class CombatHitboxController : MonoBehaviour
                     Vector3 hitDirection = (enemyCol.transform.position - transform.position).normalized;
                     hitDirection.y = 0;
 
-                    damageable.TakeDamage(finalDamage, currentActiveLimb.position, hitDirection, finalKnockback, currentHit.customHitSound);
+                    damageable.TakeDamage(finalDamage, currentActiveLimb.position, hitDirection, finalKnockback, currentHit.customHitSound, currentHit.attackID, false);
 
                     TriggerJuice(currentHit);
                     DisableHitbox();

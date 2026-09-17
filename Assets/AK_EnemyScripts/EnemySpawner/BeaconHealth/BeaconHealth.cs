@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(SphereCollider))]
+[RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(Rigidbody))]
 public class BeaconHealth : MonoBehaviour, IDamageable
 {
     [Header("Shield & Quota Settings")]
@@ -10,6 +11,7 @@ public class BeaconHealth : MonoBehaviour, IDamageable
 
     [Header("Radar Settings")]
     [SerializeField] private float radarRadius = 12f;
+    [SerializeField] private float radarHeight = 2f;
 
     [Header("Core Damage Protection")]
     [Tooltip("Maximum distance from beacon center where impact damage is accepted (prevents AOE splash bleed from nearby enemies).")]
@@ -33,13 +35,23 @@ public class BeaconHealth : MonoBehaviour, IDamageable
     public int RequiredKillQuota => requiredKillQuota;
     public int CurrentKills => currentKills;
 
-    private SphereCollider radarTrigger;
+    private CapsuleCollider radarTrigger;
+    private Rigidbody rb;
 
     private void Awake()
     {
-        radarTrigger = GetComponent<SphereCollider>();
+        // Setup Rigidbody so triggers fire reliably in Unity physics
+        rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        // Setup the radar trigger collider
+        radarTrigger = GetComponent<CapsuleCollider>();
         radarTrigger.isTrigger = true;
         radarTrigger.radius = radarRadius;
+        radarTrigger.height = radarHeight;
+        radarTrigger.enabled = true;
+
         currentCoreHealth = maxCoreHealth;
     }
 
@@ -47,6 +59,7 @@ public class BeaconHealth : MonoBehaviour, IDamageable
     {
         if (isActivated || isDestroyed) return;
 
+        // Checks if the player entered the radar trigger zone
         if (other.CompareTag("Player") || other.GetComponent<PlayerController>() != null)
         {
             ActivateBeacon();
@@ -60,7 +73,7 @@ public class BeaconHealth : MonoBehaviour, IDamageable
         OnQuotaUpdated?.Invoke(currentKills, requiredKillQuota);
     }
 
-    public void TakeDamage(int damage, Vector3 hitPoint, Vector3 hitNormal, float stunDuration, AudioClip hitSound)
+    public void TakeDamage(float damage, Vector3 hitPoint, Vector3 hitNormal, float stunDuration = 1.5f, AudioClip hitSound = null, int attackID = -1, bool isAOE = false)
     {
         if (!isActivated || isDestroyed) return;
 
@@ -69,7 +82,6 @@ public class BeaconHealth : MonoBehaviour, IDamageable
             return;
         }
 
-        // Filter out collateral AOE damage originating from fighting nearby enemies
         if (hitPoint != Vector3.zero && Vector3.Distance(transform.position, hitPoint) > coreHitRadius)
         {
             return;
