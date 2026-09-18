@@ -539,7 +539,6 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
     private IEnumerator PerformEnemyComboRoutine()
     {
         float speedScale = Mathf.Max(0.1f, enemyAttackSpeedMultiplier);
-        bool playerCaughtInCombo = false;
 
         try
         {
@@ -550,7 +549,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                     if (isDead || player == null) yield break;
 
                     // --- ATTACK 1 ONLY: ANTICIPATION WINDOW ---
-                    if (hitCount == 0) // (For the second block further down, it will be 'if (i == 0)')
+                    if (hitCount == 0)
                     {
                         if (playerTransform != null)
                         {
@@ -558,14 +557,11 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                         }
                         StartCoroutine(AnticipationFlashRoutine());
 
-                        // REMOVED Time.timeScale modifications!
-
                         float anticipationElapsed = 0f;
                         while (anticipationElapsed < anticipationDuration)
                         {
                             if (isDead) yield break;
 
-                            // Using standard time instead of unscaled time
                             anticipationElapsed += Time.deltaTime;
                             yield return null;
                         }
@@ -584,7 +580,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                             float lerpDuration = 0.18f / speedScale;
                             while (lerpElapsed < lerpDuration)
                             {
-                                if (isDead) { ResetTimeScale(); yield break; }
+                                if (isDead) yield break;
                                 lerpElapsed += Time.deltaTime;
                                 float t = Mathf.Clamp01(lerpElapsed / lerpDuration);
                                 cachedTransform.position = Vector3.Lerp(startPos, targetLerpPos, t);
@@ -595,16 +591,25 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                     }
                     else
                     {
-                        if (!playerCaughtInCombo) break;
-
-                        // SUBSEQUENT HITS (2 & 3): Always snap and face the player directly
                         if (playerTransform != null)
                         {
+                            // --- NEW: COMBOS DROP IF THE PLAYER DODGES FAR AWAY ---
+                            float distanceToPlayer = Vector3.Distance(cachedTransform.position, playerTransform.position);
+                            float maxSnapRange = attackRange * 1.5f; // The maximum distance the enemy is allowed to snap
+
+                            if (distanceToPlayer > maxSnapRange)
+                            {
+                                // The player successfully escaped. Cancel the rest of the combo!
+                                break;
+                            }
+                            // ------------------------------------------------------
+
+                            // SUBSEQUENT HITS (2 & 3): Always snap and face the player directly
                             FacePlayer(playerTransform.position, cachedTransform.position);
                             Vector3 dirToPlayer = (playerTransform.position - cachedTransform.position);
                             dirToPlayer.y = 0f;
                             dirToPlayer.Normalize();
-                            
+
                             Vector3 snapPos = playerTransform.position - (dirToPlayer * Mathf.Min(attackRange * 0.8f, 1.2f));
                             snapPos.y = groundYCoord;
                             cachedTransform.position = snapPos;
@@ -618,7 +623,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                     {
                         if (isDead) yield break;
                         elapsed += Time.deltaTime;
-                        
+
                         if (playerTransform != null)
                         {
                             FacePlayer(playerTransform.position, cachedTransform.position);
@@ -628,20 +633,6 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                         }
 
                         yield return null;
-                    }
-
-                    // CHECK IF HIT 1 CONNECTED
-                    if (hitCount == 0)
-                    {
-                        if (CheckIfAttackHit())
-                        {
-                            playerCaughtInCombo = true;
-                        }
-                        else
-                        {
-                            playerCaughtInCombo = false;
-                            break; // Missed; cancel combo hits 2 & 3
-                        }
                     }
 
                     yield return new WaitForSeconds(0.15f / speedScale);
@@ -654,12 +645,8 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                     if (isDead || player == null) yield break;
 
                     BaseAttackDataSO atk = enemyComboSequence[i];
-                    currentActiveEnemyAttack = atk; // <-- ADD THIS LINE HERE
-                    float atkDamage = atk != null ? atk.DamageAmount : meleeDamage;
-                    float atkKnockback = atk != null ? atk.KnockbackForce : meleeKnockbackForce;
-                    float atkStun = atk != null ? atk.StunDuration : 0.2f;
-                    AudioClip atkSound = atk != null && atk.HitSound != null ? atk.HitSound : meleeHitSound;
-                    int atkID = atk != null ? atk.GetHashCode() : 0;
+                    currentActiveEnemyAttack = atk;
+                    float speedScaleLocal = speedScale; // Use local if you want to scale individual hits later
 
                     // --- ATTACK 1 ONLY: ANTICIPATION WINDOW ---
                     if (i == 0)
@@ -670,14 +657,10 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                         }
                         StartCoroutine(AnticipationFlashRoutine());
 
-                        // REMOVED Time.timeScale modifications!
-
                         float anticipationElapsed = 0f;
                         while (anticipationElapsed < anticipationDuration)
                         {
                             if (isDead) yield break;
-
-                            // Use standard time instead of unscaled time
                             anticipationElapsed += Time.deltaTime;
                             yield return null;
                         }
@@ -703,7 +686,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
 
                         if (attackClip != null)
                         {
-                            animationEngine.PlayAnimation(attackClip, 0.05f / speedScale, speedScale);
+                            animationEngine.PlayAnimation(attackClip, 0.05f / speedScaleLocal, speedScaleLocal);
                             lastPlayedLocomotionState = $"Attack_{atk.name}";
                         }
                     }
@@ -718,10 +701,10 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                             targetLerpPos.y = groundYCoord;
 
                             float lerpElapsed = 0f;
-                            float lerpDuration = 0.18f / speedScale;
+                            float lerpDuration = 0.18f / speedScaleLocal;
                             while (lerpElapsed < lerpDuration)
                             {
-                                if (isDead) { ResetTimeScale(); yield break; }
+                                if (isDead) yield break;
                                 lerpElapsed += Time.deltaTime;
                                 float t = Mathf.Clamp01(lerpElapsed / lerpDuration);
                                 cachedTransform.position = Vector3.Lerp(startPos, targetLerpPos, t);
@@ -732,16 +715,25 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                     }
                     else
                     {
-                        if (!playerCaughtInCombo) break;
-
-                        // SUBSEQUENT HITS (2 & 3): Always snap and face the player directly
                         if (playerTransform != null)
                         {
+                            // --- NEW: COMBOS DROP IF THE PLAYER DODGES FAR AWAY ---
+                            float distanceToPlayer = Vector3.Distance(cachedTransform.position, playerTransform.position);
+                            float maxSnapRange = attackRange * 1.5f; // The maximum distance the enemy is allowed to snap
+
+                            if (distanceToPlayer > maxSnapRange)
+                            {
+                                // The player successfully escaped. Cancel the rest of the combo!
+                                break;
+                            }
+                            // ------------------------------------------------------
+
+                            // SUBSEQUENT HITS (2 & 3): Always snap and face the player directly
                             FacePlayer(playerTransform.position, cachedTransform.position);
                             Vector3 dirToPlayer = (playerTransform.position - cachedTransform.position);
                             dirToPlayer.y = 0f;
                             dirToPlayer.Normalize();
-                            
+
                             Vector3 snapPos = playerTransform.position - (dirToPlayer * Mathf.Min(attackRange * 0.8f, 1.2f));
                             snapPos.y = groundYCoord;
                             cachedTransform.position = snapPos;
@@ -749,16 +741,16 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                         }
                     }
 
-                    float startup = (atk != null ? atk.StartupTime : 0.15f) / speedScale;
-                    float active = (atk != null ? atk.ActiveTime : 0.15f) / speedScale;
-                    float recovery = (atk != null ? atk.RecoveryTime : 0.2f) / speedScale;
+                    float startup = (atk != null ? atk.StartupTime : 0.15f) / speedScaleLocal;
+                    float active = (atk != null ? atk.ActiveTime : 0.15f) / speedScaleLocal;
+                    float recovery = (atk != null ? atk.RecoveryTime : 0.2f) / speedScaleLocal;
 
                     float elapsedStartup = 0f;
                     while (elapsedStartup < startup)
                     {
                         if (isDead) yield break;
                         elapsedStartup += Time.deltaTime;
-                        
+
                         if (playerTransform != null)
                         {
                             FacePlayer(playerTransform.position, cachedTransform.position);
@@ -770,13 +762,12 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
                         yield return null;
                     }
 
-
                     float elapsedActive = 0f;
                     while (elapsedActive < active)
                     {
                         if (isDead) yield break;
                         elapsedActive += Time.deltaTime;
-                        
+
                         if (playerTransform != null)
                         {
                             FacePlayer(playerTransform.position, cachedTransform.position);
@@ -791,11 +782,8 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
         }
         finally
         {
-            ResetTimeScale();
-            if (playerCaughtInCombo)
-            {
-                SetPlayerComboLock(false);
-            }
+            // Unconditionally unlock the player so they never get permanently stuck
+            SetPlayerComboLock(false);
 
             if (GlobalTokenManager.Instance != null && holdsToken)
             {
@@ -1046,15 +1034,18 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
         }
 
         SetPlayerComboLock(false);
-
         ForceResetDodgeState();
+
+        // Disable the collider immediately so the player doesn't get stuck on dead bodies
+        if (capsuleCollider != null) capsuleCollider.enabled = false;
 
         if (GlobalTokenManager.Instance != null)
         {
             GlobalTokenManager.Instance.ReleaseAllTokensForEnemy(cachedTransform);
         }
 
-        if (animProfile != null && animProfile.deathClip != null && animationEngine == null)
+        // --- FIX: Changed '==' to '!=' so the death animation actually plays! ---
+        if (animProfile != null && animProfile.deathClip != null && animationEngine != null)
         {
             animationEngine.PlayAnimation(animProfile.deathClip, animProfile.deathTransitionDuration, animProfile.deathPlaybackSpeed);
         }
@@ -1064,12 +1055,23 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
 
     private IEnumerator DeathDisappearRoutine()
     {
-        // 1. Drop the body to the ground if they died mid-air
+        // 1. Shoot a laser down to find the TRUE ground instead of relying on spawn height
         Vector3 startPos = cachedTransform.position;
-        Vector3 groundPos = new Vector3(startPos.x, groundYCoord, startPos.z);
+        Vector3 groundPos = startPos;
+
+        if (Physics.Raycast(startPos + (Vector3.up * 0.5f), Vector3.down, out RaycastHit hit, 10f))
+        {
+            groundPos.y = hit.point.y;
+        }
+        else
+        {
+            groundPos.y = groundYCoord; // Fallback just in case
+        }
+
         float dropElapsed = 0f;
         float dropDuration = 0.2f;
 
+        // 2. Smoothly drop them to the true floor
         while (dropElapsed < dropDuration)
         {
             dropElapsed += Time.unscaledDeltaTime;
@@ -1078,7 +1080,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
         }
         cachedTransform.position = groundPos;
 
-        // 2. Wait for the disappear delay
+        // 3. Wait for the disappear delay, then pool/destroy
         yield return new WaitForSecondsRealtime(deathDisappearDelay);
 
         if (EnemyObjectPool.Instance != null)
