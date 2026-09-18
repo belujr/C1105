@@ -20,20 +20,32 @@ public class DashState : PlayerState
         controller.VerticalVelocity = Vector3.zero;
 
         Vector3 inputDir = controller.GetIsometricInputDirection();
-        dashDirection = inputDir.sqrMagnitude > 0.01f ? inputDir : controller.transform.forward;
-        controller.transform.rotation = Quaternion.LookRotation(dashDirection);
+
+        // --- UPDATED LOGIC: Auto-backstep on neutral input ---
+        if (inputDir.sqrMagnitude > 0.01f)
+        {
+            // Input given: Dash in that direction and turn to face it
+            dashDirection = inputDir;
+            controller.transform.rotation = Quaternion.LookRotation(dashDirection);
+        }
+        else
+        {
+            // No input: Dash backward, but DO NOT rotate (slide backward while facing forward)
+            dashDirection = -controller.transform.forward;
+        }
+        // -----------------------------------------------------
 
         // --- ENABLE DASH TRAIL ---
         if (controller.dashTrailRenderer != null)
         {
-            controller.dashTrailRenderer.Clear();          // Clear any leftover old trails
-            controller.dashTrailRenderer.emitting = true;  // Start drawing the line
+            controller.dashTrailRenderer.Clear();
+            controller.dashTrailRenderer.emitting = true;
         }
 
         // Freeze animator during dash
         if (controller.Animator != null)
         {
-            controller.Animator.speed = 0f; 
+            controller.Animator.speed = 0f;
         }
     }
 
