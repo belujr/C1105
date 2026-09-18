@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 11-Leg Sweep(Left)
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 07e8b94990f697a46abfd060069da5d4, type: 3}
+  attackName: Leg Sweep
+  description: Leg Sweep
+  attackIcon: {fileID: 21300000, guid: 4e60a42ef0fd7f741ae3d064004c81b9, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 8
   animationTriggerName: Leg Sweep Left
   animationDuration: 0.8

@@ -71,6 +71,11 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler
 
     public void OnSelect(BaseEventData eventData)
     {
+        // Triggers the left panel update when this node is highlighted
+        if (attackData != null && SkillPreviewManager.Instance != null)
+        {
+            SkillPreviewManager.Instance.ShowPreview(attackData);
+        }
     }
 
     public void UpdateVisuals()

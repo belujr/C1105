@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 6-Cross Punch
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 21c14bd71537ec34f85799928a4708b2, type: 3}
+  attackName: Cross Punch
+  description: Cross Punch
+  attackIcon: {fileID: 21300000, guid: 1640b078b78d2dd448359b0914ea5b2d, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 0
   animationTriggerName: Cross Punch
   animationDuration: 0.5

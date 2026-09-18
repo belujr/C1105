@@ -3,13 +3,19 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewAttack", menuName = "Combat/Attack Data")]
 public class AttackData : ScriptableObject
 {
-	[Header("UI Representation")]
-	[Tooltip("The icon picture for this attack (e.g. Punch1_Icon)")]
+	[Header("UI & Preview Representation")]
+	public string attackName = "Punch";
+	[TextArea(3, 5)] public string description = "A quick jab that interrupts weak enemy attacks.";
 	public Sprite attackIcon;
 
+	[Header("Stat Levels (1 to 5)")]
+    [Range(1, 5)] public int damageLevel = 3;
+    [Range(1, 5)] public int knockbackLevel = 2;
+    [Range(1, 5)] public int rangeLevel = 4;
+
 	[Header("Identity")]
-[Tooltip("Unique ID used to match hit reactions or enemy custom dodges.")]
-public int attackID = 0; // <--- ADD THIS
+	[Tooltip("Unique ID used to match hit reactions or enemy custom dodges.")]
+	public int attackID = 0; // <--- ADD THIS
 
 	[Header("Animation & Lunge")]
 	public string animationTriggerName = "Attack";

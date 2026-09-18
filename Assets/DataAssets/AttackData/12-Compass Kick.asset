@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 12-Compass Kick
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: cbe21af919b35964d949011c0261840b, type: 3}
+  attackName: Compass Kick
+  description: Compass Kick
+  attackIcon: {fileID: 21300000, guid: 3ddaefe7ea28167428f160679209cda2, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 0
   animationTriggerName: Compass Kick
   animationDuration: 0.6

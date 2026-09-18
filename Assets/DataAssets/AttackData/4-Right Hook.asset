@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 4-Right Hook
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 91a80016386235b4e9f3dfeceb2abfbf, type: 3}
+  attackName: Right Hook
+  description: Right Hook
+  attackIcon: {fileID: 21300000, guid: 597b4c6d9f97c044da215bf9c91a18b3, type: 3}
+  damageLevel: 3
+  knockbackLevel: 4
+  rangeLevel: 2
   attackID: 0
   animationTriggerName: Right Hook
   animationDuration: 0.4

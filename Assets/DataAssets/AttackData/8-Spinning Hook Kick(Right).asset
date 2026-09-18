@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 8-Spinning Hook Kick(Right)
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 3bf8188e478354a45bd3ad0a0803695d, type: 3}
+  attackName: Spinning Hook Kick
+  description: Spinning Hook Kick
+  attackIcon: {fileID: 21300000, guid: cf600257b867e494fb7d65c0c2facfa1, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 0
   animationTriggerName: Spinning Hook Kick(Right)
   animationDuration: 0.8

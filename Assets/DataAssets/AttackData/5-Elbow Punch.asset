@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 5-Elbow Punch
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 8514acd184ef6b94ab91e97dd83830f8, type: 3}
+  attackName: Elbow Punch
+  description: Elbow Punch
+  attackIcon: {fileID: 21300000, guid: ea17ea51f5265044aa1fda3cf0168e1a, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 0
   animationTriggerName: Elbow Punch
   animationDuration: 0.6

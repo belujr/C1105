@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 1-Punch 1
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 51d3ce1107162a746944a611d993ca73, type: 3}
+  attackName: Punch 1
+  description: Punch 1
+  attackIcon: {fileID: 21300000, guid: 32f8db9c77ad59540a0c7cc287395fa9, type: 3}
+  damageLevel: 1
+  knockbackLevel: 1
+  rangeLevel: 1
   attackID: 0
   animationTriggerName: Punch1
   animationDuration: 0.45

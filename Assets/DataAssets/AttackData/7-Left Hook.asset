@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: 7-Left Hook
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
-  attackIcon: {fileID: 21300000, guid: 427e9f11dae05ef479fad188ba33440c, type: 3}
+  attackName: Left Hook
+  description: Left Hook
+  attackIcon: {fileID: 21300000, guid: 9523a78f40097404f89d6a07db57f4b3, type: 3}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
   attackID: 0
   animationTriggerName: Left Hook
   animationDuration: 0.6
