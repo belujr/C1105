@@ -37,7 +37,7 @@ public class EnemyFeedback : MonoBehaviour
 		if (CombatEffectsManager.Instance != null)
 		{
 			AudioClip soundToPlay = hitSound != null ? hitSound : defaultHeavyPunchSound;
-			CombatEffectsManager.Instance.TriggerHitEffects(0.08f, 0.1f, soundToPlay);
+			CombatEffectsManager.Instance.TriggerHitEffects(0.08f, 0.1f, soundToPlay, null, hitPoint);
 		}
 
 		if (activeReaction != null) StopCoroutine(activeReaction);
