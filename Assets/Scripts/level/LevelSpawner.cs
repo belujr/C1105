@@ -3,37 +3,31 @@ using UnityEngine;
 public class LevelSpawner : MonoBehaviour
 {
     public GameObject[] roomsLayoutVariations;
-    public GameObject playerPrefab; // Assign your player character here
+    public GameObject playerPrefab;
+    public GameObject globalLight; // Assign your Directional Light in the Inspector
 
-    void Start()
+    public void GenerateLevel()
     {
-        // 1. Pick a random layout and spawn it
         int randomIndex = Random.Range(0, roomsLayoutVariations.Length);
         Instantiate(roomsLayoutVariations[randomIndex]);
 
-        // 2. Find the empty GameObject tagged "PlayerSpawn"
         GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
 
-        // 3. Spawn the player and assign it to the camera
         if (spawnPoint != null)
         {
-            // Store the spawned clone in a variable
             GameObject spawnedPlayer = Instantiate(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
 
-            // Find the IsoCameraRig in the scene and set its target
             IsoCameraRig camRig = FindObjectOfType<IsoCameraRig>();
             if (camRig != null)
             {
                 camRig.SetTarget(spawnedPlayer.transform);
             }
-            else
-            {
-                Debug.LogWarning("Could not find the IsoCameraRig in the scene!");
-            }
         }
-        else
+
+        // Turn on the global level light
+        if (globalLight != null)
         {
-            Debug.LogWarning("Could not find an object tagged 'PlayerSpawn' in the scene!");
+            globalLight.SetActive(true);
         }
     }
 }

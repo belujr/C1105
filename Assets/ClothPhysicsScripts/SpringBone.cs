@@ -75,8 +75,8 @@ namespace UnityChan
 			prevTipPos = child.position;
 		}
 
-		public void UpdateSpring ()
-		{
+        public void UpdateSpring(float groupDynamicRatio)
+        {
 			//Kobayashi
 			org = trs;
 			//回転をリセット
@@ -101,18 +101,52 @@ namespace UnityChan
 			//長さを元に戻す
 			currTipPos = ((currTipPos - trs.position).normalized * springLength) + trs.position;
 
-			//衝突判定
-			for (int i = 0; i < colliders.Length; i++) {
-				if (Vector3.Distance (currTipPos, colliders [i].transform.position) <= (radius + colliders [i].radius)) {
-					Vector3 normal = (currTipPos - colliders [i].transform.position).normalized;
-					currTipPos = colliders [i].transform.position + (normal * (radius + colliders [i].radius));
-					currTipPos = ((currTipPos - trs.position).normalized * springLength) + trs.position;
-				}
+            //衝突判定 (Collision with Capsule Support)
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                SpringCollider col = colliders[i];
+                Vector3 colliderCenter = col.transform.TransformPoint(col.offset);
+                float combinedRadius = radius + col.radius;
+                Vector3 closestPoint = colliderCenter;
 
+                // If height > 0, calculate the closest point along the capsule's line segment
+                if (col.height > 0)
+                {
+                    Vector3 dir = col.transform.up;
+                    float halfHeight = col.height * 0.5f;
+                    Vector3 top = colliderCenter + (dir * halfHeight);
+                    Vector3 bottom = colliderCenter - (dir * halfHeight);
 
-			}
+                    Vector3 v = top - bottom;
+                    Vector3 w = currTipPos - bottom;
 
-			prevTipPos = temp;
+                    float c1 = Vector3.Dot(w, v);
+                    float c2 = Vector3.Dot(v, v);
+
+                    if (c1 <= 0f)
+                    {
+                        closestPoint = bottom;
+                    }
+                    else if (c2 <= c1)
+                    {
+                        closestPoint = top;
+                    }
+                    else
+                    {
+                        closestPoint = bottom + (v * (c1 / c2));
+                    }
+                }
+
+                // Standard distance check against the closest point
+                if (Vector3.Distance(currTipPos, closestPoint) <= combinedRadius)
+                {
+                    Vector3 normal = (currTipPos - closestPoint).normalized;
+                    currTipPos = closestPoint + (normal * combinedRadius);
+                    currTipPos = ((currTipPos - trs.position).normalized * springLength) + trs.position;
+                }
+            }
+
+            prevTipPos = temp;
 
 			//回転を適用；
 			Vector3 aimVector = trs.TransformDirection (boneAxis);
@@ -121,8 +155,8 @@ namespace UnityChan
 			//trs.rotation = aimRotation * trs.rotation;
 			//Kobayahsi:Lerp with mixWeight
 			Quaternion secondaryRotation = aimRotation * trs.rotation;
-			trs.rotation = Quaternion.Lerp (org.rotation, secondaryRotation, managerRef.dynamicRatio);
-		}
+            trs.rotation = Quaternion.Lerp(org.rotation, secondaryRotation, groupDynamicRatio);
+        }
 
 		private void OnDrawGizmos ()
 		{

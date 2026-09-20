@@ -1,48 +1,62 @@
-﻿//
-//RandomWind.cs for unity-chan!
-//
-//Original Script is here:
-//ricopin / RandomWind.cs
-//Rocket Jump : http://rocketjump.skr.jp/unity3d/109/
-//https://twitter.com/ricopin416
-//
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 namespace UnityChan
 {
-	public class RandomWind : MonoBehaviour
-	{
-		private SpringBone[] springBones;
-		public bool isWindActive = true;
+    public class RandomWind : MonoBehaviour
+    {
+        private SpringBone[] springBones;
 
-		// Use this for initialization
-		void Start ()
-		{
-			springBones = GetComponent<SpringManager> ().springBones;
-		}
+        [Header("Main Switch")]
+        public bool isWindActive = true;
 
-		// Update is called once per frame
-		void Update ()
-		{
-			Vector3 force = Vector3.zero;
-			if (isWindActive) {
-				force = new Vector3 (Mathf.PerlinNoise (Time.time, 0.0f) * 0.005f, 0, 0);
-			}
+        [Header("Wind Direction & Power")]
+        [Tooltip("The X, Y, Z direction of the wind.")]
+        public Vector3 windDirection = new Vector3(0, 0, -1);
 
-			for (int i = 0; i < springBones.Length; i++) {
-				springBones [i].springForce = force;
-			}
-		}
+        [Tooltip("If true, the wind rotates with the character. If false, it blows in a fixed world direction.")]
+        public bool isLocalDirection = true;
 
-		/*
+        [Tooltip("The base strength of the wind.")]
+        public float windIntensity = 0.01f;
 
-		void OnGUI ()
-		{
-			Rect rect1 = new Rect (10, Screen.height - 40, 400, 30);
-			isWindActive = GUI.Toggle (rect1, isWindActive, "Random Wind");
-		}
+        [Header("Wind Flutter (Noise)")]
+        [Tooltip("How fast the wind pulses/flutters.")]
+        public float flutterSpeed = 2.0f;
 
-		*/
-	}
+        [Tooltip("0 = steady continuous wind. 1 = highly gusty/random wind.")]
+        [Range(0f, 1f)]
+        public float flutterVariation = 1.0f;
+
+        void Start()
+        {
+            springBones = GetComponent<SpringManager>().springBones;
+        }
+
+        void Update()
+        {
+            Vector3 force = Vector3.zero;
+
+            if (isWindActive && springBones != null)
+            {
+                // 1. Calculate the target direction
+                Vector3 normalizedDirection = windDirection.normalized;
+                Vector3 actualDirection = isLocalDirection ? transform.TransformDirection(normalizedDirection) : normalizedDirection;
+
+                // 2. Calculate the random wind noise
+                float noise = Mathf.PerlinNoise(Time.time * flutterSpeed, 0.0f);
+
+                // 3. Blend between a steady wind and the gusty noise
+                float currentPower = windIntensity * Mathf.Lerp(1.0f, noise, flutterVariation);
+
+                // 4. Apply to final force
+                force = actualDirection * currentPower;
+            }
+
+            for (int i = 0; i < springBones.Length; i++)
+            {
+                springBones[i].springForce = force;
+            }
+        }
+    }
 }
