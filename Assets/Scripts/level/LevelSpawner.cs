@@ -4,30 +4,35 @@ public class LevelSpawner : MonoBehaviour
 {
     public GameObject[] roomsLayoutVariations;
     public GameObject playerPrefab;
-    public GameObject globalLight; // Assign your Directional Light in the Inspector
+    public GameObject globalLight;
+
+    // Store references to the clones so we can delete them
+    private GameObject currentLayoutInstance;
+    private GameObject currentPlayerInstance;
 
     public void GenerateLevel()
     {
         int randomIndex = Random.Range(0, roomsLayoutVariations.Length);
-        Instantiate(roomsLayoutVariations[randomIndex]);
+        currentLayoutInstance = Instantiate(roomsLayoutVariations[randomIndex]);
 
         GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
 
         if (spawnPoint != null)
         {
-            GameObject spawnedPlayer = Instantiate(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+            currentPlayerInstance = Instantiate(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
 
             IsoCameraRig camRig = FindObjectOfType<IsoCameraRig>();
-            if (camRig != null)
-            {
-                camRig.SetTarget(spawnedPlayer.transform);
-            }
+            if (camRig != null) camRig.SetTarget(currentPlayerInstance.transform);
         }
 
-        // Turn on the global level light
-        if (globalLight != null)
-        {
-            globalLight.SetActive(true);
-        }
+        if (globalLight != null) globalLight.SetActive(true);
+    }
+
+    // Call this when pressing R3 to wipe the level from existence
+    public void ClearLevel()
+    {
+        if (currentLayoutInstance != null) Destroy(currentLayoutInstance);
+        if (currentPlayerInstance != null) Destroy(currentPlayerInstance);
+        if (globalLight != null) globalLight.SetActive(false);
     }
 }

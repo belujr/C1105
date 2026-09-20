@@ -321,23 +321,37 @@ public class PlayerController : MonoBehaviour
 		CurrentState?.Enter();
 	}
 
-	public Vector3 GetIsometricInputDirection()
-	{
-		Vector2 rawInput = InputHandler.MoveInput;
-		if (rawInput.sqrMagnitude < 0.01f) return Vector3.zero;
+    public Vector3 GetIsometricInputDirection()
+    {
+        Vector2 rawInput = InputHandler.MoveInput;
+        if (rawInput.sqrMagnitude < 0.01f) return Vector3.zero;
 
-		Vector3 camForward = cameraTransform.forward;
-		Vector3 camRight = cameraTransform.right;
+        // FAILSAFE: If the camera wasn't found at Awake, try to find it again now
+        if (cameraTransform == null)
+        {
+            if (Camera.main != null)
+            {
+                cameraTransform = Camera.main.transform;
+            }
+            else
+            {
+                // If it's STILL null, return zero to prevent the UnassignedReferenceException
+                return Vector3.zero;
+            }
+        }
 
-		camForward.y = 0f;
-		camRight.y = 0f;
-		camForward.Normalize();
-		camRight.Normalize();
+        Vector3 camForward = cameraTransform.forward;
+        Vector3 camRight = cameraTransform.right;
 
-		return (camForward * rawInput.y + camRight * rawInput.x).normalized;
-	}
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
 
-	public void RotateTowards(Vector3 direction)
+        return (camForward * rawInput.y + camRight * rawInput.x).normalized;
+    }
+
+    public void RotateTowards(Vector3 direction)
 	{
 		if (direction.sqrMagnitude > 0.01f && stats != null)
 		{
