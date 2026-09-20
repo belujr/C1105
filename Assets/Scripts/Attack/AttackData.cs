@@ -15,7 +15,7 @@ public class AttackData : ScriptableObject
 
 	[Header("Identity")]
 	[Tooltip("Unique ID used to match hit reactions or enemy custom dodges.")]
-	public int attackID = 0; // <--- ADD THIS
+	public int attackID = 0; 
 
 	[Header("Animation & Lunge")]
 	public string animationTriggerName = "Attack";
@@ -23,10 +23,10 @@ public class AttackData : ScriptableObject
 	public float forwardLungeSpeed = 2.0f;
 
 	[Tooltip("How fast the character blends into this attack (e.g. 0.05 for snappy attacks).")]
-	public float transitionDuration = 0.05f; // <--- ADD THIS
+	public float transitionDuration = 0.05f; 
 
 	[Tooltip("For Hold Attacks: At what second should the animation freeze? (e.g., 0.3)")]
-	public float chargePauseTime = 0.3f; // <--- ADD THIS LINE
+	public float chargePauseTime = 0.3f; 
 
 	[Header("Single Target Stats")]
 	public int damage = 10;
@@ -46,5 +46,5 @@ public class AttackData : ScriptableObject
 	public float cameraShakeIntensity = 0.1f;
 	public float cameraShakeDuration = 0.08f;
 	public AudioClip customHitSound;
-	public ParticleSystem customVFX;
+	public GameObject customVFX;
 }
