@@ -2517,6 +2517,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
       propertyPath: enableDodging
       value: 1
       objectReference: {fileID: 0}
@@ -3610,6 +3614,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8329697676357605877, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
@@ -7285,6 +7293,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
       propertyPath: enableDodging
       value: 1
       objectReference: {fileID: 0}
@@ -9136,99 +9148,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!1001 &3328924172795327021
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8329697676357605877, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: enableDodging
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: playerDodgeRange
-      value: 4.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: stoppingDistance
-      value: 3.29
-      objectReference: {fileID: 0}
-    - target: {fileID: 1039906771133820853, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: attackCorridorWidth
-      value: 0.63
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -5.8301
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.266
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 14.788
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1462108010528376707, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1686227355989625343, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3925226445046316536, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_Name
-      value: UltraInstinchCapsule
-      objectReference: {fileID: 0}
-    - target: {fileID: 3925226445046316536, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3973076931123279404, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
 --- !u!95 &3378172857617985548
 Animator:
   serializedVersion: 7
@@ -9907,11 +9826,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2770371106595548473, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: comboWindow
@@ -15640,7 +15559,6 @@ SceneRoots:
   - {fileID: 1097639399}
   - {fileID: 176786576}
   - {fileID: 471627142}
-  - {fileID: 3328924172795327021}
   - {fileID: 934702998}
   - {fileID: 495529737}
   - {fileID: 1833787075}
