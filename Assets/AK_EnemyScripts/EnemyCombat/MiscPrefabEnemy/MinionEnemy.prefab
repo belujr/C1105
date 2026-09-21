@@ -1878,6 +1878,9 @@ GameObject:
   - component: {fileID: 2003849762719997994}
   - component: {fileID: 2845370007556556877}
   - component: {fileID: 2957863608425592892}
+  - component: {fileID: 1023524158583870630}
+  - component: {fileID: -228239993004965147}
+  - component: {fileID: 121929205788940712}
   m_Layer: 6
   m_Name: MinionEnemy
   m_TagString: Untagged
@@ -1941,6 +1944,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MinionEnemyBrain
   enemyData: {fileID: 11400000, guid: ddcfdf170c977b544aec5bedbf38d24a, type: 2}
+  maxHealth: 60
 --- !u!95 &7185991076286389422
 Animator:
   serializedVersion: 7
@@ -2039,6 +2043,47 @@ MonoBehaviour:
   hitStopDuration: 0.04
   hitCooldown: 0.02
   comboWindow: 0.45
+--- !u!114 &1023524158583870630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dbcaf9228fab1442a4d532b12a11614, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BeaconEnemyLink
+--- !u!114 &-228239993004965147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5526c34f93834d344a5b32f85a2e8323, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyGravityHandler
+  gravityForce: 20
+  ignoreGravityLayers:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!114 &121929205788940712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7413432bf592a8948b9e50504407101f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDropCollisionController
+  groundCheckDistance: 0.3
 --- !u!1 &7639422710220769886
 GameObject:
   m_ObjectHideFlags: 0

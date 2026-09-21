@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9da761a1eda6c9948b42c7347c4889b6, type: 3}
+  m_Name: HealerShip
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceshipData
+  shipTypeName: Medium Dropper
+  shipPrefab: {fileID: 0}
+  enemyPrefabs:
+  - {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+  payloadCapacity: 1
+  flyInSpeed: 15
+  flyOutSpeed: 20
+  dropInterval: 0.5
+  dropScatterRadius: 3

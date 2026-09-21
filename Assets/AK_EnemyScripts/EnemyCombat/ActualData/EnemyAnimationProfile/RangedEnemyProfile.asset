@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
   m_Name: RangedEnemyProfile
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
-  idleClip: {fileID: -203655887218126122, guid: 22c3434b345499b4091b9eecb9454ca5, type: 3}
+  idleClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
   idleTransitionDuration: 0.15
-  walkClip: {fileID: -203655887218126122, guid: 5261022881a8fb246a5ae56418df48bd, type: 3}
+  walkClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
   walkTransitionDuration: 0.15
   runClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
   runTransitionDuration: 0.15
-  strafeLeftClip: {fileID: -203655887218126122, guid: ba06f0ff7b7d0b5439e8e2f3ba9f7e58, type: 3}
-  strafeRightClip: {fileID: -203655887218126122, guid: 31a696e1249e7ea46930eff3420912cc, type: 3}
+  strafeLeftClip: {fileID: -203655887218126122, guid: e4f1add906ff34943b5caa679aa11c99, type: 3}
+  strafeRightClip: {fileID: -203655887218126122, guid: 8a896a1ca835f514db335f06b322c149, type: 3}
   landingClip: {fileID: -203655887218126122, guid: 19d6dc2af032d094db4bf8f44d5b730e, type: 3}
   landingTransitionDuration: 0.1
   landingPlaybackSpeed: 1
@@ -31,8 +31,8 @@ MonoBehaviour:
   standUpPlaybackSpeed: 1
   standUpToIdleTransitionDuration: 0.25
   namedAttacks:
-  - attackNameKey: RangedAttack1
-    attackClip: {fileID: -203655887218126122, guid: 203023b1e0d36304a89a6c95d4b42973, type: 3}
+  - attackNameKey: RangedAttack
+    attackClip: {fileID: -203655887218126122, guid: 5b73b8ad34a51414794804f173a11b16, type: 3}
   attackReactions:
   - {fileID: 11400000, guid: d8021ea590a8abc4baa9bb1a64c65ae2, type: 2}
   - {fileID: 11400000, guid: 20c3b58b8335b484b8db600c7d44ca12, type: 2}
@@ -40,7 +40,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 44d1420f3fcdd2e4dbe89e34175d79a3, type: 2}
   - {fileID: 11400000, guid: 6c3e9c91e17df3b46a3da2ac19612f34, type: 2}
   - {fileID: 11400000, guid: e647349731822be44ba9b380a3344083, type: 2}
-  defaultHitFront: {fileID: 0}
-  defaultHitBack: {fileID: 0}
-  defaultHitLeft: {fileID: 0}
-  defaultHitRight: {fileID: 0}
+  defaultHitFront: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitBack: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitLeft: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitRight: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}

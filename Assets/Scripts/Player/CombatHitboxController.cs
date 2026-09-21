@@ -115,14 +115,10 @@ public class CombatHitboxController : MonoBehaviour
                 }
             }
 
-            if (currentHit.customVFX != null) 
-            {
-                Instantiate(currentHit.customVFX, player.transform.position, Quaternion.identity);
-            }
-            
+            if (currentHit.customVFX != null) currentHit.customVFX.Play();
             if (validHitCount > 0) TriggerJuice(currentHit);
             DisableHitbox();
-        } // <-- The missing bracket was re-added here.
+        }
         else
         {
             int hits = Physics.OverlapSphereNonAlloc(currentActiveLimb.position, hitboxRadius, hitResults, enemyLayer);

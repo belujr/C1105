@@ -5,7 +5,7 @@ using CombatSystem.Animation;
 using CombatSystem.Data;
 
 [RequireComponent(typeof(EnemyAnimationEngine))]
-public class UltraInstinctCapsule : MonoBehaviour, IDamageable
+public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
 {
     public enum DodgeDirection { DodgeLeft, DodgeRight, Jump, Backstep }
     public enum HitDirection { Front, Back, Left, Right }
@@ -1300,5 +1300,23 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable
         }
 
         return null;
+    }
+
+    
+    public bool NeedsHealing()
+    {
+        return currentHealth < maxHealth && !isDead;
+    }
+
+    public void ReceiveHeal(float amount)
+    {
+        if (isDead) return;
+        currentHealth += Mathf.RoundToInt(amount);
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
+    }
+
+    public Transform GetTransform()
+    {
+        return cachedTransform;
     }
 }
