@@ -9,7 +9,7 @@ public class SceneTransitionToGame : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             // Load the "Game" scene when the player enters the trigger
-            SceneManager.LoadScene("AK_LevelDesign");
+            SceneManager.LoadScene("Scene_Level");
         }
     }
 }

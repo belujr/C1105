@@ -35,31 +35,36 @@ public class SkillPreviewManager : MonoBehaviour
 
     private void OnEnable()
     {
-        // 1. Disable Root Motion so the animation itself cannot move the transform
-        if (dummyAnimator != null)
+        // 1. Disable Root Motion on enemy dummy so hit reactions play in place
+        if (enemyAnimator != null)
         {
-            dummyAnimator.applyRootMotion = false;
+            enemyAnimator.applyRootMotion = false;
         }
 
-        // 2. Snap the player dummy initially when the shop UI is opened
-        if (dummyAnimator != null && dummySpawnPoint != null)
+        // 2. Freeze Enemy Physics (Disables velocity/forces from impacts)
+        if (enemyDummy != null)
         {
-            TeleportCharacter(dummyAnimator.transform, dummySpawnPoint);
+            Rigidbody rb = enemyDummy.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
         }
 
-        // 3. Snap the enemy dummy
+        // 3. Snap player and enemy to spawn points on UI open
+        ResetPlayerPosition();
         ResetEnemyTransform();
     }
 
-    // NEW: Hard-lock the dummy to the spawn point every frame
+    // ONLY freeze the enemy position every frame so it takes hits in place
     private void LateUpdate()
     {
-        if (dummyAnimator != null && dummySpawnPoint != null)
+        if (enemyDummy != null && enemySpawnPoint != null)
         {
-            // This completely overrides any Physics, CharacterController, or Input 
-            // that tries to move the dummy during the frame.
-            dummyAnimator.transform.position = dummySpawnPoint.position;
-            dummyAnimator.transform.rotation = dummySpawnPoint.rotation;
+            enemyDummy.position = enemySpawnPoint.position;
+            enemyDummy.rotation = enemySpawnPoint.rotation;
         }
     }
 
@@ -77,7 +82,8 @@ public class SkillPreviewManager : MonoBehaviour
         UpdateStatSprite(knockbackBarImage, attack.knockbackLevel);
         UpdateStatSprite(rangeBarImage, attack.rangeLevel);
 
-        // Reset the Enemy ONLY so it doesn't get pushed out of bounds permanently
+        // Reset positions only when triggering a new preview
+        ResetPlayerPosition();
         ResetEnemyTransform();
 
         if (dummyAnimator != null)
@@ -96,6 +102,14 @@ public class SkillPreviewManager : MonoBehaviour
                     dummyAnimator.Update(0f);
                 }
             }
+        }
+    }
+
+    private void ResetPlayerPosition()
+    {
+        if (dummyAnimator != null && dummySpawnPoint != null)
+        {
+            TeleportCharacter(dummyAnimator.transform, dummySpawnPoint);
         }
     }
 
