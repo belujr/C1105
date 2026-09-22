@@ -7,14 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SG_Foliage_SSS
+  m_Name: SG_Foliage_SSS 1
   m_Shader: {fileID: -6465566751694194690, guid: faf6fac0af77c0341adb571dfd634992, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -29,7 +29,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 4fb0e7a163f6cbe45b580d3528eb38d6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 6439361ffeb407f4a93962faa6ae23c1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -51,14 +51,14 @@ Material:
     - Vector1_91bfdbc471264214bc0e8eff4e9796a6: 1
     - Vector1_c757b884625e4ed788ab2dc9baeacd70: 0.274
     - Vector1_db1d002c272f437585896ac0a44d7df4: 1
-    - Vector1_dcd6fb2993dc494b9898e8ff54ffee00: 0.489
+    - Vector1_dcd6fb2993dc494b9898e8ff54ffee00: 0.306
     - Vector1_f20a8422b91f4118b3a0871b5c71763d: 1.07
     - Vector1_ff4512fc7937496e9b87a59c420ee391: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - Color_7c8773ac703143ca996f120b117c8013: {r: 0.35479882, g: 0.3584906, b: 0.049038816, a: 0}
-    - Color_c8f27e1b70544bc99b4cd796a4f63591: {r: 0.5660378, g: 0.5660378, b: 0.5660378, a: 0}
+    - Color_7c8773ac703143ca996f120b117c8013: {r: 0.8742138, g: 0.8742138, b: 0.8742138, a: 0}
+    - Color_c8f27e1b70544bc99b4cd796a4f63591: {r: 0, g: 0.26415092, b: 0.012533349, a: 0}
     - _WorldSpaceLightPos0: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
