@@ -278,6 +278,7 @@ GameObject:
   - component: {fileID: 4298536910230088914}
   - component: {fileID: 5328439643012407842}
   - component: {fileID: 1191904385516748377}
+  - component: {fileID: -1262347586620216322}
   m_Layer: 8
   m_Name: Player (1)
   m_TagString: Player
@@ -585,6 +586,22 @@ MonoBehaviour:
   flashDuration: 0.1
   deathDisappearDelay: 0.5
   isImmortal: 0
+--- !u!114 &-1262347586620216322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459098319445998704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcb49f1896ddecf429d3e4e1ce70c755, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDissolveController
+  dissolveDuration: 0.88
+  targetRenderer: {fileID: 379396953302579403}
+  dissolveMaterial: {fileID: 2100000, guid: bb0ffcb435df5314ba9f7926eb505d25, type: 2}
+  mainMaterial: {fileID: 2100000, guid: a5101f23246005945b1f419f8ff9a4da, type: 2}
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0
