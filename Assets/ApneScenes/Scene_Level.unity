@@ -303,6 +303,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ped
       objectReference: {fileID: 0}
+    - target: {fileID: 7931815856992987685, guid: 56ac6889646fc1b4da4c50e14d7231cf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -79020,6 +79024,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: newped
       objectReference: {fileID: 0}
+    - target: {fileID: 3837094765064953806, guid: 4d23b5006e07385488d5d311bf1cd0d5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4859725837995863492, guid: 4d23b5006e07385488d5d311bf1cd0d5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.53
@@ -121092,7 +121100,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8697788778403307107
 Transform:
   m_ObjectHideFlags: 0
