@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 public class HubNPC : MonoBehaviour
 {
-    public enum NPCType { Popatlal, Dmitri, Bhide, C1, Other }
+    public enum NPCType { Trench, Milo, Ren, C1, Other }
 
     public NPCType npcRole;
     public GameObject interactPromptUI;
