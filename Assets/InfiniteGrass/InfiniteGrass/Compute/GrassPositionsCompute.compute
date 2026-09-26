@@ -76,11 +76,14 @@ void CSGrass(uint3 id : SV_DispatchThreadID)
     float mixedWeight = mixedSplatColor[_MixedTerrainSplatChannel];
 
     // Combine them! Grass spawns if either Grass OR Mixed layer is painted.
-    float combinedWeight = grassWeight + mixedWeight;
+    float combinedWeight = saturate(grassWeight + mixedWeight);
 
     bool inGrassMask = saturate(random(currentIndex.x * 9421 + currentIndex.y) - 0.001) >= grassMaskValue;
+    // Instead of a hard cutoff, treat the painted weight as a spawn PROBABILITY.
+    // This turns brush falloff into a natural, dithered fade instead of a sharp line.
+    bool inTerrainWeight = random(currentIndex.x * 3049 + currentIndex.y * 9311) < combinedWeight;
 
-    if (heightMap.a > 0.99 && heightMap.g > 0.5 && inGrassMask && combinedWeight > 0.3)
+    if (heightMap.a > 0.99 && heightMap.g > 0.5 && inGrassMask && inTerrainWeight)
     {
         float3 positionWS = float3(positionXZ.x, Remap(heightMap.r, float2(0, 1), float2(_BoundsMin.y, _BoundsMax.y)), positionXZ.y);
         uint d = 1 << uint(floor(length(_CameraPosition - positionWS) / _FullDensityDistance));
@@ -136,9 +139,11 @@ void CSFlower(uint3 id : SV_DispatchThreadID)
     float mixedWeight = mixedSplatColor[_MixedTerrainSplatChannel];
     
     // Combine them! Flowers spawn if either Flower OR Mixed layer is painted.
-    float combinedWeight = flowerWeight + mixedWeight;
-    
-    if (heightMap.a > 0.99 && heightMap.b > 0.5 && inFlowerMask && combinedWeight > 0.3)
+    float combinedWeight = saturate(flowerWeight + mixedWeight);
+    // Same probability-based fade as grass, so flower patches don't cut off sharply either.
+    bool inTerrainWeight = random(currentIndex.x * 4177 + currentIndex.y * 6829) < combinedWeight;
+
+    if (heightMap.a > 0.99 && heightMap.b > 0.5 && inFlowerMask && inTerrainWeight)
     {
         float3 positionWS = float3(positionXZ.x, Remap(heightMap.r, float2(0, 1), float2(_BoundsMin.y, _BoundsMax.y)), positionXZ.y);
         uint d = 1 << uint(floor(length(_CameraPosition - positionWS) / _FullDensityDistance));
