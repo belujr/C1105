@@ -91,7 +91,7 @@
                 float _DrawDistance;
                 float _TextureUpdateThreshold;
 
-                StructuredBuffer<float3> _GrassPositions;
+                StructuredBuffer<float4> _GrassPositions; // xyz = world position, w = height scale (for edge fading)
 
             CBUFFER_END
 
@@ -167,7 +167,9 @@
             {
                 Varyings OUT;
 
-                float3 pivot = _GrassPositions[instanceID];
+                float4 grassData = _GrassPositions[instanceID];
+                float3 pivot = grassData.xyz;
+                float heightFadeScale = grassData.w;
 
                 float2 uv = (pivot.xz - _CenterPos) / (_DrawDistance + _TextureUpdateThreshold);
                 uv = uv * 0.5 + 0.5;
@@ -180,7 +182,7 @@
                 grassWidth *= (1 - IN.positionOS.y);
 
                 //Grass Height
-                float grassHeight = _GrassHeight * (1 - random(pivot.x * 230 + pivot.z * 10) * _GrassHeightRandomness);
+                float grassHeight = _GrassHeight * (1 - random(pivot.x * 230 + pivot.z * 10) * _GrassHeightRandomness) * heightFadeScale;
                 
                 //Billboard Logic
                 float3 cameraTransformRightWS = UNITY_MATRIX_V[0].xyz;

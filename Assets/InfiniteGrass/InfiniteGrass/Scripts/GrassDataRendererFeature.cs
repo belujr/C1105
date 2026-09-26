@@ -54,6 +54,7 @@ public class GrassDataRendererFeature : ScriptableRendererFeature
         private static readonly int GrassSlopeRT_ID = Shader.PropertyToID("_GrassSlopeRT");
         private static readonly int VPMatrixID = Shader.PropertyToID("_VPMatrix");
         private static readonly int FullDensityDistanceID = Shader.PropertyToID("_FullDensityDistance");
+        private static readonly int FadeMinHeightScaleID = Shader.PropertyToID("_FadeMinHeightScale");
         private static readonly int BoundsMinID = Shader.PropertyToID("_BoundsMin");
         private static readonly int BoundsMaxID = Shader.PropertyToID("_BoundsMax");
         private static readonly int CameraPositionID = Shader.PropertyToID("_CameraPosition");
@@ -103,7 +104,8 @@ public class GrassDataRendererFeature : ScriptableRendererFeature
             if (grassPositionsBuffer == null || grassPositionsBuffer.count != bufferSize)
             {
                 grassPositionsBuffer?.Release();
-                grassPositionsBuffer = new ComputeBuffer(bufferSize, sizeof(float) * 3, ComputeBufferType.Append);
+                // float4: xyz = world position, w = height scale (for edge fading)
+                grassPositionsBuffer = new ComputeBuffer(bufferSize, sizeof(float) * 4, ComputeBufferType.Append);
             }
 
             if (flowerPositionsBuffer == null || flowerPositionsBuffer.count != bufferSize)
@@ -281,6 +283,7 @@ public class GrassDataRendererFeature : ScriptableRendererFeature
                     cmd.SetComputeFloatParam(data.computeShader, SpacingID, gSpacing);
                     cmd.SetComputeFloatParam(data.computeShader, DrawDistanceID, InfiniteGrassRenderer.instance.drawDistance);
                     cmd.SetComputeFloatParam(data.computeShader, FullDensityDistanceID, InfiniteGrassRenderer.instance.fullDensityDistance);
+                    cmd.SetComputeFloatParam(data.computeShader, FadeMinHeightScaleID, InfiniteGrassRenderer.instance.fadeMinHeightScale);
                     cmd.SetComputeVectorParam(data.computeShader, GridStartIndexID, (Vector2)gGridStart);
                     cmd.SetComputeTextureParam(data.computeShader, kernelGrass, GrassHeightMapRT_ID, data.heightRT);
                     cmd.SetComputeTextureParam(data.computeShader, kernelGrass, GrassMaskMapRT_ID, data.maskRT);

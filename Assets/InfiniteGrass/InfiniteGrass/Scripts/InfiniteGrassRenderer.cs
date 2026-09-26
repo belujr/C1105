@@ -25,6 +25,9 @@ public class InfiniteGrassRenderer : MonoBehaviour
     public float fullDensityDistance = 50;
     public int grassMeshSubdivision = 5;
     public float textureUpdateThreshold = 10.0f;
+    [Range(0f, 1f)]
+    [Tooltip("How short grass is right at a thin/faded painted edge (0 = shrinks to nothing, 1 = no height fade at all, only density fades)")]
+    public float fadeMinHeightScale = 0.4f;
 
     [Header("Max Buffer Count (Millions)")]
     public float maxBufferCount = 2;

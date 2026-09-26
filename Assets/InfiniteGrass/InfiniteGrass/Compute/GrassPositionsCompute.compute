@@ -6,6 +6,7 @@ float _DrawDistance;
 float _MaxDrawDistance;
 float _TextureUpdateThreshold;
 float _FullDensityDistance;
+float _FadeMinHeightScale;
 
 // Terrain Variables (Grass)
 Texture2D<float4> _TerrainSplatmap;
@@ -36,7 +37,7 @@ Texture2D<float4> _GrassHeightMapRT;
 Texture2D<float> _GrassMaskMapRT;
 Texture2D<float> _FlowerMaskMapRT; 
 
-AppendStructuredBuffer<float3> _GrassPositions;
+AppendStructuredBuffer<float4> _GrassPositions; // xyz = world position, w = height scale (for edge fading)
 AppendStructuredBuffer<float3> _FlowerPositions; 
 
 uint murmurHash3(int input) {
@@ -92,7 +93,9 @@ void CSGrass(uint3 id : SV_DispatchThreadID)
 
         if (insideDensityLevel && absPosCS.z <= absPosCS.w && absPosCS.y <= absPosCS.w * 2.0 && absPosCS.x <= absPosCS.w * 1.4 && absPosCS.w <= _DrawDistance)
         {
-            _GrassPositions.Append(positionWS);
+            // Blades near a thin/faded edge (low combinedWeight) grow in shorter instead of popping to full height.
+            float heightScale = lerp(_FadeMinHeightScale, 1.0, combinedWeight);
+            _GrassPositions.Append(float4(positionWS, heightScale));
         }
     }
 }
