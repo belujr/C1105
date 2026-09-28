@@ -44,6 +44,9 @@
         },
         {
             "m_Id": "6dc47699ca5240d095442dd2584b4f93"
+        },
+        {
+            "m_Id": "e976d6d76c65439e875d7b8072a50c19"
         }
     ],
     "m_Keywords": [],
@@ -278,6 +281,9 @@
         },
         {
             "m_Id": "15b4287e222443e78ba55badbbeb68ee"
+        },
+        {
+            "m_Id": "484350829f164cc3a936969211b3ae54"
         }
     ],
     "m_GroupDatas": [
@@ -574,6 +580,20 @@
                     "m_Id": "040ef2a2a5934f1c8883137cd4935f86"
                 },
                 "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "484350829f164cc3a936969211b3ae54"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "efa48bd30f024ec2a2f1c0001d7269b5"
+                },
+                "m_SlotId": -741510725
             }
         },
         {
@@ -3777,6 +3797,65 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector3MaterialSlot",
+    "m_ObjectId": "479f6e8a9c20483ebaf64de6439afe00",
+    "m_Id": 0,
+    "m_DisplayName": "Main Cam Pos",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "484350829f164cc3a936969211b3ae54",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -932.0,
+            "y": -432.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "479f6e8a9c20483ebaf64de6439afe00"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "e976d6d76c65439e875d7b8072a50c19"
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "4acfa51928c847f9ad3c6f5628379dd7",
     "m_Id": 0,
@@ -4075,6 +4154,29 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector3MaterialSlot",
+    "m_ObjectId": "55003a385fe4472294a68a9e2a8e8353",
+    "m_Id": -741510725,
+    "m_DisplayName": "_MainCamPos",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_MainCamPos",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
     "m_ObjectId": "55beb49439c54e848586ea02182085db",
     "m_Group": {
@@ -4139,8 +4241,8 @@
     "m_ObjectId": "57a6148e57924b0bb5827df45c47ab3b",
     "m_Title": "Object To World",
     "m_Position": {
-        "x": -2886.66650390625,
-        "y": -1139.333251953125
+        "x": -2886.000244140625,
+        "y": -1139.3333740234375
     }
 }
 
@@ -4271,8 +4373,8 @@
     "m_ObjectId": "5c3a54f43c2e44d7a7e983135c1e653b",
     "m_Title": "Opposing World Space Light",
     "m_Position": {
-        "x": -2240.66650390625,
-        "y": -1272.0
+        "x": -2240.000244140625,
+        "y": -1272.0001220703125
     }
 }
 
@@ -6247,7 +6349,7 @@
     "m_ObjectId": "87cd7149fd1a4349b806f0c2ffa6b004",
     "m_Title": "Wind",
     "m_Position": {
-        "x": -3666.66650390625,
+        "x": -3666.000244140625,
         "y": -2699.999755859375
     }
 }
@@ -6476,6 +6578,9 @@
         },
         {
             "m_Id": "6dc47699ca5240d095442dd2584b4f93"
+        },
+        {
+            "m_Id": "e976d6d76c65439e875d7b8072a50c19"
         }
     ]
 }
@@ -9160,6 +9265,39 @@
 }
 
 {
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector3ShaderProperty",
+    "m_ObjectId": "e976d6d76c65439e875d7b8072a50c19",
+    "m_Guid": {
+        "m_GuidSerialized": "696d4da2-3c22-43a0-9803-869c8931ac12"
+    },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
+    "m_Name": "Main Cam Pos",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Main Cam Pos",
+    "m_DefaultReferenceName": "_Main_Cam_Pos",
+    "m_OverrideReferenceName": "_MainCamPos",
+    "m_GeneratePropertyBlock": false,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": true,
+    "hlslDeclarationOverride": 1,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    }
+}
+
+{
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicValueMaterialSlot",
     "m_ObjectId": "eb0ae8afa525406899b4c44be9e72c32",
@@ -9381,6 +9519,9 @@
             "m_Id": "1af8cf7b9f634f4ca36651e51d6fda53"
         },
         {
+            "m_Id": "55003a385fe4472294a68a9e2a8e8353"
+        },
+        {
             "m_Id": "098edbb032f54a10810e5a25b33d2213"
         }
     ],
@@ -9396,12 +9537,14 @@
     "m_PropertyGuids": [
         "2efc94d5-5003-4deb-9292-ab913daba4aa",
         "21a791b5-0a1b-4d3f-a5a2-f9d5586fa935",
-        "e988a358-15eb-44a5-b760-92a0c5b50ffd"
+        "e988a358-15eb-44a5-b760-92a0c5b50ffd",
+        "286beffd-e601-4e28-a5d2-a76ae2aa29df"
     ],
     "m_PropertyIds": [
         1478032761,
         -1933027757,
-        -256875583
+        -256875583,
+        -741510725
     ],
     "m_Dropdowns": [],
     "m_DropdownSelectedEntries": []
@@ -9775,7 +9918,7 @@
     "m_ObjectId": "fc1f8e667ba24ead9a06e07db84d7e8a",
     "m_Title": "QuadScatter",
     "m_Position": {
-        "x": -3036.66650390625,
+        "x": -3036.000244140625,
         "y": -3411.999755859375
     }
 }

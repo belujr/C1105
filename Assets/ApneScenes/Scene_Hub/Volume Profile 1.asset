@@ -21,7 +21,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.35
+    m_Value: 0.406
   smoothness:
     m_OverrideState: 0
     m_Value: 0.2
@@ -102,19 +102,19 @@ MonoBehaviour:
   active: 1
   postExposure:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.84
   contrast:
     m_OverrideState: 1
-    m_Value: -10
+    m_Value: -13
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 1.4980392, g: 0.9845603, b: 1.3683758, a: 1}
+    m_Value: {r: 1.5723268, g: 1.0828288, b: 1.1204826, a: 1}
   hueShift:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: -11
   saturation:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -15
 --- !u!114 &4292710111628846312
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -152,13 +152,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70afe9e12c7a7ed47911bb608a23a8ff, type: 3}
   m_Name: SplitToning
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.SplitToning
-  active: 0
+  active: 1
   shadows:
-    m_OverrideState: 1
-    m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  highlights:
     m_OverrideState: 0
-    m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    m_Value: {r: 0.5597484, g: 0.46645698, b: 0.46645698, a: 1}
+  highlights:
+    m_OverrideState: 1
+    m_Value: {r: 0.62301713, g: 0.62936044, b: 0.6855345, a: 1}
   balance:
     m_OverrideState: 0
     m_Value: 0
@@ -176,14 +176,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ShadowsMidtonesHighlights
   active: 1
   shadows:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 0.5877812, z: 0.9150313, w: 0}
+    m_OverrideState: 1
+    m_Value: {x: 0.7944318, y: 0.84216464, z: 1, w: 0.03903222}
   midtones:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_OverrideState: 1
+    m_Value: {x: 0.9501827, y: 1, z: 0.5851505, w: 0.062451333}
   highlights:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 0.95207757, z: 0.24462187, w: 0}
   shadowsStart:
     m_OverrideState: 0
     m_Value: 0

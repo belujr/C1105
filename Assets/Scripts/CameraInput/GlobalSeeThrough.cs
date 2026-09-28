@@ -16,15 +16,14 @@ public class GlobalSeeThrough : MonoBehaviour
             Debug.LogError("SeeThrough Script: No camera tagged 'MainCamera' was found!");
         }
     }
-    void Update()
+    void LateUpdate()
     {
         if (player == null || cam == null) return;
 
         Vector3 targetPos = player.position + Vector3.up * 1.5f;
         Vector3 screenPos = cam.WorldToViewportPoint(targetPos);
 
-        // Replace the treeMaterial line with this global command:
-        // This broadcasts the coordinates to EVERY shader in the game simultaneously
         Shader.SetGlobalVector("_PlayerScreenPos", new Vector4(screenPos.x, screenPos.y, 0, 0));
+        Shader.SetGlobalVector("_MainCamPos", cam.transform.position);
     }
 }
