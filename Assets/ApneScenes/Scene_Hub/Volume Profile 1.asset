@@ -47,6 +47,7 @@ MonoBehaviour:
   - {fileID: 6706959548246001681}
   - {fileID: 5632889040498521042}
   - {fileID: 4292710111628846312}
+  - {fileID: 2654574170093295158}
 --- !u!114 &1493341110925589389
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -105,7 +106,7 @@ MonoBehaviour:
     m_Value: 0.84
   contrast:
     m_OverrideState: 1
-    m_Value: -13
+    m_Value: -4
   colorFilter:
     m_OverrideState: 1
     m_Value: {r: 1.5723268, g: 1.0828288, b: 1.1204826, a: 1}
@@ -114,7 +115,74 @@ MonoBehaviour:
     m_Value: -11
   saturation:
     m_OverrideState: 1
-    m_Value: -15
+    m_Value: -37
+--- !u!114 &2654574170093295158
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a074ec59f6e910b4e8c49f57e56cf95a, type: 3}
+  m_Name: VolumetricFogVolumeComponent
+  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricFogVolumeComponent
+  active: 1
+  distance:
+    m_OverrideState: 0
+    m_Value: 64
+  baseHeight:
+    m_OverrideState: 1
+    m_Value: 0
+  maximumHeight:
+    m_OverrideState: 1
+    m_Value: 50
+  enableGround:
+    m_OverrideState: 1
+    m_Value: 0
+  groundHeight:
+    m_OverrideState: 0
+    m_Value: 0
+  density:
+    m_OverrideState: 0
+    m_Value: 0.2
+  attenuationDistance:
+    m_OverrideState: 0
+    m_Value: 128
+  enableAPVContribution:
+    m_OverrideState: 1
+    m_Value: 0
+  APVContributionWeight:
+    m_OverrideState: 0
+    m_Value: 1
+  enableMainLightContribution:
+    m_OverrideState: 1
+    m_Value: 1
+  anisotropy:
+    m_OverrideState: 0
+    m_Value: 0.4
+  scattering:
+    m_OverrideState: 0
+    m_Value: 0.15
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 0.2264151, g: 0.18088727, b: 0.033463847, a: 1}
+  enableAdditionalLightsContribution:
+    m_OverrideState: 1
+    m_Value: 1
+  maxSteps:
+    m_OverrideState: 0
+    m_Value: 128
+  blurIterations:
+    m_OverrideState: 0
+    m_Value: 2
+  enabled:
+    m_OverrideState: 1
+    m_Value: 1
+  renderPassEvent:
+    m_OverrideState: 0
+    m_Value: 550
 --- !u!114 &4292710111628846312
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -154,11 +222,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.SplitToning
   active: 1
   shadows:
-    m_OverrideState: 0
-    m_Value: {r: 0.5597484, g: 0.46645698, b: 0.46645698, a: 1}
+    m_OverrideState: 1
+    m_Value: {r: 0.3584906, g: 0.3439809, b: 0.30099678, a: 1}
   highlights:
     m_OverrideState: 1
-    m_Value: {r: 0.62301713, g: 0.62936044, b: 0.6855345, a: 1}
+    m_Value: {r: 0.51572317, g: 0.48130232, b: 0.09244089, a: 1}
   balance:
     m_OverrideState: 0
     m_Value: 0
@@ -177,10 +245,10 @@ MonoBehaviour:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {x: 0.7944318, y: 0.84216464, z: 1, w: 0.03903222}
+    m_Value: {x: 0.49418986, y: 0.6396493, z: 1, w: 0.03903222}
   midtones:
     m_OverrideState: 1
-    m_Value: {x: 0.9501827, y: 1, z: 0.5851505, w: 0.062451333}
+    m_Value: {x: 0.9949796, y: 1, z: 0.6388918, w: 0.062451333}
   highlights:
     m_OverrideState: 1
     m_Value: {x: 1, y: 0.95207757, z: 0.24462187, w: 0}

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Chamber1
+  m_Name: Tree1
   m_Shader: {fileID: -6465566751694194690, guid: bf3d4c4377137214ba3fb46468a23ce0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -53,7 +53,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTexture:
-        m_Texture: {fileID: 2800000, guid: ea415406cf79e6840ab29417e9bb7504, type: 3}
+        m_Texture: {fileID: 2800000, guid: 96dced4c358b7684bb3735d46b6ee94a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -61,7 +61,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normal_Map:
-        m_Texture: {fileID: 2800000, guid: 67912b56886c225488e8fcb81785e157, type: 3}
+        m_Texture: {fileID: 2800000, guid: 5b6f7341ec6f88c45935b4f7797bb9e1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -73,7 +73,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Smoothness_Map:
-        m_Texture: {fileID: 2800000, guid: 67e7fda6b0bc5db438b2580c299828be, type: 3}
+        m_Texture: {fileID: 2800000, guid: a002821b0999e894b835c6cbb8f17c8f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -113,7 +113,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
-    - _Normal_Strength: 0.5
+    - _Normal_Strength: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _PropHoleSize: 0.1
@@ -123,7 +123,7 @@ Material:
     - _ReceiveShadows: 1
     - _Smoothness: 0.981
     - _SmoothnessTextureChannel: 0
-    - _Smoothness_Multiplier: 0
+    - _Smoothness_Multiplier: 0.451
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1

@@ -23,6 +23,9 @@
 
         [Header(Lighting)][Space]
         _RandomNormal("Random Normal", Range(0, 1)) = 0.1
+
+        [Header(Fog)][Space]
+        _FogResistance("Fog Resistance", Range(0, 1)) = 0.4
     }
 
     SubShader
@@ -53,6 +56,7 @@
             struct Attributes
             {
                 float4 positionOS   : POSITION;
+                float3 normalOS     : NORMAL;
                 float2 uv           : TEXCOORD0;
             };
 
@@ -62,6 +66,9 @@
                 float3 positionWS  : TEXCOORD0;
                 float2 uv          : TEXCOORD1;
                 half3 instanceColor: COLOR;
+                float3 normalWS    : TEXCOORD2;
+                float3 rootWS      : TEXCOORD3;
+                float localHeight  : TEXCOORD4;
             };
 
             CBUFFER_START(UnityPerMaterial)
@@ -81,6 +88,7 @@
                 float _WindStrength;
                 float2 _WindScroll;
                 half _RandomNormal;
+                half _FogResistance;
 
                 float2 _CenterPos;
                 float _DrawDistance;
@@ -155,26 +163,33 @@
     // 1. Procedural Density Culling
     float densityCheck = abs(srandom(stableSeed * 1.5));
     if (densityCheck > _FlowerDensity) {
-        OUT.positionCS = float4(0,0,0,0);
+        OUT.positionCS = float4(1e9, 1e9, 1e9, 1); // valid w (no NaN on divide), far outside the clip volume so it's discarded reliably on every GPU
         OUT.positionWS = float3(0,0,0);
         OUT.uv = float2(0,0);
         OUT.instanceColor = half3(1,1,1);
+        OUT.normalWS = float3(0,1,0);
+        OUT.rootWS = float3(0,0,0);
+        OUT.localHeight = 0;
         return OUT;
     }
 
     // 2. Mesh Type Culling
     uint randomType = murmurHash3(stableSeed) % max(1, (uint)_FlowerCount);
     if (randomType != (uint)_FlowerIndex) {
-        OUT.positionCS = float4(0,0,0,0);
+        OUT.positionCS = float4(1e9, 1e9, 1e9, 1); // valid w (no NaN on divide), far outside the clip volume so it's discarded reliably on every GPU
         OUT.positionWS = float3(0,0,0);
         OUT.uv = float2(0,0);
         OUT.instanceColor = half3(1,1,1);
+        OUT.normalWS = float3(0,1,0);
+        OUT.rootWS = float3(0,0,0);
+        OUT.localHeight = 0;
         return OUT;
     }
 
     // 3. XZ Spread Scatter (using stable Seed)
     pivot.x += srandom(stableSeed * 2.2) * _Spread;
     pivot.z += srandom(stableSeed * 3.3) * _Spread;
+    OUT.rootWS = pivot; // stable per-instance root, used later for the color RT lookup
 
     // 4. Random Color Assignment
     float randColor = abs(srandom(stableSeed * 4.4));
@@ -193,6 +208,13 @@
     float2x2 rotMat = float2x2(c, -s, s, c);
     positionOS.xz = mul(rotMat, positionOS.xz);
 
+    // Rotate the real mesh normal by the same Y rotation, so lighting actually
+    // follows the flower's petals/leaves instead of a fixed up-vector.
+    float3 normalOS = IN.normalOS;
+    normalOS.xz = mul(rotMat, normalOS.xz);
+    OUT.normalWS = normalize(normalOS);
+    OUT.localHeight = saturate(IN.positionOS.y); // clamped to 0-1: the flower mesh's Y range is arbitrary, unlike grass's guaranteed 0-1 mesh
+
     // 7. Wind Displacement ONLY (Interactivity / Slope RT removed)
     half3 windTex = tex2Dlod(_WindTexture, float4(TRANSFORM_TEX(pivot.xz, _WindTexture) + _WindScroll * _Time.y, 0, 0));
     float2 wind = (windTex.rg * 2.0 - 1.0) * _WindStrength;
@@ -210,7 +232,7 @@
 
     return OUT;
 }
-            half4 frag(Varyings IN) : SV_Target
+            half4 frag(Varyings IN, bool isFrontFace : SV_IsFrontFace) : SV_Target
             {
                 float4 texColor = tex2D(_BaseColorTexture, IN.uv);
                 clip(texColor.a - _AlphaClip);
@@ -218,21 +240,30 @@
                 // Base color multiplied by random instance color 
                 half3 albedo = texColor.rgb * IN.instanceColor;
 
-                float3 pivot = IN.positionWS - float3(0, IN.positionWS.y, 0); 
-                float localY = IN.positionWS.y - pivot.y;
-
-                float2 rtUV = (pivot.xz - _CenterPos) / (_DrawDistance + _TextureUpdateThreshold);
+                float2 rtUV = (IN.rootWS.xz - _CenterPos) / (_DrawDistance + _TextureUpdateThreshold);
                 rtUV = rtUV * 0.5 + 0.5;
                 float4 colorRT = tex2D(_GrassColorRT, rtUV);
 
                 albedo = lerp(albedo, colorRT.rgb, colorRT.a);
 
-                float3 N = normalize(float3(0, 1, 0) + float3(srandom(pivot.x * 314 + pivot.z * 10), 0, srandom(pivot.z * 677 + pivot.x * 10)) * _RandomNormal);
+                // Real mesh normal (rotated with the flower) drives shading, with a touch of
+                // per-instance jitter for variety. Flip it on backfaces since this pass is Cull Off,
+                // otherwise the undersides of petals/leaves read as unlit.
+                float3 baseNormal = IN.normalWS * (isFrontFace ? 1 : -1);
+                float3 N = normalize(baseNormal + float3(srandom(IN.rootWS.x * 314 + IN.rootWS.z * 10), 0, srandom(IN.rootWS.z * 677 + IN.rootWS.x * 10)) * _RandomNormal);
                 half3 V = normalize(_WorldSpaceCameraPos - IN.positionWS);
 
-                float3 lighting = CalculateLighting(albedo, IN.positionWS, N, V, colorRT.a, localY);
+                float3 lighting = CalculateLighting(albedo, IN.positionWS, N, V, colorRT.a, IN.localHeight);
                 
                 float fogFactor = ComputeFogFactor(IN.positionCS.z);
+                // The same fog blend % reads as a much bigger color shift on dark areas (stem, shadowed
+                // leaves) than on bright petals, since dark colors have little of their own "signal" to
+                // begin with. Give darker areas extra resistance so the stem doesn't wash out to fog color
+                // while petals still read naturally.
+                float luminance = dot(lighting, half3(0.299, 0.587, 0.114));
+                float darknessBoost = (1 - saturate(luminance)) * _FogResistance;
+                float effectiveResistance = saturate(_FogResistance + darknessBoost);
+                fogFactor = saturate(lerp(fogFactor, 1, effectiveResistance));
                 return half4(MixFog(lighting, fogFactor), 1);
             }
             ENDHLSL

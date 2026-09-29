@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 [System.Serializable]
 public struct FlowerSettings
 {
@@ -9,6 +10,7 @@ public struct FlowerSettings
     public float yOffset;
     public Material[] materials;
 }
+[DefaultExecutionOrder(1000)]
 [ExecuteAlways]
 public class InfiniteGrassRenderer : MonoBehaviour
 {
