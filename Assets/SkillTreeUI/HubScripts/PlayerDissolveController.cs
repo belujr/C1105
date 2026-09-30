@@ -1,26 +1,19 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerDissolveController : MonoBehaviour
 {
     [Header("Settings")]
     public float dissolveDuration = 1.5f;
-    
-    [Header("References")]
-    [Tooltip("Drag the Beta_Surface object here from your hierarchy")]
-    public Renderer targetRenderer;
-    
-    [Header("Materials")]
-    public Material dissolveMaterial;
-    public Material mainMaterial;
-    
-    private MaterialPropertyBlock propBlock;
-    private static readonly int DissolveAmountProp = Shader.PropertyToID("_DissolveAmount");
 
-    private void Awake()
-    {
-        propBlock = new MaterialPropertyBlock();
-    }
+    [Header("Dissolve Material")]
+    [Tooltip("Assign your single Dissolve Shader material here")]
+    public Material dissolveMaterial;
+
+    private Renderer[] childRenderers;
+    private Dictionary<Renderer, Material[]> originalMaterialsDict = new Dictionary<Renderer, Material[]>();
+    private static readonly int DissolveAmountProp = Shader.PropertyToID("_DissolveAmount");
 
     public void TriggerDissolveIn()
     {
@@ -29,36 +22,71 @@ public class PlayerDissolveController : MonoBehaviour
 
     private IEnumerator DissolveInRoutine()
     {
-        if (targetRenderer == null || dissolveMaterial == null || mainMaterial == null)
+        if (dissolveMaterial == null)
         {
-            Debug.LogError("MISSING REFERENCES: Assign the Target Renderer, Dissolve Material, and Main Material in the inspector.");
+            Debug.LogError("MISSING REFERENCE: Assign the Dissolve Material in the inspector.");
             yield break;
         }
 
-        // 1. Immediately apply the dissolve material and set it to fully invisible (1)
-        targetRenderer.material = dissolveMaterial;
-        targetRenderer.GetPropertyBlock(propBlock);
-        propBlock.SetFloat(DissolveAmountProp, 1f);
-        targetRenderer.SetPropertyBlock(propBlock);
+        childRenderers = GetComponentsInChildren<Renderer>();
+        if (childRenderers == null || childRenderers.Length == 0) yield break;
+
+        originalMaterialsDict.Clear();
+
+        // 1. Cache the original materials and swap every mesh slot to the dissolve material
+        foreach (var rend in childRenderers)
+        {
+            if (rend == null) continue;
+
+            originalMaterialsDict[rend] = rend.sharedMaterials;
+
+            Material[] dissolveMats = new Material[rend.sharedMaterials.Length];
+            for (int i = 0; i < dissolveMats.Length; i++)
+            {
+                dissolveMats[i] = new Material(dissolveMaterial);
+            }
+            rend.materials = dissolveMats;
+
+            // Set initial state to fully invisible / dissolved (1f)
+            foreach (var mat in rend.materials)
+            {
+                if (mat != null && mat.HasProperty(DissolveAmountProp))
+                {
+                    mat.SetFloat(DissolveAmountProp, 1f);
+                }
+            }
+        }
 
         float elapsedTime = 0f;
 
-        // 2. Animate the dissolve over 1.5 seconds
+        // 2. Animate the dissolve property from 1 down to 0
         while (elapsedTime < dissolveDuration)
         {
             elapsedTime += Time.deltaTime;
             float currentDissolve = Mathf.Lerp(1f, 0f, elapsedTime / dissolveDuration);
 
-            targetRenderer.GetPropertyBlock(propBlock);
-            propBlock.SetFloat(DissolveAmountProp, currentDissolve);
-            targetRenderer.SetPropertyBlock(propBlock);
+            foreach (var rend in childRenderers)
+            {
+                if (rend == null) continue;
+                foreach (var mat in rend.materials)
+                {
+                    if (mat != null && mat.HasProperty(DissolveAmountProp))
+                    {
+                        mat.SetFloat(DissolveAmountProp, currentDissolve);
+                    }
+                }
+            }
 
             yield return null;
         }
 
-        // 3. Clear property blocks and swap to the final 12 material
-        propBlock.Clear();
-        targetRenderer.SetPropertyBlock(propBlock);
-        targetRenderer.material = mainMaterial;
+        // 3. Once fully faded in, instantly restore all original external toon materials
+        foreach (var kvp in originalMaterialsDict)
+        {
+            if (kvp.Key != null)
+            {
+                kvp.Key.materials = kvp.Value;
+            }
+        }
     }
 }

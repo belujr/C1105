@@ -605,10 +605,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcb49f1896ddecf429d3e4e1ce70c755, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDissolveController
-  dissolveDuration: 0.88
-  targetRenderer: {fileID: 379396953302579403}
+  dissolveTime: 0.7
+  stabilizationTime: 0
   dissolveMaterial: {fileID: 2100000, guid: bb0ffcb435df5314ba9f7926eb505d25, type: 2}
-  mainMaterial: {fileID: 2100000, guid: a5101f23246005945b1f419f8ff9a4da, type: 2}
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0

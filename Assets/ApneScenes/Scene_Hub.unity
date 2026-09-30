@@ -13720,7 +13720,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1066402185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17441,7 +17441,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1461249803
 AudioSource:
   m_ObjectHideFlags: 0
@@ -28432,23 +28432,23 @@ MonoBehaviour:
   runNarratives:
   - runName: 1
     steps:
-    - stepLabel: C1 OPENING
+    - stepLabel: RUN 1 ATLAS
       dialogueSequence: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
       triggerNPC: 3
-      autoTriggerOnRunStart: 0
+      autoTriggerOnRunStart: 1
       dependency: {fileID: 0}
       onStepCompleted:
         m_PersistentCalls:
           m_Calls: []
-    - stepLabel: POPATLAL GRAVE INTRO
+    - stepLabel: RUN 1 TRENCH
       dialogueSequence: {fileID: 11400000, guid: e04680f935b301d4c9b6ac049b6333b9, type: 2}
       triggerNPC: 0
       autoTriggerOnRunStart: 0
-      dependency: {fileID: 0}
+      dependency: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
       onStepCompleted:
         m_PersistentCalls:
           m_Calls: []
-    - stepLabel: DMITRI
+    - stepLabel: RUN 1 MILO
       dialogueSequence: {fileID: 11400000, guid: d1430ac79c50396448fd29cf26d1afa9, type: 2}
       triggerNPC: 1
       autoTriggerOnRunStart: 0
@@ -28468,7 +28468,7 @@ MonoBehaviour:
               m_StringArgument: 
               m_BoolArgument: 0
             m_CallState: 2
-    - stepLabel: BHIDE INTRO
+    - stepLabel: RUN 1 MASTER REN
       dialogueSequence: {fileID: 11400000, guid: 8f0a9ccac7c8b7047be6c834ab60c99d, type: 2}
       triggerNPC: 2
       autoTriggerOnRunStart: 0
@@ -28476,7 +28476,7 @@ MonoBehaviour:
       onStepCompleted:
         m_PersistentCalls:
           m_Calls: []
-    - stepLabel: BHIDE LORE
+    - stepLabel: RUN 1 REN
       dialogueSequence: {fileID: 11400000, guid: 0c3adcd7f45da454eb400b9c2d1a52d9, type: 2}
       triggerNPC: 2
       autoTriggerOnRunStart: 0

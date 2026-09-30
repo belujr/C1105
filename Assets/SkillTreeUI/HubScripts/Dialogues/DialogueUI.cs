@@ -11,8 +11,8 @@ public class DialogueUI : MonoBehaviour
     [Header("UI Components")]
     public GameObject dialoguePanel;
     public TMP_Text speakerNameText;
-    public TMP_Text speakerSubtitleText; // Reference for the subtitle / role[cite: 22]
-    public Image speakerSpriteImage;     // Reference for the character 2D sprite image UI element
+    public TMP_Text speakerSubtitleText; 
+    public Image speakerSpriteImage;     
     public TMP_Text dialogueText;
 
     private Queue<DialogueLine> linesQueue = new Queue<DialogueLine>();
@@ -40,7 +40,6 @@ public class DialogueUI : MonoBehaviour
         DisplayNextLine();
     }
 
-    // Overload for dynamic on-the-fly lines
     public void StartDynamicLines(List<DialogueLine> dynamicLines, Action callback = null)
     {
         onDialogueComplete = callback;
@@ -71,7 +70,6 @@ public class DialogueUI : MonoBehaviour
             speakerSubtitleText.text = currentLine.speakerSubtitle;
         }
 
-        // Handle speaker sprite assignment
         if (speakerSpriteImage != null)
         {
             if (currentLine.speakerSprite != null)
@@ -80,12 +78,11 @@ public class DialogueUI : MonoBehaviour
                 speakerSpriteImage.sprite = currentLine.speakerSprite;
             }
             else
-            {
-                speakerSpriteImage.gameObject.SetActive(false); // Hide image container if no sprite is provided
-            }
+                speakerSpriteImage.gameObject.SetActive(false);
         }
 
-        dialogueText.text = currentLine.text;
+        // Pulls a random alternative text option from the array
+        dialogueText.text = currentLine.GetRandomText();
     }
 
     private void EndDialogue()
