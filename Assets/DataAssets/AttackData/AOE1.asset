@@ -12,10 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c436f71d7979bb4d8008f12051e8cf9, type: 3}
   m_Name: AOE1
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
+  attackName: Punch
+  description: A quick jab that interrupts weak enemy attacks.
+  attackIcon: {fileID: 0}
+  damageLevel: 3
+  knockbackLevel: 2
+  rangeLevel: 4
+  attackID: 0
   animationTriggerName: AOEAttack
   animationDuration: 0.7
   forwardLungeSpeed: 2
-  chargeAnimationName: 
+  transitionDuration: 0.05
+  chargePauseTime: 0.3
   damage: 20
   knockbackForce: 4
   strikeDistance: 2
@@ -28,4 +36,4 @@ MonoBehaviour:
   cameraShakeIntensity: 0.3
   cameraShakeDuration: 0.12
   customHitSound: {fileID: 0}
-  customVFX: {fileID: 0}
+  customVFX: {fileID: 8159823443438401081, guid: cba27d119a483244f9679916f2bfc2b4, type: 3}

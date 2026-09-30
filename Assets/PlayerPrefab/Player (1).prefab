@@ -456,6 +456,13 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
+  vfxHeightOffset: 0.2
+  aoeVfxHeightOffset: 0.1
+  vfxTowardCameraOffset: 0.5
+  debugVFX: 0
+  vfxAnchor: 0
+  vfxFollowsTarget: 1
+  hitStopTimeScale: 0.02
 --- !u!120 &5328439643012407842
 LineRenderer:
   serializedVersion: 3

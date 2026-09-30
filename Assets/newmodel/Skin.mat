@@ -8,10 +8,14 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Skin
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: be891319084e9d147b09d89e80ce60e0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _EMISSIVE_SIMPLE
+  - _IS_CLIPPING_OFF
+  - _IS_OUTLINE_CLIPPING_NO
+  - _OUTLINE_NML
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -230,8 +234,8 @@ Material:
     - _ToonMaterialVersion: 0
     m_Floats:
     - _1st2nd_Shades_Feather: 0.389
-    - _1st_ShadeColor_Feather: 0.179
-    - _1st_ShadeColor_Step: 0.758
+    - _1st_ShadeColor_Feather: 0.218
+    - _1st_ShadeColor_Step: 0.699
     - _2nd_ShadeColor_Feather: 0.389
     - _2nd_ShadeColor_Step: 0.368
     - _AORemapMax: 1
@@ -262,8 +266,8 @@ Material:
     - _AutoRenderQueue: 1
     - _BaseColorOverridden: 0
     - _BaseColorVisible: 1
-    - _BaseColor_Step: 0.758
-    - _BaseShade_Feather: 0.179
+    - _BaseColor_Step: 0.699
+    - _BaseShade_Feather: 0.218
     - _Base_Speed: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -461,7 +465,7 @@ Material:
     - _simpleUI: 0
     - _utsTechnique: 0
     m_Colors:
-    - _1st_ShadeColor: {r: 0.8805031, g: 0.72086, b: 0.50670457, a: 1}
+    - _1st_ShadeColor: {r: 0.6132076, g: 0.5996189, b: 0.5813902, a: 1}
     - _2nd_ShadeColor: {r: 0, g: 0, b: 0, a: 1}
     - _AngelRingMaskColor: {r: 0, g: 1, b: 0, a: 1}
     - _AngelRing_Color: {r: 1, g: 1, b: 1, a: 1}

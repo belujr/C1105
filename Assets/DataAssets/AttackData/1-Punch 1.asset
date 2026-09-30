@@ -27,7 +27,7 @@ MonoBehaviour:
   damage: 10
   knockbackForce: 1
   strikeDistance: 0.5
-  isAOE: 1
+  isAOE: 0
   aoeRadius: 6
   coneAngle: 120
   maxEnemiesHit: 4
@@ -36,4 +36,4 @@ MonoBehaviour:
   cameraShakeIntensity: 0.1
   cameraShakeDuration: 0.08
   customHitSound: {fileID: 0}
-  customVFX: {fileID: 0}
+  customVFX: {fileID: 8159823443438401081, guid: cba27d119a483244f9679916f2bfc2b4, type: 3}
