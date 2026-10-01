@@ -133,7 +133,7 @@ Shader "UberStylizedWater"
         Cull Back
         Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
         ZTest LEqual
-        ZWrite Off
+        ZWrite On
         
         // Debug
         // <None>
