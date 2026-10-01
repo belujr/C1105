@@ -38,6 +38,11 @@ public class CombatHitboxController : MonoBehaviour
     [Tooltip("Makes the single-target VFX stick to the enemy, so it moves with knockback.")]
     public bool vfxFollowsTarget = true;
 
+    [Header("Skill Preview Screen (leave empty on the real player)")]
+    [Tooltip("Only for the preview dummy: a point on the preview enemy's chest where the hit VFX always appears.")]
+    public Transform previewHitPoint;
+    [HideInInspector] public AttackData previewAttack; // set by SkillPreviewManager
+
     [Header("Hit Stop Settings")]
     [Tooltip("Time scale during hit stop. Slightly above 0 avoids odd animation/physics behaviour.")]
     public float hitStopTimeScale = 0.02f;
@@ -125,12 +130,20 @@ public class CombatHitboxController : MonoBehaviour
             }
         }
 
+        // Skill-preview screen: use the attack being previewed, not whatever the dummy's PlayerController thinks it's doing
+        if (previewAttack != null) currentHit = previewAttack;
+
         if (currentHit == null) return;
 
         int finalDamage = Mathf.RoundToInt(currentHit.damage * player.CurrentChargeMultiplier);
         float finalKnockback = currentHit.knockbackForce * player.CurrentChargeMultiplier;
 
-        if (currentHit.isAOE)
+        // In the skill preview, AOE-flagged attacks (e.g. spinning kicks) are treated like single hits.
+        // The AOE branch spawns the VFX at the player's feet the instant the hitbox starts, which is
+        // wrong for a preview that should show the impact on the enemy.
+        bool runAsAoe = currentHit.isAOE && previewAttack == null;
+
+        if (runAsAoe)
         {
             int hits = Physics.OverlapSphereNonAlloc(player.transform.position, currentHit.aoeRadius, hitResults, enemyLayer);
             int validHitCount = 0;
@@ -192,7 +205,13 @@ public class CombatHitboxController : MonoBehaviour
 
                     damageable.TakeDamage(finalDamage, exactHitPoint, hitDirection, finalKnockback, currentHit.customHitSound, currentHit.attackID, false);
 
-                    if (debugVFX) Debug.Log("[CombatHitbox] Single-target hit by attack: " + currentHit + " on " + enemyCol.name, this);
+                    if (debugVFX)
+                    {
+                        string previewInfo = previewAttack == null ? "" :
+                            (previewHitPoint != null ? " | PREVIEW POINT USED" : " | PREVIEW POINT MISSING (not assigned)");
+                        Debug.Log("[CombatHitbox] Single-target hit by attack: " + currentHit + " on " + enemyCol.name +
+                                  " | anchor: " + vfxAnchor + previewInfo, this);
+                    }
 
                     // Pick where the VFX appears: on the striking limb, on the enemy surface, or halfway
                     Vector3 vfxPoint;
@@ -203,6 +222,13 @@ public class CombatHitboxController : MonoBehaviour
                         case VFXAnchor.Midpoint: vfxPoint = (currentActiveLimb.position + exactHitPoint) * 0.5f; break;
                         case VFXAnchor.EnemyBody: vfxPoint = GetEnemyBodyPoint(enemyCol, out followTarget); break;
                         default: vfxPoint = currentActiveLimb.position; break;
+                    }
+
+                    // Skill-preview screen: always play the VFX at the fixed point on the preview enemy
+                    if (previewAttack != null && previewHitPoint != null)
+                    {
+                        vfxPoint = previewHitPoint.position;
+                        followTarget = previewHitPoint;
                     }
 
                     // vfxTowardCameraOffset should stay at 0 unless you really need it (see notes)
