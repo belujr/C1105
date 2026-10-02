@@ -17431,7 +17431,7 @@ GameObject:
   - component: {fileID: 1440518667}
   - component: {fileID: 1440518666}
   - component: {fileID: 1440518671}
-  - component: {fileID: 1440518673}
+  - component: {fileID: 1440518672}
   m_Layer: 0
   m_Name: Milo
   m_TagString: Untagged
@@ -17574,33 +17574,36 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &1440518673
-Rigidbody:
+--- !u!114 &1440518672
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1440518665}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24db3129d20dce6478c3cad35945ef26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MiloController
+  miloVisualObject: {fileID: 1440518665}
+  miloSpawnPoint: {fileID: 1832932344}
+  waypointsToRen:
+  - {fileID: 84987195}
+  - {fileID: 2109004409}
+  - {fileID: 1207256084}
+  - {fileID: 415689906}
+  - {fileID: 913949873}
+  - {fileID: 990915961}
+  - {fileID: 1712795518}
+  masterRenPoint: {fileID: 1712795518}
+  dialogueSpawnToPlayer: {fileID: 11400000, guid: 59b2d0c7c9ce5aa4f89e9ed4753f106b, type: 2}
+  dialoguePlayerToRen: {fileID: 11400000, guid: d1430ac79c50396448fd29cf26d1afa9, type: 2}
+  miloIdleAtRenSequence: {fileID: 11400000, guid: 7bd1f1ca536ca5944bb40921cadbc18c, type: 2}
+  playerStopDistance: 1.5
+  timeToStayAtPlayer: 2
+  timeToReachRen: 15
+  isAtRen: 0
 --- !u!1 &1445790352
 GameObject:
   m_ObjectHideFlags: 0
@@ -28910,7 +28913,19 @@ MonoBehaviour:
       dependency: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
       onStepCompleted:
         m_PersistentCalls:
-          m_Calls: []
+          m_Calls:
+          - m_Target: {fileID: 1440518672}
+            m_TargetAssemblyTypeName: MiloController, Assembly-CSharp
+            m_MethodName: BeginMiloSequence
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 2
     - stepLabel: RUN 1 MILO
       dialogueSequence: {fileID: 11400000, guid: d1430ac79c50396448fd29cf26d1afa9, type: 2}
       triggerNPC: 1
@@ -31008,7 +31023,7 @@ Transform:
   m_GameObject: {fileID: 1832932343}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -14.84, y: 2.29, z: 50.91}
+  m_LocalPosition: {x: -14.84, y: 1.675, z: 50.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62012,7 +62027,7 @@ GameObject:
   - component: {fileID: 4610307421551695954}
   m_Layer: 14
   m_Name: Player (1)
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

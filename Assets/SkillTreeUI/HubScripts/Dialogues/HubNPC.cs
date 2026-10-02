@@ -61,11 +61,19 @@ public class HubNPC : MonoBehaviour
     }
 
     private void Interact()
+{
+    // If this NPC is Milo and he has already arrived at Master Ren, trigger his cyclical single-line dialogue
+    if (npcRole == NPCType.Milo && MiloController.Instance != null && MiloController.Instance.isAtRen)
+    {
+        MiloController.Instance.HandleMiloInteraction();
+    }
+    else
     {
         HubNarrativeManager.Instance.ProcessNPCInteraction(this);
-        onInteracted?.Invoke();
     }
-
+    
+    onInteracted?.Invoke();
+}
     public void PlayFallbackDialogue()
     {
         if (defaultAmbientDialogue != null)
