@@ -687,6 +687,8 @@ MonoBehaviour:
   debugVFX: 0
   vfxAnchor: 0
   vfxFollowsTarget: 1
+  previewHitPoint: {fileID: 0}
+  previewAttack: {fileID: 0}
   hitStopTimeScale: 0.02
 --- !u!120 &5328439643012407842
 LineRenderer:
@@ -831,7 +833,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDissolveController
   dissolveDuration: 1.5
-  dissolveMaterial: {fileID: 2100000, guid: bb0ffcb435df5314ba9f7926eb505d25, type: 2}
+  dissolveNoise: {fileID: 2800000, guid: 831e855fe4b8a804790a8aa38af532e7, type: 3}
+  hiddenLevel: -1
+  visibleLevel: 1
+  glowMaterial: {fileID: 2100000, guid: 8edb8688af0f2af468bd9e9ef5effd24, type: 2}
+  glowWidth: 0.05
+  glowOffset: 0
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0
