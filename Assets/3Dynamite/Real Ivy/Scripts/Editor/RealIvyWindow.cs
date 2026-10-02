@@ -386,10 +386,13 @@ namespace Dynamite3D.RealIvy
 
         void Update()
         {
-            controller.Update();
+            if (controller != null)
+            {
+                controller.Update();
+            }
         }
 
-		[DidReloadScripts]
+        [DidReloadScripts]
 		private static void OnScriptsReloaded()
 		{
 			if (EditorPrefs.GetBool(KEY_WINDOW_OPENED, false))
