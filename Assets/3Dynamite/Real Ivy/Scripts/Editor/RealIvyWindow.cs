@@ -164,14 +164,21 @@ namespace Dynamite3D.RealIvy
 
         void OnDestroy()
         {
-			realIvyProToolsWindow.QuitWindow();
-			DestroyImmediate(realIvyProToolsWindow);
-			controller.Destroy();
-			
-			SceneView.RepaintAll();
+            if (realIvyProToolsWindow != null)
+            {
+                realIvyProToolsWindow.QuitWindow();
+                DestroyImmediate(realIvyProToolsWindow);
+            }
 
-			EditorPrefs.SetBool(KEY_WINDOW_OPENED, false);
-		}
+            if (controller != null)
+            {
+                controller.Destroy();
+            }
+
+            SceneView.RepaintAll();
+
+            EditorPrefs.SetBool(KEY_WINDOW_OPENED, false);
+        }
 
         private static void RefreshEditorValues()
         {

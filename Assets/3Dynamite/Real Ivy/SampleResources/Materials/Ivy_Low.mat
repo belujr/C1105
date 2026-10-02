@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Ivy_Low
-  m_Shader: {fileID: 4800000, guid: c4573eff80916204ea0bde95c672a5fc, type: 3}
+  m_Shader: {fileID: 4800000, guid: 93a04fae32c89c748b20fdb0ecc06f21, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,16 +16,15 @@ Material:
   - _ALPHATEST_ON
   - _DOUBLESIDED_ON
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 1
   m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
-    RenderType: TransparentCutout
   disabledShaderPasses:
   - MOTIONVECTORS
   - TransparentBackface
-  m_LockedProperties: 
+  m_LockedProperties: _ParallaxIntensity
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -54,7 +53,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 7162178e217d90342ba7a90c3498130e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightTexture:
