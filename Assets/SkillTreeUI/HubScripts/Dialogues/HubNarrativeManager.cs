@@ -7,6 +7,10 @@ public class HubNarrativeManager : MonoBehaviour
 {
     public static HubNarrativeManager Instance;
 
+    [Header("Debug & Testing")]
+    [Tooltip("If true, automatically wipes all narrative save data every time you enter Play mode.")]
+    public bool resetSaveDataOnStart = false;
+
     [Header("Save Keys")]
     private const string SAVE_RUN_KEY = "Narrative_CurrentRunNumber";
     private const string SAVE_STEP_KEY = "Narrative_Run1ProgressStep";
@@ -29,7 +33,17 @@ public class HubNarrativeManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else 
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // Auto-reset logic
+        if (resetSaveDataOnStart)
+        {
+            ResetSaveData();
+        }
 
         // Load progress before Start runs
         LoadProgress();
