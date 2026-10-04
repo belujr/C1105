@@ -47,4 +47,5 @@ public class AttackData : ScriptableObject
 	public float cameraShakeDuration = 0.08f;
 	public AudioClip customHitSound;
 	public ParticleSystem customVFX;
+    public GameObject swingVFX;
 }

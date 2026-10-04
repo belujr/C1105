@@ -38,6 +38,10 @@ public class CombatHitboxController : MonoBehaviour
     [Tooltip("Makes the single-target VFX stick to the enemy, so it moves with knockback.")]
     public bool vfxFollowsTarget = true;
 
+    [Header("Swing VFX (motion lines / swoosh while a limb moves)")]
+    [Tooltip("Safety: the swing VFX is stopped after this many seconds even if the animation never calls DisableHitbox.")]
+    public float swingMaxDuration = 0.8f;
+
     [Header("Skill Preview Screen (leave empty on the real player)")]
     [Tooltip("Only for the preview dummy: a point on the preview enemy's chest where the hit VFX always appears.")]
     public Transform previewHitPoint;
@@ -51,6 +55,10 @@ public class CombatHitboxController : MonoBehaviour
     private Transform currentActiveLimb;
     private bool isHitboxActive = false;
     private Collider[] hitResults = new Collider[10];
+
+    // The swing VFX currently attached to a limb
+    private GameObject activeSwing;
+    private float swingStopTime;
 
     // Cached references (avoids per-frame lookups)
     private PlayerController player;
@@ -70,26 +78,58 @@ public class CombatHitboxController : MonoBehaviour
             Time.timeScale = 1f;
             isHitStopping = false;
         }
+
+        StopSwingVFX();
+    }
+
+    private Transform GetLimb(int limbIndex)
+    {
+        switch (limbIndex)
+        {
+            case 0: return leftFist;
+            case 1: return rightFist;
+            case 2: return rightFoot;
+            case 3: return leftFoot;
+            case 4: return leftElbow;
+            case 5: return rightElbow;
+            case 6: return leftKnee;
+            case 7: return rightKnee;
+            default: return rightFist;
+        }
     }
 
     public void TriggerHitbox(int limbIndex)
     {
-        switch (limbIndex)
-        {
-            case 0: currentActiveLimb = leftFist; break;
-            case 1: currentActiveLimb = rightFist; break;
-            case 2: currentActiveLimb = rightFoot; break;
-            case 3: currentActiveLimb = leftFoot; break;
-            case 4: currentActiveLimb = leftElbow; break;
-            case 5: currentActiveLimb = rightElbow; break;
-            case 6: currentActiveLimb = leftKnee; break;
-            case 7: currentActiveLimb = rightKnee; break;
-            default: currentActiveLimb = rightFist; break;
-        }
+        currentActiveLimb = GetLimb(limbIndex);
         isHitboxActive = true;
+
+        // If an earlier BeginSwing event already started the swing VFX, keep it. Otherwise start it now.
+        if (activeSwing == null) StartSwingVFX(currentActiveLimb);
     }
 
+    // OPTIONAL animation event. Put it at the START of the strike motion (the frame the leg begins to lift
+    // or the arm begins to move), so the swoosh / motion lines cover the whole movement instead of
+    // only starting at the hit window. Same limb numbers as TriggerHitbox.
+    public void BeginSwing(int limbIndex)
+    {
+        StartSwingVFX(GetLimb(limbIndex));
+    }
+
+    // OPTIONAL animation event: ends only the swing VFX (DisableHitbox also ends it)
+    public void EndSwing()
+    {
+        StopSwingVFX();
+    }
+
+    // Called by the animation event at the end of the strike: ends hit detection AND the swing VFX
     public void DisableHitbox()
+    {
+        StopHitDetection();
+        StopSwingVFX();
+    }
+
+    // Ends hit detection only. Used internally after a hit lands, so the swing VFX can keep following the limb
+    private void StopHitDetection()
     {
         isHitboxActive = false;
         currentActiveLimb = null;
@@ -103,6 +143,11 @@ public class CombatHitboxController : MonoBehaviour
         {
             CheckForHits();
         }
+
+        if (activeSwing != null && Time.unscaledTime >= swingStopTime)
+        {
+            StopSwingVFX();
+        }
     }
 
     private void CheckForHits()
@@ -111,27 +156,7 @@ public class CombatHitboxController : MonoBehaviour
         if (player == null) player = GetComponentInParent<PlayerController>();
         if (player == null) return;
 
-        AttackData currentHit = null;
-
-        if (player.CurrentState == player.AOEAttackState)
-        {
-            currentHit = player.specialAttackY;
-        }
-        else if (player.CurrentState == player.PowerPunchState)
-        {
-            if (player.equippedStyle != null)
-                currentHit = player.equippedStyle.GetActiveChargeAttack();
-        }
-        else
-        {
-            if (player.equippedStyle != null && player.equippedStyle.lightComboSequence.Length > player.CurrentComboIndex)
-            {
-                currentHit = player.equippedStyle.lightComboSequence[player.CurrentComboIndex];
-            }
-        }
-
-        // Skill-preview screen: use the attack being previewed, not whatever the dummy's PlayerController thinks it's doing
-        if (previewAttack != null) currentHit = previewAttack;
+        AttackData currentHit = ResolveCurrentAttack();
 
         if (currentHit == null) return;
 
@@ -180,7 +205,7 @@ public class CombatHitboxController : MonoBehaviour
             SpawnVFX(currentHit.customVFX, player.transform.position, player.transform.forward, aoeVfxHeightOffset, false);
 
             if (validHitCount > 0) TriggerJuice(currentHit);
-            DisableHitbox();
+            StopHitDetection();
         }
         else
         {
@@ -236,11 +261,83 @@ public class CombatHitboxController : MonoBehaviour
                              vfxFollowsTarget ? followTarget : null);
 
                     TriggerJuice(currentHit);
-                    DisableHitbox();
+                    StopHitDetection();
                     break;
                 }
             }
         }
+    }
+
+    // Works out which attack is currently being thrown
+    private AttackData ResolveCurrentAttack()
+    {
+        // Skill-preview screen: use the attack being previewed
+        if (previewAttack != null) return previewAttack;
+
+        if (player == null) player = GetComponentInParent<PlayerController>();
+        if (player == null) return null;
+
+        if (player.CurrentState == player.AOEAttackState)
+            return player.specialAttackY;
+
+        if (player.CurrentState == player.PowerPunchState)
+            return player.equippedStyle != null ? player.equippedStyle.GetActiveChargeAttack() : null;
+
+        if (player.equippedStyle != null && player.equippedStyle.lightComboSequence.Length > player.CurrentComboIndex)
+            return player.equippedStyle.lightComboSequence[player.CurrentComboIndex];
+
+        return null;
+    }
+
+    // Attaches the attack's swing VFX (trail / motion lines) to the given limb
+    private void StartSwingVFX(Transform limb)
+    {
+        StopSwingVFX(); // end any previous swing first
+
+        if (limb == null) return;
+
+        AttackData attack = ResolveCurrentAttack();
+        if (attack == null) return;
+
+        if (attack.swingVFX == null)
+        {
+            if (debugVFX) Debug.Log("[CombatHitbox] No swingVFX assigned on attack: " + attack, this);
+            return;
+        }
+
+        activeSwing = Instantiate(attack.swingVFX, limb.position, limb.rotation, limb);
+        swingStopTime = Time.unscaledTime + swingMaxDuration;
+
+        if (debugVFX) Debug.Log("[CombatHitbox] Swing VFX started: " + attack.swingVFX.name + " on " + limb.name, this);
+    }
+
+    // Stops emitting and lets the trail fade out where it is, then cleans up
+    private void StopSwingVFX()
+    {
+        if (activeSwing == null) return;
+
+        GameObject swing = activeSwing;
+        activeSwing = null;
+
+        // Detach from the limb so trails and particles can finish fading in place
+        swing.transform.SetParent(null, true);
+
+        float linger = 0.1f;
+
+        foreach (TrailRenderer tr in swing.GetComponentsInChildren<TrailRenderer>())
+        {
+            tr.emitting = false;
+            linger = Mathf.Max(linger, tr.time);
+        }
+
+        foreach (ParticleSystem ps in swing.GetComponentsInChildren<ParticleSystem>())
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            ParticleSystem.MainModule m = ps.main;
+            linger = Mathf.Max(linger, m.startLifetime.constantMax);
+        }
+
+        Destroy(swing, linger + 0.1f);
     }
 
     // Spawns a VFX prefab with a safe rotation, optional pull toward the camera, and automatic cleanup
