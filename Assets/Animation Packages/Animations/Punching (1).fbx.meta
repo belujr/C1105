@@ -55,6 +55,13 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
+      - time: 0.20179468
+        functionName: BeginSwing
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 1
+        messageOptions: 0
       - time: 0.59708893
         functionName: TriggerHitbox
         data: 
@@ -64,13 +71,6 @@ ModelImporter:
         messageOptions: 0
       - time: 0.6329537
         functionName: DisableHitbox
-        data: 
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 1
-        messageOptions: 0
-      - time: 0.31165743
-        functionName: BeginSwing
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
