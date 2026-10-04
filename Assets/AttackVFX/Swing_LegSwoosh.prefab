@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8639119825131756392}
   - component: {fileID: 3654588884118099270}
+  - component: {fileID: 2684267570914207279}
   m_Layer: 0
   m_Name: Swing_LegSwoosh
   m_TagString: Untagged
@@ -147,7 +148,25 @@ TrailRenderer:
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_MinVertexDistance: 0.01
+  m_MinVertexDistance: 0.2
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &2684267570914207279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3255076585970533783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c2125cd909c2e4abff3fb10bbd44cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwingTrailMotion
+  minSpeed: 2
+  fullSpeed: 10
+  minTime: 0.02
+  maxTime: 0
+  minWidthFactor: 0
+  response: 1.5
