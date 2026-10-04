@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Run1_Atlas
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSequence
   lines:
-  - speakerName: ATLAS
+  - speakerProfile: {fileID: 11400000, guid: 5a655b03adb9d904482801e230a21b96, type: 2}
+    speakerName: ATLAS
     speakerSubtitle: 
     speakerSprite: {fileID: 21300000, guid: 8a1ca990f612b464cbf912c6444d5e19, type: 3}
+    defaultTitleAccentColor: {r: 1, g: 1, b: 1, a: 1}
     textOptions:
     - Prove to me you're not just another waste of flesh.
     - Show me the strength I fused into your bones.

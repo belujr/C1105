@@ -13,37 +13,25 @@ MonoBehaviour:
   m_Name: Run1_Milo_2
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSequence
   lines:
-  - speakerName: PLAYER
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 42c9230344a709440979c825b0fc9b71, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 8c997c5ba8fc9524880d72f0429fccbe, type: 2}
     textOptions:
     - Are you Milo?
-  - speakerName: MILO
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 5d7071eebdff19e44b139822c53bc2c0, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 4f6ef4ee3543d2a458da382195631fc9, type: 2}
     textOptions:
     - Why is every version of you more confused than the previous one?
-  - speakerName: PLAYER
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 42c9230344a709440979c825b0fc9b71, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 8c997c5ba8fc9524880d72f0429fccbe, type: 2}
     textOptions:
     - Every version of me?
-  - speakerName: MILO
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 5d7071eebdff19e44b139822c53bc2c0, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 4f6ef4ee3543d2a458da382195631fc9, type: 2}
     textOptions:
     - A thousand deaths, a thousand fresh bodies. And every single one of you starts
       with that exact same blank stare.
-  - speakerName: PLAYER
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 42c9230344a709440979c825b0fc9b71, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 8c997c5ba8fc9524880d72f0429fccbe, type: 2}
     textOptions:
     - 'What is this place?
 
 '
-  - speakerName: MILO
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 5d7071eebdff19e44b139822c53bc2c0, type: 3}
+  - speakerProfile: {fileID: 11400000, guid: 4f6ef4ee3543d2a458da382195631fc9, type: 2}
     textOptions:
     - 'You''ll figure it out. Come meet Master Ren, you must''ve met him before,
       surely.
