@@ -10286,6 +10286,23 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 88859345}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &103409357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7926cbe089682e42b7ad5931a902b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.IvyContainer
+  lastNumberAssigned: 1
+  ivyGO: {fileID: 1112117707}
+  branches:
+  - {fileID: 1412656566}
+  firstVertexVector: {x: 0.9696269, y: 0.059059795, z: -0.237352}
 --- !u!1 &103780548
 GameObject:
   m_ObjectHideFlags: 0
@@ -11983,6 +12000,26 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
+--- !u!114 &143469337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64da891e02f9d8d40915b66a68af5874, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.EditorMeshBuilder
+  infoPool: {fileID: 1335081837}
+  ivyMesh: {fileID: 1637380827}
+  verts: []
+  leavesMaterials:
+  - {fileID: 2100000, guid: eeb61e819741d6049971e075e35cc84a, type: 2}
+  - {fileID: 2100000, guid: 9a7f60740d3ab3042ab8508b65d29335, type: 2}
+  uv2Rects: []
+  leavesDataInitialized: 1
 --- !u!1 &149692034
 GameObject:
   m_ObjectHideFlags: 0
@@ -16326,11 +16363,328 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
   m_PrefabInstance: {fileID: 480218115}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &187996494
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 187996498}
+  - component: {fileID: 187996497}
+  - component: {fileID: 187996496}
+  - component: {fileID: 187996495}
+  m_Layer: 0
+  m_Name: New Ivy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &187996495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187996494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e69007cdc264f6a418aa6037bc66de5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.IvyInfo
+  originalPreset: {fileID: 11400000, guid: b5708dc2b57a92e4fb5245cf08be8a15, type: 2}
+  infoPool: {fileID: 1313438031}
+  meshFilter: {fileID: 187996496}
+  meshRenderer: {fileID: 187996497}
+--- !u!33 &187996496
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187996494}
+  m_Mesh: {fileID: 204691968}
+--- !u!23 &187996497
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187996494}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 2bc7758f26740d140ab9279be99c3fd2, type: 2}
+  - {fileID: 2100000, guid: eeb61e819741d6049971e075e35cc84a, type: 2}
+  - {fileID: 2100000, guid: 9a7f60740d3ab3042ab8508b65d29335, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!4 &187996498
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187996494}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.03151056, y: -0.38967046, z: 0.013341859, w: 0.9203185}
+  m_LocalPosition: {x: 56.60622, y: 1.2107304, z: 69.86658}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &203566938 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
   m_PrefabInstance: {fileID: 522381970}
   m_PrefabAsset: {fileID: 0}
+--- !u!43 &204691968
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Ivy Mesh
+  serializedVersion: 12
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 0
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 4
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_MeshUsageFlags: 0
+  m_CookingOptions: 30
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+  m_MeshLodInfo:
+    serializedVersion: 2
+    m_LodSelectionCurve:
+      serializedVersion: 1
+      m_LodSlope: 0
+      m_LodBias: 0
+    m_NumLevels: 1
+    m_SubMeshes:
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
 --- !u!1 &219663114
 GameObject:
   m_ObjectHideFlags: 0
@@ -87440,6 +87794,26 @@ MonoBehaviour:
     firstVector: {x: 0.9089701, y: -0.03187187, z: -0.41564107}
     axis: {x: 0.41682142, y: 0.08327945, z: 0.90516543}
   branchNumber: 2
+--- !u!114 &939046354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f0c5b0e1341a6b42afe694b87304dba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.EditorIvyGrowth
+  infoPool: {fileID: 1335081837}
+  origin: {x: 56.606712, y: 1.2007538, z: 69.866104}
+  growing: 0
+  randomstate:
+    s0: 1900727103
+    s1: 1900725526
+    s2: 1900725046
+    s3: 559298752
 --- !u!4 &945565645 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7646081219768044986, guid: 8e6ad90d4b14bec44895246f4c6b6b2e, type: 3}
@@ -94414,6 +94788,115 @@ MonoBehaviour:
   thickness: 3
   lineColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 1}
   drawDuration: 0.5
+--- !u!1 &1112117707
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1112117711}
+  - component: {fileID: 1112117710}
+  - component: {fileID: 1112117709}
+  - component: {fileID: 1112117708}
+  m_Layer: 0
+  m_Name: New Ivy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1112117708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112117707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e69007cdc264f6a418aa6037bc66de5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.IvyInfo
+  originalPreset: {fileID: 11400000, guid: b5708dc2b57a92e4fb5245cf08be8a15, type: 2}
+  infoPool: {fileID: 1335081837}
+  meshFilter: {fileID: 1112117709}
+  meshRenderer: {fileID: 1112117710}
+--- !u!33 &1112117709
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112117707}
+  m_Mesh: {fileID: 1637380827}
+--- !u!23 &1112117710
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112117707}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 2bc7758f26740d140ab9279be99c3fd2, type: 2}
+  - {fileID: 2100000, guid: eeb61e819741d6049971e075e35cc84a, type: 2}
+  - {fileID: 2100000, guid: 9a7f60740d3ab3042ab8508b65d29335, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!4 &1112117711
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112117707}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.38967037, y: 0.031510543, z: -0.92031854, w: 0.013341846}
+  m_LocalPosition: {x: 56.606712, y: 1.2007538, z: 69.866104}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1113360808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101529,6 +102012,70 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
   m_PrefabInstance: {fileID: 1720143193}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1313438031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 929028f524957094fb60043afa09a9a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.InfoPool
+  ivyContainer: {fileID: 1960403558}
+  meshBuilder: {fileID: 1458949321}
+  ivyParameters:
+    stepSize: 0.05
+    randomSeed: 0
+    branchProvability: 0.025
+    maxBranchs: 15
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 55
+    minDistanceToSurface: 0.01
+    maxDistanceToSurface: 0.03
+    DTSFrequency: 1
+    DTSRandomness: 0.2
+    directionFrequency: 2
+    directionAmplitude: 50
+    directionRandomness: 1
+    gravity: {x: 0, y: -1, z: 0}
+    grabProvabilityOnFall: 1
+    stiffness: 0.03
+    optAngleBias: 15
+    leaveEvery: 2
+    randomLeaveEvery: 1
+    buffer32Bits: 0
+    halfgeom: 1
+    sides: 3
+    minRadius: 0.037
+    maxRadius: 0.029
+    radiusVarFreq: 1
+    radiusVarOffset: 0
+    tipInfluence: 0.5
+    uvScale: {x: 0.5, y: 11.51}
+    uvOffset: {x: 0, y: 0}
+    minScale: 1
+    maxScale: 5
+    globalOrientation: 1
+    globalRotation: {x: -0, y: -0.33, z: -0}
+    rotation: {x: 30, y: 180, z: 0}
+    randomRotation: {x: 0, y: 10, z: 500}
+    offset: {x: 0, y: 0, z: 0}
+    LMUVPadding: 0.002
+    branchesMaterial: {fileID: 2100000, guid: 2bc7758f26740d140ab9279be99c3fd2, type: 2}
+    leavesPrefabs:
+    - {fileID: 8649792681698546789, guid: 4fa00c3f97209844f8503727f32756ff, type: 3}
+    - {fileID: 8649792681698546789, guid: 6ff1059f44580b84c9424165e37515b8, type: 3}
+    leavesProb:
+    - 1
+    - 1
+    generateBranches: 1
+    generateLeaves: 1
+    generateLightmapUVs: 0
+  growth: {fileID: 1488771548}
 --- !u!114 &1313671087
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101645,6 +102192,70 @@ MonoBehaviour:
     generateLeaves: 1
     generateLightmapUVs: 0
   growth: {fileID: 1555132377}
+--- !u!114 &1335081837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 929028f524957094fb60043afa09a9a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.InfoPool
+  ivyContainer: {fileID: 103409357}
+  meshBuilder: {fileID: 143469337}
+  ivyParameters:
+    stepSize: 0.05
+    randomSeed: 0
+    branchProvability: 0.025
+    maxBranchs: 15
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 55
+    minDistanceToSurface: 0.01
+    maxDistanceToSurface: 0.03
+    DTSFrequency: 1
+    DTSRandomness: 0.2
+    directionFrequency: 2
+    directionAmplitude: 50
+    directionRandomness: 1
+    gravity: {x: 0, y: -1, z: 0}
+    grabProvabilityOnFall: 1
+    stiffness: 0.03
+    optAngleBias: 15
+    leaveEvery: 2
+    randomLeaveEvery: 1
+    buffer32Bits: 0
+    halfgeom: 1
+    sides: 3
+    minRadius: 0.037
+    maxRadius: 0.029
+    radiusVarFreq: 1
+    radiusVarOffset: 0
+    tipInfluence: 0.5
+    uvScale: {x: 0.5, y: 11.51}
+    uvOffset: {x: 0, y: 0}
+    minScale: 1
+    maxScale: 5
+    globalOrientation: 1
+    globalRotation: {x: -0, y: -0.33, z: -0}
+    rotation: {x: 30, y: 180, z: 0}
+    randomRotation: {x: 0, y: 10, z: 500}
+    offset: {x: 0, y: 0, z: 0}
+    LMUVPadding: 0.002
+    branchesMaterial: {fileID: 2100000, guid: 2bc7758f26740d140ab9279be99c3fd2, type: 2}
+    leavesPrefabs:
+    - {fileID: 8649792681698546789, guid: 4fa00c3f97209844f8503727f32756ff, type: 3}
+    - {fileID: 8649792681698546789, guid: 6ff1059f44580b84c9424165e37515b8, type: 3}
+    leavesProb:
+    - 1
+    - 1
+    generateBranches: 1
+    generateLeaves: 1
+    generateLightmapUVs: 0
+  growth: {fileID: 939046354}
 --- !u!43 &1340111817
 Mesh:
   m_ObjectHideFlags: 0
@@ -103728,6 +104339,66 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1406745213}
   m_CullTransparentMesh: 1
+--- !u!114 &1412656566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 130ef590413a34a4ea018a487ad3302a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.BranchContainer
+  branchPoints:
+  - originalPoint: {x: 0, y: 0, z: 0}
+    point: {x: 56.60622, y: 1.2107304, z: 69.86658}
+    grabVector: {x: 0.049114827, y: -0.9976581, z: -0.04760157}
+    pointSS: {x: 0, y: 0}
+    length: 0
+    initialGrowDir: {x: 0, y: 0, z: 0}
+    branchContainer: {fileID: 1412656566}
+    index: 0
+    newBranch: 1
+    newBranchNumber: 0
+    radius: 1
+    currentRadius: 1
+    forwardRotation: {x: 0, y: 0, z: 0, w: 0}
+    verticesLoop: []
+    firstVector: {x: 0, y: 0, z: 0}
+    axis: {x: 0, y: 0, z: 0}
+  growDirection: {x: 0.9696269, y: 0.059059795, z: -0.237352}
+  leaves: []
+  totalLenght: 0
+  fallIteration: 0
+  falling: 0
+  rotationOnFallIteration: {x: 0, y: 0, z: 0, w: 0}
+  branchSense: 1
+  heightParameter: 0
+  randomizeHeight: 5.6636705
+  heightVar: 0.074548244
+  currentHeight: 0.012240964
+  deltaHeight: -0.0022409642
+  newHeight: 0.012240964
+  originPointOfThisBranch:
+    originalPoint: {x: 0, y: 0, z: 0}
+    point: {x: 0, y: 0, z: 0}
+    grabVector: {x: 0, y: 0, z: 0}
+    pointSS: {x: 0, y: 0}
+    length: 0
+    initialGrowDir: {x: 0, y: 0, z: 0}
+    branchContainer: {fileID: 0}
+    index: 0
+    newBranch: 0
+    newBranchNumber: 0
+    radius: 0
+    currentRadius: 0
+    forwardRotation: {x: 0, y: 0, z: 0, w: 0}
+    verticesLoop: []
+    firstVector: {x: 0, y: 0, z: 0}
+    axis: {x: 0, y: 0, z: 0}
+  branchNumber: 0
 --- !u!114 &1415997306
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106609,6 +107280,26 @@ MonoBehaviour:
   thickness: 3
   lineColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 1}
   drawDuration: 0.5
+--- !u!114 &1458949321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64da891e02f9d8d40915b66a68af5874, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.EditorMeshBuilder
+  infoPool: {fileID: 1313438031}
+  ivyMesh: {fileID: 204691968}
+  verts: []
+  leavesMaterials:
+  - {fileID: 2100000, guid: eeb61e819741d6049971e075e35cc84a, type: 2}
+  - {fileID: 2100000, guid: 9a7f60740d3ab3042ab8508b65d29335, type: 2}
+  uv2Rects: []
+  leavesDataInitialized: 1
 --- !u!1 &1461249801
 GameObject:
   m_ObjectHideFlags: 0
@@ -114692,6 +115383,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1480328565}
   m_Mesh: {fileID: 943425510969111387, guid: 9eea1176c84c42545ab6a70908860a12, type: 3}
+--- !u!114 &1488771548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f0c5b0e1341a6b42afe694b87304dba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.EditorIvyGrowth
+  infoPool: {fileID: 1313438031}
+  origin: {x: 56.60622, y: 1.2107304, z: 69.86658}
+  growing: 0
+  randomstate:
+    s0: -457200697
+    s1: -685904810
+    s2: 555870598
+    s3: 1722974348
 --- !u!114 &1495217727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139273,6 +139984,214 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
   m_PrefabInstance: {fileID: 1627674562}
   m_PrefabAsset: {fileID: 0}
+--- !u!43 &1637380827
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Ivy Mesh
+  serializedVersion: 12
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 0
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 4
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_MeshUsageFlags: 0
+  m_CookingOptions: 30
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+  m_MeshLodInfo:
+    serializedVersion: 2
+    m_LodSelectionCurve:
+      serializedVersion: 1
+      m_LodSlope: 0
+      m_LodBias: 0
+    m_NumLevels: 1
+    m_SubMeshes:
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
 --- !u!4 &1642598194 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 408869210076216818, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
@@ -177764,6 +178683,66 @@ MonoBehaviour:
     firstVector: {x: 0.64957494, y: -0.026708897, z: -0.75982827}
     axis: {x: 0.7602426, y: 0.03483293, z: 0.64870477}
   branchNumber: 6
+--- !u!114 &1910501043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 130ef590413a34a4ea018a487ad3302a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.BranchContainer
+  branchPoints:
+  - originalPoint: {x: 0, y: 0, z: 0}
+    point: {x: 56.60622, y: 1.2107304, z: 69.86658}
+    grabVector: {x: 0.049114987, y: -0.99765813, z: -0.047601648}
+    pointSS: {x: 405.0321, y: 200.32658}
+    length: 0
+    initialGrowDir: {x: 0, y: 0, z: 0}
+    branchContainer: {fileID: 1910501043}
+    index: 0
+    newBranch: 1
+    newBranchNumber: 0
+    radius: 1
+    currentRadius: 1
+    forwardRotation: {x: 0, y: 0, z: 0, w: 0}
+    verticesLoop: []
+    firstVector: {x: 0, y: 0, z: 0}
+    axis: {x: 0, y: 0, z: 0}
+  growDirection: {x: 0.2675708, y: 0.059059814, z: -0.96172667}
+  leaves: []
+  totalLenght: 0
+  fallIteration: 0
+  falling: 0
+  rotationOnFallIteration: {x: 0, y: 0, z: 0, w: 0}
+  branchSense: 1
+  heightParameter: 0
+  randomizeHeight: 5.6636705
+  heightVar: 0.074548244
+  currentHeight: 0.012240964
+  deltaHeight: -0.0022409642
+  newHeight: 0.012240964
+  originPointOfThisBranch:
+    originalPoint: {x: 0, y: 0, z: 0}
+    point: {x: 0, y: 0, z: 0}
+    grabVector: {x: 0, y: 0, z: 0}
+    pointSS: {x: 96.74266, y: -363.76483}
+    length: 0
+    initialGrowDir: {x: 0, y: 0, z: 0}
+    branchContainer: {fileID: 0}
+    index: 0
+    newBranch: 0
+    newBranchNumber: 0
+    radius: 0
+    currentRadius: 0
+    forwardRotation: {x: 0, y: 0, z: 0, w: 0}
+    verticesLoop: []
+    firstVector: {x: 0, y: 0, z: 0}
+    axis: {x: 0, y: 0, z: 0}
+  branchNumber: 0
 --- !u!1001 &1930796819
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -178005,6 +178984,23 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
   m_PrefabInstance: {fileID: 519825853}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1960403558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7926cbe089682e42b7ad5931a902b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dynamite3D.RealIvy.IvyContainer
+  lastNumberAssigned: 1
+  ivyGO: {fileID: 187996494}
+  branches:
+  - {fileID: 1910501043}
+  firstVertexVector: {x: 0.2675708, y: 0.059059814, z: -0.96172667}
 --- !u!4 &1964953161 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6835113371981180702, guid: 782198918b407a147b1a1e8af401d941, type: 3}
@@ -226081,3 +227077,5 @@ SceneRoots:
   - {fileID: 116816910}
   - {fileID: 59464678}
   - {fileID: 133682084}
+  - {fileID: 1112117711}
+  - {fileID: 187996498}

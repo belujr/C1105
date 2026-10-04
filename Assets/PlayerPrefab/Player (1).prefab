@@ -504,6 +504,7 @@ GameObject:
   - component: {fileID: 5328439643012407842}
   - component: {fileID: 1191904385516748377}
   - component: {fileID: -1262347586620216322}
+  - component: {fileID: 6175491832309531173}
   m_Layer: 14
   m_Name: Player (1)
   m_TagString: Player
@@ -839,6 +840,22 @@ MonoBehaviour:
   glowMaterial: {fileID: 2100000, guid: 8edb8688af0f2af468bd9e9ef5effd24, type: 2}
   glowWidth: 0.05
   glowOffset: 0
+--- !u!114 &6175491832309531173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459098319445998704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fc22d9521fc7754d90ae9cf105d2105, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterInteractor
+  waterHeight: -0.6
+  spawnInterval: 0.12
+  minSpeed: 0.2
+  maxSpeed: 6
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0
