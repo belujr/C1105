@@ -308,6 +308,14 @@ public class CombatHitboxController : MonoBehaviour
         activeSwing = Instantiate(attack.swingVFX, limb.position, limb.rotation, limb);
         swingStopTime = Time.unscaledTime + swingMaxDuration;
 
+        // Trail Renderer prefabs get the speed helper automatically (SmoothSwingRibbon prefabs already react to speed)
+        bool hasRibbon = activeSwing.GetComponentInChildren<SmoothSwingRibbon>() != null;
+        if (!hasRibbon && activeSwing.GetComponentInChildren<TrailRenderer>() != null
+                       && activeSwing.GetComponent<SwingTrailMotion>() == null)
+        {
+            activeSwing.AddComponent<SwingTrailMotion>();
+        }
+
         if (debugVFX) Debug.Log("[CombatHitbox] Swing VFX started: " + attack.swingVFX.name + " on " + limb.name, this);
     }
 
@@ -328,6 +336,12 @@ public class CombatHitboxController : MonoBehaviour
         {
             tr.emitting = false;
             linger = Mathf.Max(linger, tr.time);
+        }
+
+        foreach (SmoothSwingRibbon ribbon in swing.GetComponentsInChildren<SmoothSwingRibbon>())
+        {
+            ribbon.StopEmitting();
+            linger = Mathf.Max(linger, ribbon.lifetime);
         }
 
         foreach (ParticleSystem ps in swing.GetComponentsInChildren<ParticleSystem>())
