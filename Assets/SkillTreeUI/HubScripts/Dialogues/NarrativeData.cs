@@ -6,14 +6,14 @@ using UnityEngine.Events;
 [Serializable]
 public class NarrativeStep
 {
-    public string stepLabel; // Helper name for Inspector organization (e.g., "Step 3 - Bhide Grapple")
-    public DialogueSequence dialogueSequence; // The Dialogue ScriptableObject to play
-    public HubNPC.NPCType triggerNPC; // NPC required to trigger this dialogue
-    public bool autoTriggerOnRunStart; // True for opening dialogues (e.g., C1 opening)
-    public DialogueSequence dependency; // Optional: Prerequisite Dialogue SO that MUST be completed first
+    public string stepLabel; // Organization label (e.g., "Step 1 - Opening Cutscene")
+    public DialogueSequence dialogueSequence;
+    public HubNPC.NPCType triggerNPC;
+    public bool autoTriggerOnRunStart;
+    public DialogueSequence dependency;
 
     [Header("Optional Events")]
-    public UnityEvent onStepCompleted; // Triggers shop unlocks, quest updates, etc.
+    public UnityEvent onStepCompleted;
 }
 
 [Serializable]

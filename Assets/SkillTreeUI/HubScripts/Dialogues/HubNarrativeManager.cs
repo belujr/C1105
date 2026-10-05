@@ -8,7 +8,7 @@ public class HubNarrativeManager : MonoBehaviour
     public static HubNarrativeManager Instance;
 
     [Header("Debug & Testing")]
-    [Tooltip("If true, automatically wipes all narrative save data every time you enter Play mode.")]
+    [Tooltip("Check this box to automatically wipe save data every time you hit Play in the Editor.")]
     public bool resetSaveDataOnStart = false;
 
     [Header("Save Keys")]
@@ -17,7 +17,7 @@ public class HubNarrativeManager : MonoBehaviour
     private const string SAVE_SEQUENCES_KEY = "Narrative_CompletedSequences";
 
     [Header("Legacy Progress Tracking")]
-    public int run1ProgressStep = 0; // Maintained for backward compatibility with Shopkeeper.cs
+    public int run1ProgressStep = 0;
 
     [Header("Run Configuration")]
     public int currentRunNumber = 1;
@@ -39,13 +39,11 @@ public class HubNarrativeManager : MonoBehaviour
             return;
         }
 
-        // Auto-reset logic
         if (resetSaveDataOnStart)
         {
             ResetSaveData();
         }
 
-        // Load progress before Start runs
         LoadProgress();
     }
 
@@ -58,11 +56,9 @@ public class HubNarrativeManager : MonoBehaviour
     {
         if (spawnPoint == null) yield break;
 
-        // 1. Play VFX
         if (vesselConjureVFX != null)
             Instantiate(vesselConjureVFX, spawnPoint.position, Quaternion.identity);
 
-        // 2. Instantiate Player & Trigger Dissolve
         GameObject activePlayer = null;
         if (playerPrefab != null)
         {
@@ -74,7 +70,6 @@ public class HubNarrativeManager : MonoBehaviour
             }
         }
 
-        // 3. Attach Camera Rig
         if (activePlayer != null)
         {
             IsoCameraRig camRig = Object.FindFirstObjectByType<IsoCameraRig>();
@@ -85,10 +80,8 @@ public class HubNarrativeManager : MonoBehaviour
             }
         }
 
-        // 4. Wait for dissolve completion
         yield return new WaitForSeconds(1.5f);
 
-        // 5. Trigger Opening Step if configured for the current saved run
         NarrativeStep openingStep = GetAutoTriggerStepForCurrentRun();
         if (openingStep != null)
         {
@@ -101,11 +94,11 @@ public class HubNarrativeManager : MonoBehaviour
         RunNarrativeData currentRunData = GetCurrentRunData();
         if (currentRunData == null)
         {
+            Debug.LogWarning($"[NarrativeManager] No narrative data configured for Run {currentRunNumber}.");
             npc.PlayFallbackDialogue();
             return;
         }
 
-        // Search for an eligible step for this NPC
         NarrativeStep validStep = currentRunData.steps.Find(step =>
             step.triggerNPC == npc.npcRole &&
             !completedSequences.Contains(step.dialogueSequence) &&
@@ -126,18 +119,21 @@ public class HubNarrativeManager : MonoBehaviour
     {
         if (step.dialogueSequence == null) return;
 
-        DialogueUI.Instance.StartSequence(step.dialogueSequence, () =>
-        {
-            if (!completedSequences.Contains(step.dialogueSequence))
+        DialogueUI.Instance.StartSequence(
+            step.dialogueSequence,
+            () =>
             {
-                completedSequences.Add(step.dialogueSequence);
-                run1ProgressStep++; 
-                SaveProgress(); // Auto-save when step completes
-            }
+                if (!completedSequences.Contains(step.dialogueSequence))
+                {
+                    completedSequences.Add(step.dialogueSequence);
+                    run1ProgressStep++; 
+                    SaveProgress();
+                }
 
-            step.onStepCompleted?.Invoke();
-            Debug.Log($"Completed & Saved Narrative Step: {step.stepLabel}");
-        });
+                step.onStepCompleted?.Invoke();
+                Debug.Log($"[NarrativeManager] Completed & Saved Step: {step.stepLabel}");
+            }
+        );
     }
 
     private bool IsDependencySatisfied(NarrativeStep step)
@@ -179,7 +175,6 @@ public class HubNarrativeManager : MonoBehaviour
     {
         currentRunNumber++;
         SaveProgress();
-        Debug.Log($"Advanced to Run {currentRunNumber} and saved state.");
     }
 
     public void SaveProgress()
@@ -187,7 +182,6 @@ public class HubNarrativeManager : MonoBehaviour
         PlayerPrefs.SetInt(SAVE_RUN_KEY, currentRunNumber);
         PlayerPrefs.SetInt(SAVE_STEP_KEY, run1ProgressStep);
 
-        // Serialize completed dialogue sequence asset names into a single string
         List<string> savedNames = new List<string>();
         foreach (DialogueSequence seq in completedSequences)
         {
@@ -209,7 +203,6 @@ public class HubNarrativeManager : MonoBehaviour
         string savedData = PlayerPrefs.GetString(SAVE_SEQUENCES_KEY, "");
         if (string.IsNullOrEmpty(savedData)) return;
 
-        // Build a lookup map of all assigned DialogueSequences across all run steps
         Dictionary<string, DialogueSequence> sequenceMap = new Dictionary<string, DialogueSequence>();
         foreach (var run in runNarratives)
         {
@@ -222,7 +215,6 @@ public class HubNarrativeManager : MonoBehaviour
             }
         }
 
-        // Reconstruct completedHashSet from saved string names
         string[] names = savedData.Split('|');
         foreach (string seqName in names)
         {
@@ -245,7 +237,7 @@ public class HubNarrativeManager : MonoBehaviour
         run1ProgressStep = 0;
         completedSequences.Clear();
         
-        Debug.Log("Narrative Save Data Reset.");
+        Debug.Log("[NarrativeManager] Save Data Reset Successfully.");
     }
 
     #endregion

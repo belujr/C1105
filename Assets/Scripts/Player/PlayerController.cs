@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
 	[Tooltip("This attack is independent of your combat style. Drag an AttackData here!")]
 	public AttackData specialAttackY;
 
+	// Dialogue Lock Tracking
+	public bool IsMovementLocked { get; private set; }
+
 	// Combat Tracking
 	public float CurrentChargeMultiplier { get; set; } = 1f;
 	public int CurrentComboIndex { get; set; } = 0;
@@ -56,6 +59,16 @@ public class PlayerController : MonoBehaviour
 	public PlayerHitState HitState { get; private set; }
 
 	public bool IsGravityEnabled { get; set; } = true;
+
+	private void OnEnable()
+	{
+		DialogueUI.OnPlayerMovementStateChanged += HandleDialogueMovementStateChanged;
+	}
+
+	private void OnDisable()
+	{
+		DialogueUI.OnPlayerMovementStateChanged -= HandleDialogueMovementStateChanged;
+	}
 
 	private void Awake()
 	{
@@ -91,6 +104,24 @@ public class PlayerController : MonoBehaviour
 
 	private void Update()
 	{
+		// Freeze logic updates and input checks if movement is locked during Fixed dialogue
+		if (IsMovementLocked)
+		{
+			if (IsGravityEnabled)
+			{
+				ApplyGravity();
+			}
+
+			if (Animator != null)
+			{
+				Animator.SetBool("IsGrounded", CharacterController.isGrounded);
+				Animator.SetFloat("Speed", 0f);
+			}
+
+			UpdateGrappleReticle();
+			return;
+		}
+
 		DashState?.UpdateCooldown(Time.deltaTime);
 		SlideState?.UpdateCooldown(Time.deltaTime);
 
@@ -121,11 +152,36 @@ public class PlayerController : MonoBehaviour
 
 	private void FixedUpdate()
 	{
-		CurrentState?.PhysicsUpdate();
+		if (!IsMovementLocked)
+		{
+			CurrentState?.PhysicsUpdate();
+		}
+	}
+
+	private void HandleDialogueMovementStateChanged(bool canMove)
+	{
+		IsMovementLocked = !canMove;
+
+		if (IsMovementLocked)
+		{
+			// Reset movement parameters when dialogue freezes player
+			if (Animator != null)
+			{
+				Animator.SetFloat("Speed", 0f);
+			}
+
+			// Force back to grounded state if player was mid-attack, dash, or grapple
+			if (CurrentState != GroundedState && CurrentState != AirborneState)
+			{
+				TransitionToState(GroundedState);
+			}
+		}
 	}
 
 	private bool CheckForInterrupts()
 	{
+		if (IsMovementLocked) return false;
+
 		// 1. DASH CANCELS ATTACKS
 		if (InputHandler.DashTriggered && CurrentState != DashState)
 		{
@@ -279,7 +335,7 @@ public class PlayerController : MonoBehaviour
 	{
 		if (enemyGrappleReticle == null) return;
 
-		if (InputHandler.LockOnHeld)
+		if (InputHandler.LockOnHeld && !IsMovementLocked)
 		{
 			Transform target = FindEnemyToGrapple();
 			if (target != null)
@@ -323,6 +379,8 @@ public class PlayerController : MonoBehaviour
 
 	public Vector3 GetIsometricInputDirection()
 	{
+		if (IsMovementLocked) return Vector3.zero;
+
 		Vector2 rawInput = InputHandler.MoveInput;
 		if (rawInput.sqrMagnitude < 0.01f) return Vector3.zero;
 
@@ -372,10 +430,9 @@ public class PlayerController : MonoBehaviour
 		Gizmos.DrawWireSphere(transform.position, stats.idealStrikeDistance);
 	}
 
-    // Add this anywhere inside PlayerController.cs
-    public void TakeHit(int animHash, float duration)
-    {
-        HitState.SetUp(animHash, duration);
-        TransitionToState(HitState);
-    }
+	public void TakeHit(int animHash, float duration)
+	{
+		HitState.SetUp(animHash, duration);
+		TransitionToState(HitState);
+	}
 }

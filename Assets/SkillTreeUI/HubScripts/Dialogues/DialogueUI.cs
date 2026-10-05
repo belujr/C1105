@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 
 public class DialogueUI : MonoBehaviour
@@ -10,17 +12,31 @@ public class DialogueUI : MonoBehaviour
 
     [Header("Main Dialogue Frame")]
     public GameObject dialoguePanel;
-    public Image dialogueBoxImage; // Static background frame sprite (does not change color)
+    public Image dialogueBoxImage;
 
     [Header("Speaker Title Components")]
-    public Image titleBackgroundImage; // White sprite background for title & subtitle
+    public Image titleBackgroundImage;
     public TMP_Text speakerNameText;
     public TMP_Text speakerSubtitleText;
     public Image speakerSpriteImage;
     public TMP_Text dialogueText;
 
+    [Header("Skip Prompt Visuals")]
+    [Tooltip("Assign the UI Image / GameObject located at the bottom right corner indicating skip prompt.")]
+    public GameObject skipPromptUI;
+
+    // Static event for player controller subscription
+    public static event Action<bool> OnPlayerMovementStateChanged;
+
     private Queue<DialogueLine> linesQueue = new Queue<DialogueLine>();
     private Action onDialogueComplete;
+
+    private DialogueAdvanceMode currentAdvanceMode = DialogueAdvanceMode.PlayerInteractionBased;
+    private DialogueMovementMode currentMovementMode = DialogueMovementMode.Fixed;
+    private float currentAutoAdvanceTime = 3.0f;
+
+    private Coroutine autoAdvanceCoroutine;
+    private Coroutine promptDelayCoroutine;
 
     private void Awake()
     {
@@ -28,13 +44,23 @@ public class DialogueUI : MonoBehaviour
         else Destroy(gameObject);
 
         dialoguePanel.SetActive(false);
+        if (skipPromptUI != null) skipPromptUI.SetActive(false);
     }
 
+    // Pulls settings directly from the DialogueSequence asset
     public void StartSequence(DialogueSequence sequence, Action callback = null)
     {
-        onDialogueComplete = callback;
-        linesQueue.Clear();
+        if (sequence == null) return;
 
+        onDialogueComplete = callback;
+        currentAdvanceMode = sequence.advanceMode;
+        currentMovementMode = sequence.movementMode;
+        currentAutoAdvanceTime = sequence.autoAdvanceTime;
+
+        // Apply movement restrictions based on sequence asset settings
+        SetPlayerMovementAllowed(currentMovementMode == DialogueMovementMode.Walkable);
+
+        linesQueue.Clear();
         foreach (var line in sequence.lines)
         {
             linesQueue.Enqueue(line);
@@ -44,11 +70,21 @@ public class DialogueUI : MonoBehaviour
         DisplayNextLine();
     }
 
-    public void StartDynamicLines(List<DialogueLine> dynamicLines, Action callback = null)
+    public void StartDynamicLines(
+        List<DialogueLine> dynamicLines, 
+        DialogueAdvanceMode advanceMode = DialogueAdvanceMode.PlayerInteractionBased, 
+        DialogueMovementMode movementMode = DialogueMovementMode.Fixed,
+        float autoAdvanceTime = 3.0f, 
+        Action callback = null)
     {
         onDialogueComplete = callback;
-        linesQueue.Clear();
+        currentAdvanceMode = advanceMode;
+        currentMovementMode = movementMode;
+        currentAutoAdvanceTime = autoAdvanceTime;
 
+        SetPlayerMovementAllowed(currentMovementMode == DialogueMovementMode.Walkable);
+
+        linesQueue.Clear();
         foreach (var line in dynamicLines)
         {
             linesQueue.Enqueue(line);
@@ -60,6 +96,9 @@ public class DialogueUI : MonoBehaviour
 
     public void DisplayNextLine()
     {
+        StopLineCoroutines();
+        if (skipPromptUI != null) skipPromptUI.SetActive(false);
+
         if (linesQueue.Count == 0)
         {
             EndDialogue();
@@ -68,28 +107,17 @@ public class DialogueUI : MonoBehaviour
 
         DialogueLine currentLine = linesQueue.Dequeue();
 
-        // 1. Update Speaker Text & Subtitle
         speakerNameText.text = currentLine.SpeakerName;
-        if (speakerSubtitleText != null)
-        {
-            speakerSubtitleText.text = currentLine.SpeakerSubtitle;
-        }
+        if (speakerSubtitleText != null) speakerSubtitleText.text = currentLine.SpeakerSubtitle;
 
-        // 2. Apply Dynamic HSB Accent Color to Title Background Sprite
-        if (titleBackgroundImage != null)
-        {
-            titleBackgroundImage.color = currentLine.AccentColor;
-        }
+        if (titleBackgroundImage != null) titleBackgroundImage.color = currentLine.AccentColor;
 
-        // 3. Handle Text Color Overrides if specified on Speaker Profile
         if (currentLine.speakerProfile != null && currentLine.speakerProfile.overrideTextColor)
         {
             speakerNameText.color = currentLine.speakerProfile.nameTextColor;
-            if (speakerSubtitleText != null)
-                speakerSubtitleText.color = currentLine.speakerProfile.subtitleTextColor;
+            if (speakerSubtitleText != null) speakerSubtitleText.color = currentLine.speakerProfile.subtitleTextColor;
         }
 
-        // 4. Update Speaker Portrait Sprite
         if (speakerSpriteImage != null)
         {
             if (currentLine.SpeakerSprite != null)
@@ -103,21 +131,80 @@ public class DialogueUI : MonoBehaviour
             }
         }
 
-        // 5. Display Body Dialogue Text
         dialogueText.text = currentLine.GetRandomText();
+
+        if (currentAdvanceMode == DialogueAdvanceMode.PlayerInteractionBased)
+        {
+            promptDelayCoroutine = StartCoroutine(ShowPromptDelayRoutine(1.0f));
+        }
+        else if (currentAdvanceMode == DialogueAdvanceMode.Continuous)
+        {
+            autoAdvanceCoroutine = StartCoroutine(AutoAdvanceRoutine(currentAutoAdvanceTime));
+        }
+    }
+
+    private IEnumerator ShowPromptDelayRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (skipPromptUI != null)
+        {
+            skipPromptUI.SetActive(true);
+        }
+    }
+
+    private IEnumerator AutoAdvanceRoutine(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        DisplayNextLine();
+    }
+
+    private void StopLineCoroutines()
+    {
+        if (promptDelayCoroutine != null)
+        {
+            StopCoroutine(promptDelayCoroutine);
+            promptDelayCoroutine = null;
+        }
+        if (autoAdvanceCoroutine != null)
+        {
+            StopCoroutine(autoAdvanceCoroutine);
+            autoAdvanceCoroutine = null;
+        }
     }
 
     private void EndDialogue()
     {
+        StopLineCoroutines();
+        if (skipPromptUI != null) skipPromptUI.SetActive(false);
         dialoguePanel.SetActive(false);
+
+        // Always restore full player movement when dialogue ends
+        SetPlayerMovementAllowed(true);
+
         onDialogueComplete?.Invoke();
+    }
+
+    private void SetPlayerMovementAllowed(bool allowed)
+    {
+        OnPlayerMovementStateChanged?.Invoke(allowed);
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            PlayerInput pInput = playerObj.GetComponent<PlayerInput>();
+            if (pInput != null)
+            {
+                if (allowed) pInput.ActivateInput();
+                else pInput.DeactivateInput();
+            }
+        }
     }
 
     private void Update()
     {
-        bool advancePressed = (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.spaceKey.wasPressedThisFrame) ||
-                              (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.enterKey.wasPressedThisFrame) ||
-                              (UnityEngine.InputSystem.Gamepad.current != null && UnityEngine.InputSystem.Gamepad.current.buttonSouth.wasPressedThisFrame);
+        bool advancePressed = (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) ||
+                              (Keyboard.current != null && Keyboard.current.enterKey.wasPressedThisFrame) ||
+                              (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
 
         if (dialoguePanel != null && dialoguePanel.activeSelf && advancePressed)
         {

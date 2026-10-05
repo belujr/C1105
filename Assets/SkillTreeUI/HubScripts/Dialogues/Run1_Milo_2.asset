@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ec8b4c43df9884dab1e56106bf74dc, type: 3}
   m_Name: Run1_Milo_2
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSequence
+  advanceMode: 1
+  movementMode: 1
+  autoAdvanceTime: 4
   lines:
   - speakerProfile: {fileID: 11400000, guid: 8c997c5ba8fc9524880d72f0429fccbe, type: 2}
     textOptions:
