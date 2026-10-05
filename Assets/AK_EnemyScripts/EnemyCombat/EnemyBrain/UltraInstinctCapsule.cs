@@ -194,6 +194,17 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
         // you would disable the trigger collider here.
     }
 
+    // --- ADD THESE NEW METHODS ---
+    public void BeginSwing(int limbIndex)
+    {
+        // Empty receiver to prevent errors when sharing animations with the Player
+    }
+
+    public void EndSwing()
+    {
+        // Empty receiver to prevent errors when sharing animations with the Player
+    }
+
     private void OnEnable()
     {
         currentHealth = maxHealth;
