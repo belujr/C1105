@@ -108,6 +108,11 @@ public class BeaconWorldShieldVisual : MonoBehaviour
         {
             shieldDissolve.Break();   // animated; switches the shield off when finished
         }
+        else if (shieldRenderer != null)
+        {
+            // Only hide the mesh. Never deactivate the object: it may also hold BeaconHealth and the hitbox.
+            shieldRenderer.enabled = false;
+        }
         else if (shieldVisualTransform != null)
         {
             shieldVisualTransform.gameObject.SetActive(false);

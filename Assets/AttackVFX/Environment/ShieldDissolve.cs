@@ -1,15 +1,16 @@
 using System.Collections;
 using UnityEngine;
 
-/// Put this on an object that stays ACTIVE (e.g. the beacon root), NOT on the shield sphere itself,
-/// because the shield sphere gets switched off when the dissolve finishes.
+/// Can live on the Shield object itself (the same object as BeaconHealth).
+/// It never deactivates any GameObject: when the dissolve finishes it only switches the shield MESH off,
+/// so BeaconHealth, the hitbox and the colliders keep working (the core still has to be hit afterwards).
 public class ShieldDissolve : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("Shield sphere renderer + ripple sphere renderer (anything using the shield shader graph).")]
+    [Tooltip("Every renderer that uses the shield shader (main shield + ripple). All of them get the Dissolve value.")]
     [SerializeField] Renderer[] renderers;
-    [Tooltip("Object switched off when the dissolve finishes (usually the shield sphere that BeaconWorldShieldVisual scales).")]
-    [SerializeField] GameObject visualRoot;
+    [Tooltip("Renderers switched OFF when the dissolve finishes and back ON by Restore. Put the MAIN shield mesh here, NOT the ripple (ShieldHit controls the ripple).")]
+    [SerializeField] Renderer[] hideWhenDone;
 
     [Header("Timing")]
     [SerializeField] float duration = 1.2f;
@@ -28,7 +29,7 @@ public class ShieldDissolve : MonoBehaviour
         SetDissolve(0f);
     }
 
-    /// Shield dissolves top to bottom, then the visual root is switched off.
+    /// Shield dissolves top to bottom, then the shield mesh is switched off.
     public void Break()
     {
         if (IsDissolved) return;
@@ -40,17 +41,17 @@ public class ShieldDissolve : MonoBehaviour
     public void Restore()
     {
         IsDissolved = false;
-        if (visualRoot) visualRoot.SetActive(true);
+        SetHidden(false);
         Play(1f, 0f, false);
     }
 
-    void Play(float from, float to, bool hideWhenDone)
+    void Play(float from, float to, bool hideWhenFinished)
     {
         if (routine != null) StopCoroutine(routine);
-        routine = StartCoroutine(Run(from, to, hideWhenDone));
+        routine = StartCoroutine(Run(from, to, hideWhenFinished));
     }
 
-    IEnumerator Run(float from, float to, bool hideWhenDone)
+    IEnumerator Run(float from, float to, bool hideWhenFinished)
     {
         for (float t = 0f; t < 1f; t += Time.deltaTime / duration)
         {
@@ -58,8 +59,15 @@ public class ShieldDissolve : MonoBehaviour
             yield return null;
         }
         SetDissolve(to);
-        if (hideWhenDone && visualRoot) visualRoot.SetActive(false);
+        if (hideWhenFinished) SetHidden(true);
         routine = null;
+    }
+
+    void SetHidden(bool hidden)
+    {
+        if (hideWhenDone == null) return;
+        foreach (var r in hideWhenDone)
+            if (r != null) r.enabled = !hidden;
     }
 
     /// Public so the custom inspector slider can scrub it (works in edit mode too).

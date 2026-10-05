@@ -10,6 +10,7 @@ public class BeaconHealth : MonoBehaviour, IDamageable
     [SerializeField] private float maxCoreHealth = 500f;
 
     [Header("Radar Settings")]
+    [Tooltip("Size of the activation zone in WORLD units. The object's scale is compensated automatically.")]
     [SerializeField] private float radarRadius = 12f;
     [SerializeField] private float radarHeight = 2f;
 
@@ -50,8 +51,14 @@ public class BeaconHealth : MonoBehaviour, IDamageable
         // Setup the radar trigger collider
         radarTrigger = GetComponent<CapsuleCollider>();
         radarTrigger.isTrigger = true;
-        radarTrigger.radius = radarRadius;
-        radarTrigger.height = radarHeight;
+
+        // Radar size is given in WORLD units. A collider is multiplied by its object's scale,
+        // so divide that out (otherwise a scaled-up shield object makes the radar far too big).
+        Vector3 objScale = transform.lossyScale;
+        float scale = Mathf.Max(Mathf.Abs(objScale.x), Mathf.Abs(objScale.y), Mathf.Abs(objScale.z));
+        if (scale < 0.0001f) scale = 1f;
+        radarTrigger.radius = radarRadius / scale;
+        radarTrigger.height = Mathf.Max(radarHeight / scale, radarTrigger.radius * 2f);
         radarTrigger.enabled = true;
 
         currentCoreHealth = maxCoreHealth;
@@ -138,5 +145,14 @@ public class BeaconHealth : MonoBehaviour, IDamageable
         {
             radarTrigger.enabled = false;
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Cyan = activation zone (walls build when the player enters). Orange = where the core can be hit from.
+        Gizmos.color = new Color(0f, 1f, 1f, 0.6f);
+        Gizmos.DrawWireSphere(transform.position, radarRadius);
+        Gizmos.color = new Color(1f, 0.4f, 0f, 0.6f);
+        Gizmos.DrawWireSphere(transform.position, coreHitRadius);
     }
 }

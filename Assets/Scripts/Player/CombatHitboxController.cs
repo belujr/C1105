@@ -249,6 +249,14 @@ public class CombatHitboxController : MonoBehaviour
                         default: vfxPoint = currentActiveLimb.position; break;
                     }
 
+                    // Targets like the beacon shield want the VFX exactly where the fist touched them
+                    BeaconHitRelay hitRelay = enemyCol.GetComponent<BeaconHitRelay>();
+                    if (hitRelay != null && hitRelay.hitVfxAtContactPoint)
+                    {
+                        vfxPoint = hitRelay.GetSurfacePoint(currentActiveLimb.position);
+                        followTarget = enemyCol.transform;
+                    }
+
                     // Skill-preview screen: always play the VFX at the fixed point on the preview enemy
                     if (previewAttack != null && previewHitPoint != null)
                     {

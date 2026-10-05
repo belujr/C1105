@@ -350,6 +350,9 @@
         },
         {
             "m_Id": "a1861e78c60e47d2bd26d0abd91a8383"
+        },
+        {
+            "m_Id": "26a4673709af4c08a4a3c49326e716cb"
         }
     ],
     "m_GroupDatas": [
@@ -1862,6 +1865,9 @@
             },
             {
                 "m_Id": "fcdaebb7f39e400c8c075b5a79fe80d9"
+            },
+            {
+                "m_Id": "26a4673709af4c08a4a3c49326e716cb"
             }
         ]
     },
@@ -2988,7 +2994,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Smoothness",
     "m_StageCapability": 2,
-    "m_Value": 0.5,
+    "m_Value": 0.0,
     "m_DefaultValue": 0.5,
     "m_Labels": [],
     "m_LiteralMode": false
@@ -3899,6 +3905,40 @@
     "m_Property": {
         "m_Id": "c61c23d31c8a40008e3b37b3f3192325"
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BlockNode",
+    "m_ObjectId": "26a4673709af4c08a4a3c49326e716cb",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "SurfaceDescription.AlphaClipThreshold",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "ce86cc82f4ac4710972235212670de5b"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_SerializedDescriptor": "SurfaceDescription.AlphaClipThreshold"
 }
 
 {
@@ -10999,6 +11039,22 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "ce86cc82f4ac4710972235212670de5b",
+    "m_Id": 0,
+    "m_DisplayName": "Alpha Clip Threshold",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "AlphaClipThreshold",
+    "m_StageCapability": 2,
+    "m_Value": 0.009999999776482582,
+    "m_DefaultValue": 0.5,
+    "m_Labels": [],
+    "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicValueMaterialSlot",
     "m_ObjectId": "d040a8f386194f8cbc09850f27d86131",
     "m_Id": 2,
@@ -11962,8 +12018,8 @@
     "m_ObjectId": "e2363ab3e2f849cea6c7119ce7069c38",
     "m_Title": "Panel Data",
     "m_Position": {
-        "x": -2289.333251953125,
-        "y": -904.6670532226563
+        "x": -2289.33349609375,
+        "y": -904.6665649414063
     }
 }
 
@@ -13055,8 +13111,8 @@
     "m_ObjectId": "fe70deea4daf4984b459b0e9c71da526",
     "m_Title": "Fresnel",
     "m_Position": {
-        "x": -437.333251953125,
-        "y": 1215.9996337890625
+        "x": -437.3334655761719,
+        "y": 1215.9998779296875
     }
 }
 
