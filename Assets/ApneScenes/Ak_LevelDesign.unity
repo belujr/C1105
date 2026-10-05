@@ -1698,7 +1698,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &549520828
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2468,6 +2468,9 @@ MonoBehaviour:
   OnShieldDropped:
     m_PersistentCalls:
       m_Calls: []
+  OnShieldHit:
+    m_PersistentCalls:
+      m_Calls: []
   OnCoreDamaged:
     m_PersistentCalls:
       m_Calls: []
@@ -2513,8 +2516,10 @@ MonoBehaviour:
   beaconHealth: {fileID: 1007440746}
   shieldVisualTransform: {fileID: 1870139280}
   shieldRenderer: {fileID: 1870139277}
+  shieldDissolve: {fileID: 0}
   initialShieldScale: {x: 5, y: 5, z: 5}
   shrinkAsItWearsOff: 0
+  minScaleFactor: 0.6
   fullShieldColor: {r: 0, g: 1, b: 0, a: 0.1764706}
   lowShieldColor: {r: 1, g: 0, b: 0, a: 0.20392157}
 --- !u!65 &1007440748
@@ -4336,6 +4341,10 @@ GameObject:
   - component: {fileID: 3469287838121968865}
   - component: {fileID: 1711813855132725291}
   - component: {fileID: 3469287838121968866}
+  - component: {fileID: 3469287838121968867}
+  - component: {fileID: 3469287838121968870}
+  - component: {fileID: 3469287838121968869}
+  - component: {fileID: 3469287838121968868}
   m_Layer: 0
   m_Name: Shield
   m_TagString: Untagged
@@ -4488,10 +4497,141 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ae0903133a41342b14c6f04fffb2ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShieldHit
+  beaconHealth: {fileID: 3469287838121968868}
   ripple: {fileID: 549520828}
+  mainShield: {fileID: 1711813855132725291}
   maxRadius: 1.5
   duration: 0.6
+  projectOntoSurface: 1
   hitColor: {r: 1, g: 1, b: 1, a: 1}
+  hitBrightness: 3
+  useMainShieldColor: 1
+--- !u!114 &3469287838121968867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132147517264382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd7db224ca1639241b6946ae8f5eef10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShieldDissolve
+  renderers:
+  - {fileID: 1711813855132725291}
+  - {fileID: 549520828}
+  visualRoot: {fileID: 919132147517264382}
+  duration: 1.2
+  curve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &3469287838121968868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132147517264382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f93bb2f68897d84898105603dad328c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BeaconHealth
+  requiredKillQuota: 20
+  maxCoreHealth: 500
+  radarRadius: 12
+  radarHeight: 2
+  coreHitRadius: 3.5
+  OnBeaconActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  OnQuotaUpdated:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShieldDropped:
+    m_PersistentCalls:
+      m_Calls: []
+  OnShieldHit:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCoreDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBeaconDestroyed:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!54 &3469287838121968869
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132147517264382}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &3469287838121968870
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132147517264382}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.97582555
+  m_Height: 1.9306242
+  m_Direction: 1
+  m_Center: {x: -0.000000029802322, y: 0.000000029802319, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

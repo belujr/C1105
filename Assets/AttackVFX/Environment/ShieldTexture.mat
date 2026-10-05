@@ -55,10 +55,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Dissolve: 0
+    - _EdgeWidth: 0.08
     - _FresnelPower: 3
+    - _NoiseScale: 8
+    - _NoiseStrength: 0.15
+    - _PanelMode: 1
     - _PluseGlow: 5
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _ShieldRadius: 1
     - _SphereHardness: 0
     - _SphereMask: 0
     - _SphereRadius: 0
@@ -66,6 +72,7 @@ Material:
     - _VertexFrequency: 1.5
     m_Colors:
     - _BackColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EdgeColor: {r: 0, g: 1, b: 0.9675145, a: 1}
     - _FresnelColor: {r: 0.30147198, g: 2.4824486, b: 95.87452, a: 1}
     - _FronColor: {r: 0, g: 9.807184, b: 11.984314, a: 1}
     - _SphereCenter: {r: 0, g: 0, b: 0, a: 0}

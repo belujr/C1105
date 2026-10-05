@@ -21,6 +21,8 @@ public class BeaconHealth : MonoBehaviour, IDamageable
     public UnityEvent OnBeaconActivated;
     public UnityEvent<int, int> OnQuotaUpdated;
     public UnityEvent OnShieldDropped;
+    [Tooltip("Fired when something hits the beacon while its shield is still up. Passes the world hit point (ShieldHit uses it for the ripple).")]
+    public UnityEvent<Vector3> OnShieldHit;
     public UnityEvent<float, float> OnCoreDamaged;
     public UnityEvent OnBeaconDestroyed;
 
@@ -79,6 +81,7 @@ public class BeaconHealth : MonoBehaviour, IDamageable
 
         if (isShieldActive)
         {
+            OnShieldHit?.Invoke(hitPoint != Vector3.zero ? hitPoint : transform.position);
             return;
         }
 
