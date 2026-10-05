@@ -103,8 +103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fbbed83c8d8c0e4b818ffd294f5c65f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmoothSwingRibbon
-  lifetime: 0.3
-  width: 1.6
+  lifetime: 1
+  width: 1.2
   widthOverAge:
     serializedVersion: 2
     m_Curve:
@@ -163,11 +163,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   color: {r: 1, g: 1, b: 1, a: 1}
-  segments: 64
-  smoothingPasses: 6
+  segments: 19
+  smoothingPasses: 2
   minSampleDistance: 0.02
   maxFrameTime: 0.033
   minSpeed: 3
   fullSpeed: 10
   slowAgeRate: 6
-  speedResponse: 18
+  speedResponse: 10
