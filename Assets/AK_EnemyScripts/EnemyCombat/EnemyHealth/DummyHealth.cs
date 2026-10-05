@@ -27,6 +27,8 @@ public class DummyHealth : MonoBehaviour
     public float ReviveCooldown => reviveCooldown;
 
     public event Action<float, float> OnHealthChanged; 
+    
+    // --- NEW INTERFACE EVENTS ---
     public event Action OnDeath;
     public event Action OnRevive;
 
@@ -66,7 +68,9 @@ public class DummyHealth : MonoBehaviour
         IsDead = false;
       
         OnHealthChanged?.Invoke(currentHP, maxHP);
-        OnRevive?.Invoke();
+        
+        // Broadcasts to the Brain that we revived
+        OnRevive?.Invoke(); 
     }
 
     private void Die()
@@ -94,7 +98,8 @@ public class DummyHealth : MonoBehaviour
             }
         }
 
-        OnDeath?.Invoke();
+        // Broadcasts to the Brain that we died
+        OnDeath?.Invoke(); 
 
         if (!isDummy && GetComponent<BaseEnemyBrain>() == null)
         {

@@ -1,28 +1,47 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random; 
 using CombatSystem.Animation;
 using CombatSystem.Data;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(EnemyAnimationEngine))]
-public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
+public class ImpBrain : MonoBehaviour, IDamageable, IHealable
 {
     public enum ImpState { Strafing, Charging, Firing, PanicLeap, Reacting }
 
     [Header("Imp Stats & Combat")]
     public float maxHealth = 40f; 
+    public float deathDisappearDelay = 2.0f;
     private float currentHealth;
     private bool isDead = false;
     private CharacterController charController;
+    private Collider capsuleCollider; 
 
     [Header("Core References & Animation Profiles")]
+    public PlayerController player;
     public EnemyAnimProfile animProfile;
     private EnemyAnimationEngine animationEngine;
     private Transform cachedTransform;
+    private Transform playerTransform;
+
+    [Header("Enemy Type & Token Settings")]
+    public TokenType tokenType = TokenType.Ranged;
+
+    [Header("Aggression & Cooldowns")]
+    public float baseAttackCooldown = 2.5f;
+    private float currentAttackCooldown = 0f;
+
+    [Header("Separation & Spread Tuning")]
+    [Tooltip("Minimum personal space distance Imps try to maintain from each other.")]
+    public float separationRadius = 2.0f;
+    [Tooltip("How strongly they push away from crowded allies.")]
+    public float separationWeight = 2.5f;
+    private static readonly Collider[] overlapBuffer = new Collider[16];
 
     [Header("Visual Hump (Back Sphere) References")]
-    [Tooltip("Assign the transparent sphere GameObject attached to the Imp's back.")]
     public Transform humpSphereTransform;
     private Material humpMaterial;
     private float currentChargeProgress = 0f;
@@ -32,21 +51,17 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
     public Transform firePoint;
     public AnimationClip rangedAttackClip; 
     public float preferredRange = 10f;
-    [Tooltip("If the player steps closer than this distance, the Imp aggressively backpedals to stay ranged-only.")]
     public float minimumSafeDistance = 6.0f;
     public float chargeDuration = 2.0f; 
     public float fireballDamage = 20f;
     public float rotationSpeed = 20f;
 
     [Header("Player Reaction Hook")]
-    [Tooltip("The exact name of the Player's Animator node to play when hit.")]
     public string playerReactionAnimName = "Hit_Light";
     public float stunDuration = 0.2f;
 
     [Header("Animation Controls")]
-    [Tooltip("Multiplier for the attack animation speed.")]
     public float attackAnimationSpeed = 1.0f;
-    [Tooltip("Direct slot for the Imp's hit reaction clip. Bypasses profile lookup if assigned.")]
     public AnimationClip hitReactionClip;
 
     [Header("Movement & Panic Leap")]
@@ -58,16 +73,32 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
     private float strafeTimer = 0f;
     private int strafeDir = 1;
     private bool holdsToken = false;
+    
     private Coroutine activeActionRoutine;
+    private Coroutine activeKnockbackRoutine;
+    
     private string lastPlayedLocomotionState = "";
+    private bool isReacting = false;
+    private float reactionTimer = 0f;
+    private float fallVelocity = 0f;
 
-    protected override void Awake()
+    public event Action OnDeath;
+    public event Action OnRevive;
+
+    public void ForceDisableUntilGrounded() => enabled = false;
+
+    public void AuthorizeGroundContactAndEnable()
     {
-        base.Awake();
+        enabled = true;
+        lastPlayedLocomotionState = "";
+    }
+
+    private void Awake()
+    {
         cachedTransform = transform;
         charController = GetComponent<CharacterController>();
+        capsuleCollider = GetComponent<Collider>(); 
         animationEngine = GetComponent<EnemyAnimationEngine>();
-        currentHealth = maxHealth;
 
         if (animProfile != null) animProfile.InitializeDictionary();
 
@@ -76,29 +107,82 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
             Renderer rend = humpSphereTransform.GetComponent<Renderer>();
             if (rend != null) humpMaterial = rend.material; 
         }
+        
+        FindPlayerReference();
     }
 
-    protected void OnEnable()
+    private void FindPlayerReference()
+    {
+        if (player == null) player = FindObjectOfType<PlayerController>();
+        if (player != null) playerTransform = player.transform;
+    }
+
+    private void Start() => FindPlayerReference();
+
+    private void OnEnable()
     {
         currentHealth = maxHealth;
         isDead = false;
         holdsToken = false;
+        isReacting = false;
         impState = ImpState.Strafing;
         currentChargeProgress = 0f;
         lastPlayedLocomotionState = "";
-        if (charController != null) charController.enabled = true;
+        activeActionRoutine = null;
+        activeKnockbackRoutine = null;
+        fallVelocity = -2f; 
+
+        currentAttackCooldown = Random.Range(0.5f, 2.0f);
+        if (capsuleCollider != null) capsuleCollider.enabled = true;
+
         UpdateHumpVisuals(0f);
+        FindPlayerReference();
+        OnRevive?.Invoke();
     }
 
-    protected override void Update()
+    private void OnDisable()
     {
-        if (isDead || target == null) return;
+        currentHealth = maxHealth;
+        isDead = false;
+        isReacting = false;
+        ReleaseTokenSafely();
+        if (charController != null) charController.enabled = true;
+    }
 
-        base.Update(); 
+    private void OnDestroy() => ReleaseTokenSafely();
 
-        float distToTarget = Vector3.Distance(cachedTransform.position, target.position);
+    private void Update()
+    {
+        if (player == null || playerTransform == null)
+        {
+            FindPlayerReference();
+            if (player == null) return;
+        }
 
-        if (impState != ImpState.PanicLeap && impState != ImpState.Reacting)
+        if (isDead) return;
+
+        if (currentAttackCooldown > 0f) currentAttackCooldown -= Time.deltaTime;
+
+        if (charController != null && charController.enabled)
+        {
+            if (charController.isGrounded) fallVelocity = -0.5f;
+            else fallVelocity -= 20f * Time.deltaTime;
+        }
+
+        if (isReacting)
+        {
+            reactionTimer -= Time.deltaTime;
+            if (charController != null && charController.enabled)
+            {
+                charController.Move(new Vector3(0, fallVelocity, 0) * Time.deltaTime);
+            }
+            if (reactionTimer <= 0f) isReacting = false;
+            return;
+        }
+
+        float distToTarget = Vector3.Distance(cachedTransform.position, playerTransform.position);
+
+        if (impState != ImpState.PanicLeap && impState != ImpState.Reacting && activeKnockbackRoutine == null)
         {
             FaceTarget();
         }
@@ -106,36 +190,51 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
         switch (impState)
         {
             case ImpState.Strafing:
-                HandlePureRangedMovement(distToTarget);
-                TryInitiateAttackToken();
+                if (activeKnockbackRoutine == null) HandlePureRangedMovement(distToTarget);
+                TryInitiateAttackToken(distToTarget);
                 break;
-
             case ImpState.Charging:
-                PlayLocomotionAnimation("Charging", animProfile != null ? animProfile.idleClip : null, 0.1f);
-                break;
-
-            case ImpState.Firing:
-                break;
-
-            case ImpState.PanicLeap:
-                break;
-
-            case ImpState.Reacting:
+                if (charController != null && charController.enabled)
+                {
+                    charController.Move(new Vector3(0, fallVelocity, 0) * Time.deltaTime);
+                }
+                UpdateLocomotionAnimation("Charging", animProfile != null ? animProfile.idleClip : null, 0.1f);
                 break;
         }
     }
 
-    private void PlayLocomotionAnimation(string stateKey, AnimationClip clip, float duration, float speedMultiplier = 1.0f)
+    private Vector3 CalculateSeparationForce()
     {
-        if (animationEngine == null || animProfile == null || isDead) return;
+        Vector3 separationMove = Vector3.zero;
+        Vector3 currentPos = cachedTransform.position;
+        int hitCount = Physics.OverlapSphereNonAlloc(currentPos, separationRadius, overlapBuffer);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider hit = overlapBuffer[i];
+            if (hit != null && hit.gameObject != gameObject && hit.TryGetComponent<ImpBrain>(out _))
+            {
+                Vector3 awayDir = currentPos - hit.transform.position;
+                awayDir.y = 0f;
+                float distanceSqr = awayDir.sqrMagnitude;
+
+                if (distanceSqr > 0.0001f)
+                {
+                    separationMove += (awayDir.normalized / Mathf.Sqrt(distanceSqr)) * separationWeight;
+                }
+            }
+        }
+        return separationMove;
+    }
+
+    private void UpdateLocomotionAnimation(string stateKey, AnimationClip clip, float duration, float speedMultiplier = 1.0f)
+    {
+        if (animationEngine == null || animProfile == null || isDead || isReacting) return;
         
         if (lastPlayedLocomotionState != stateKey)
         {
             lastPlayedLocomotionState = stateKey;
-            if (clip != null)
-            {
-                animationEngine.PlayAnimation(clip, duration, speedMultiplier);
-            }
+            if (clip != null) animationEngine.PlayAnimation(clip, duration, speedMultiplier);
         }
     }
 
@@ -148,44 +247,40 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
             strafeDir = Random.value > 0.5f ? 1 : -1;
         }
 
-        Vector3 dirToTarget = (target.position - cachedTransform.position).normalized;
+        Vector3 dirToTarget = (playerTransform.position - cachedTransform.position).normalized;
+        dirToTarget.y = 0f;
         Vector3 rightDir = Vector3.Cross(Vector3.up, dirToTarget).normalized;
+        Vector3 separationForce = CalculateSeparationForce();
         Vector3 moveDir = Vector3.zero;
 
-        if (distToTarget < minimumSafeDistance)
-        {
-            moveDir = -dirToTarget; 
-        }
-        else
-        {
-            moveDir = (rightDir * strafeDir);
-            if (distToTarget < preferredRange - 2f) moveDir -= dirToTarget;
-            else if (distToTarget > preferredRange + 2f) moveDir += dirToTarget;
-        }
+        if (distToTarget < minimumSafeDistance) moveDir = -dirToTarget + separationForce;
+        else if (distToTarget > preferredRange) moveDir = dirToTarget + separationForce;
+        else moveDir = (rightDir * strafeDir) + (dirToTarget * 0.15f) + separationForce;
 
         moveDir.Normalize();
 
         if (charController != null && charController.enabled)
         {
-            charController.Move(moveDir * impMoveSpeed * Time.deltaTime);
+            charController.Move((moveDir * impMoveSpeed + new Vector3(0, fallVelocity, 0)) * Time.deltaTime);
         }
 
         if (animProfile != null)
         {
             AnimationClip moveClip = distToTarget < minimumSafeDistance ? animProfile.walkClip : (strafeDir > 0 ? animProfile.strafeRightClip : animProfile.strafeLeftClip);
             if (moveClip == null) moveClip = animProfile.walkClip;
+            
             string moveKey = distToTarget < minimumSafeDistance ? "Backpedal" : (strafeDir > 0 ? "StrafeRight" : "StrafeLeft");
-            PlayLocomotionAnimation(moveKey, moveClip, animProfile.walkTransitionDuration);
+            UpdateLocomotionAnimation(moveKey, moveClip, animProfile.walkTransitionDuration);
         }
     }
 
-    private void TryInitiateAttackToken()
+    private void TryInitiateAttackToken(float distToTarget)
     {
-        if (holdsToken) return;
+        if (holdsToken || currentAttackCooldown > 0f || distToTarget > preferredRange + 4f) return;
 
         if (GlobalTokenManager.Instance != null)
         {
-            if (GlobalTokenManager.Instance.RequestToken(cachedTransform, TokenType.Ranged))
+            if (GlobalTokenManager.Instance.RequestToken(cachedTransform, tokenType))
             {
                 holdsToken = true;
                 impState = ImpState.Charging;
@@ -208,12 +303,10 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
 
         while (elapsed < chargeDuration)
         {
-            if (isDead || target == null) yield break;
-
+            if (isDead || playerTransform == null || isReacting) yield break;
             elapsed += Time.deltaTime;
             currentChargeProgress = Mathf.Clamp01(elapsed / chargeDuration);
             UpdateHumpVisuals(currentChargeProgress);
-
             yield return null;
         }
 
@@ -229,36 +322,45 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
             lastPlayedLocomotionState = "RangedAttack";
         }
 
-        float throwDelay = clipDuration * 0.4f;
-        yield return new WaitForSeconds(throwDelay);
+        yield return new WaitForSeconds(clipDuration * 0.4f);
 
-        SpawnFireball();
+        if (!isDead && !isReacting) SpawnFireball();
         
         currentChargeProgress = 0f;
         UpdateHumpVisuals(0f);
 
-        yield return new WaitForSeconds(clipDuration - throwDelay); 
+        yield return new WaitForSeconds(clipDuration * 0.6f); 
 
         ReleaseTokenSafely();
         impState = ImpState.Strafing;
         strafeTimer = 0f; 
+        currentAttackCooldown = baseAttackCooldown + Random.Range(-0.5f, 0.5f);
     }
 
     private void SpawnFireball()
     {
-        if (fireballPrefab == null || target == null) return;
+        if (fireballPrefab == null || playerTransform == null) return;
 
-        Vector3 spawnPos = firePoint != null ? firePoint.position : cachedTransform.position + Vector3.up + cachedTransform.forward;
-        Vector3 dirToTarget = (target.position - spawnPos).normalized;
+        // Spawn well clear of the enemy's body collider
+        Vector3 spawnPos = firePoint != null ? firePoint.position : cachedTransform.position + Vector3.up * 1.5f + (cachedTransform.forward * 2.0f);
+        Vector3 targetPos = playerTransform.position + Vector3.up * 1.0f;
+        Vector3 dirToTarget = (targetPos - spawnPos).normalized;
 
         GameObject fbObj = Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(dirToTarget));
+        
+        // Force ignore collisions with the enemy's colliders so it never destroys itself on spawn
+        Collider projCol = fbObj.GetComponent<Collider>();
+        if (projCol != null)
+        {
+            if (capsuleCollider != null) Physics.IgnoreCollision(projCol, capsuleCollider);
+            if (charController != null) Physics.IgnoreCollision(projCol, charController);
+        }
+
         if (fbObj.TryGetComponent<ImpFireball>(out var fireball))
         {
-            // NEW: Pass the string and stun duration down into the fireball!
-            fireball.Initialize(cachedTransform, target, fireballDamage, playerReactionAnimName, stunDuration);
+            fireball.Initialize(cachedTransform, playerTransform, fireballDamage, playerReactionAnimName, stunDuration);
         }
     }
-
     private void UpdateHumpVisuals(float progress)
     {
         if (humpSphereTransform == null) return;
@@ -276,8 +378,8 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
 
     private void FaceTarget()
     {
-        if (target == null) return;
-        Vector3 dir = (target.position - cachedTransform.position);
+        if (playerTransform == null) return;
+        Vector3 dir = (playerTransform.position - cachedTransform.position);
         dir.y = 0f;
         if (dir.sqrMagnitude > 0.001f)
         {
@@ -289,29 +391,21 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
     public void TakeDamage(float damage, Vector3 hitPoint, Vector3 hitDirection, float force, AudioClip hitSound, int attackID, bool isAOE)
     {
         if (isDead) return;
-
         currentHealth -= damage;
 
-        if (activeActionRoutine != null)
-        {
-            StopCoroutine(activeActionRoutine);
-            activeActionRoutine = null;
-        }
+        if (activeActionRoutine != null) { StopCoroutine(activeActionRoutine); activeActionRoutine = null; }
+        if (activeKnockbackRoutine != null) StopCoroutine(activeKnockbackRoutine);
 
         ReleaseTokenSafely();
         currentChargeProgress = 0f;
         UpdateHumpVisuals(0f);
-
         PlayHitReaction(attackID, hitDirection);
 
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
         else
         {
             impState = ImpState.PanicLeap;
-            StartCoroutine(PanicLeapRoutine(hitDirection));
+            activeKnockbackRoutine = StartCoroutine(PanicLeapRoutine(hitDirection));
         }
     }
 
@@ -322,19 +416,19 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
         if (hitReactionClip != null)
         {
             animationEngine.PlayAnimation(hitReactionClip, 0.05f, 1.0f);
+            isReacting = true;
+            reactionTimer = hitReactionClip.length;
             lastPlayedLocomotionState = "Reaction";
             return;
         }
 
         if (animProfile == null) return;
-
         AttackReactionData reactionData = animProfile.GetReaction(attackID);
-        HitAnimationData hitAnim = null;
-
         if (hitDirection == Vector3.zero) hitDirection = -cachedTransform.forward;
         Vector3 localDir = cachedTransform.InverseTransformDirection(hitDirection.normalized);
         bool isZAxis = Mathf.Abs(localDir.z) > Mathf.Abs(localDir.x);
 
+        HitAnimationData hitAnim = null;
         if (reactionData != null)
         {
             hitAnim = isZAxis ? (localDir.z > 0 ? reactionData.reactionFront : reactionData.reactionBack)
@@ -350,43 +444,41 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
         if (hitAnim != null && hitAnim.clip != null)
         {
             animationEngine.PlayAnimation(hitAnim.clip, hitAnim.transitionDuration, hitAnim.playbackSpeed);
+            isReacting = true;
+            reactionTimer = hitAnim.clip.length / Mathf.Max(0.01f, hitAnim.playbackSpeed);
             lastPlayedLocomotionState = "Reaction";
         }
     }
 
     private IEnumerator PanicLeapRoutine(Vector3 hitDirection)
     {
-        impState = ImpState.Reacting;
-
         Vector3 leapDir = -hitDirection;
         leapDir.y = 0f;
         if (leapDir == Vector3.zero) leapDir = -cachedTransform.forward;
         leapDir.Normalize();
 
-        float leapDuration = 0.35f;
         float elapsed = 0f;
-
-        while (elapsed < leapDuration)
+        while (elapsed < 0.25f)
         {
             if (isDead) yield break;
             elapsed += Time.deltaTime;
-
             if (charController != null && charController.enabled)
             {
-                charController.Move(leapDir * panicLeapSpeed * Time.deltaTime);
+                charController.Move((leapDir * panicLeapSpeed + new Vector3(0, fallVelocity, 0)) * Time.deltaTime);
             }
             yield return null;
         }
 
         impState = ImpState.Strafing;
         strafeTimer = 0f;
+        activeKnockbackRoutine = null;
     }
 
     private void ReleaseTokenSafely()
     {
         if (holdsToken && GlobalTokenManager.Instance != null)
         {
-            GlobalTokenManager.Instance.ReleaseToken(transform, TokenType.Ranged);
+            GlobalTokenManager.Instance.ReleaseToken(cachedTransform, tokenType);
             holdsToken = false;
         }
     }
@@ -395,16 +487,15 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
     {
         if (isDead) return;
         isDead = true;
+        OnDeath?.Invoke();
 
         if (activeActionRoutine != null) StopCoroutine(activeActionRoutine);
+        if (activeKnockbackRoutine != null) StopCoroutine(activeKnockbackRoutine);
         ReleaseTokenSafely();
-
-        if (GlobalTokenManager.Instance != null)
-        {
-            GlobalTokenManager.Instance.ReleaseAllTokensForEnemy(transform);
-        }
+        isReacting = false;
 
         if (charController != null) charController.enabled = false;
+        if (capsuleCollider != null) capsuleCollider.enabled = false;
 
         if (animProfile != null && animProfile.deathClip != null && animationEngine != null)
         {
@@ -416,52 +507,15 @@ public class ImpBrain : BaseEnemyBrain, IDamageable, IHealable
 
     private IEnumerator DeathDisappearRoutine()
     {
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(deathDisappearDelay);
 
-        // Fixed lookup avoiding BeaconSpawnerManager.Instance
         BeaconSpawnerManager spawnerManager = FindObjectOfType<BeaconSpawnerManager>();
-        if (spawnerManager != null)
-        {
-            spawnerManager.RegisterEnemyDefeated(cachedTransform.gameObject);
-        }
-        else if (EnemyObjectPool.Instance != null)
-        {
-            EnemyObjectPool.Instance.ReturnToPool(cachedTransform.gameObject);
-        }
-        else
-        {
-            gameObject.SetActive(false);
-        }
+        if (spawnerManager != null) spawnerManager.RegisterEnemyDefeated(cachedTransform.gameObject);
+        else if (EnemyObjectPool.Instance != null) EnemyObjectPool.Instance.ReturnToPool(cachedTransform.gameObject);
+        else gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
-    {
-        ReleaseTokenSafely();
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, preferredRange);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, minimumSafeDistance);
-    }
-
-    // --- IHEALABLE IMPLEMENTATION ---
-    public bool NeedsHealing()
-    {
-        return currentHealth < maxHealth && !isDead;
-    }
-
-    public void ReceiveHeal(float amount)
-    {
-        if (isDead) return;
-        currentHealth += amount;
-        currentHealth = Mathf.Min(currentHealth, maxHealth);
-    }
-
-    public Transform GetTransform()
-    {
-        return cachedTransform;
-    }
+    public bool NeedsHealing() => currentHealth < maxHealth && !isDead;
+    public void ReceiveHeal(float amount) { currentHealth = Mathf.Min(currentHealth + amount, maxHealth); }
+    public Transform GetTransform() => cachedTransform;
 }

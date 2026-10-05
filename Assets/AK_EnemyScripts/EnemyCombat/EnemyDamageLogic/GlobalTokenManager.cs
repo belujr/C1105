@@ -7,7 +7,9 @@ public enum TokenType
     Disruption,
     Heavy,
     AgileFlanker,
-    Ranged
+    Ranged,
+    Engage,
+    OuterRing
 }
 
 public class GlobalTokenManager : MonoBehaviour
@@ -19,9 +21,8 @@ public class GlobalTokenManager : MonoBehaviour
     {
         public TokenType type;
         public int maxTokens;
-        [Tooltip("Minimum delay in seconds before a released token of this type can be re-assigned to any enemy.")]
+        [Tooltip("Minimum delay in seconds before a released token can be re-assigned.")]
         public float tokenSwitchDelay;
-        [Tooltip("Displays current active token holders in real-time.")]
         public int activeTokensCount;
     }
 
@@ -29,16 +30,27 @@ public class GlobalTokenManager : MonoBehaviour
     [SerializeField] 
     private List<TokenCategory> tokenCategories = new List<TokenCategory>
     {
-        new TokenCategory { type = TokenType.Melee, maxTokens = 2, tokenSwitchDelay = 1.0f, activeTokensCount = 0 },
-        new TokenCategory { type = TokenType.Disruption, maxTokens = 1, tokenSwitchDelay = 1.5f, activeTokensCount = 0 },
-        new TokenCategory { type = TokenType.Heavy, maxTokens = 1, tokenSwitchDelay = 2.0f, activeTokensCount = 0 }
+        new TokenCategory { type = TokenType.Melee, maxTokens = 2, tokenSwitchDelay = 1.0f },
+        new TokenCategory { type = TokenType.Disruption, maxTokens = 1, tokenSwitchDelay = 1.5f },
+        new TokenCategory { type = TokenType.Heavy, maxTokens = 1, tokenSwitchDelay = 2.0f },
+        new TokenCategory { type = TokenType.Engage, maxTokens = 2, tokenSwitchDelay = 0.8f }, // Capped strictly at 2 attackers!
+        new TokenCategory { type = TokenType.OuterRing, maxTokens = 10, tokenSwitchDelay = 0.0f } 
     };
 
-    // Internal tracking dictionaries ensuring zero-GC lookups
-    private Dictionary<TokenType, HashSet<Transform>> tokenHolders = new Dictionary<TokenType, HashSet<Transform>>();
-    private Dictionary<TokenType, int> maxTokenLimits = new Dictionary<TokenType, int>();
-    private Dictionary<TokenType, float> tokenSwitchDelays = new Dictionary<TokenType, float>();
-    private Dictionary<TokenType, float> nextAvailableTimes = new Dictionary<TokenType, float>();
+    private class TokenPool
+    {
+        public HashSet<Transform> ActiveHolders = new HashSet<Transform>();
+        public int MaxCapacity;
+        public float CooldownDelay;
+        public float NextAvailableTime;
+        public int InspectorIndex;
+    }
+
+    private Dictionary<TokenType, TokenPool> pools = new Dictionary<TokenType, TokenPool>();
+    
+    // Tracks when an enemy last held an Engage token to prevent them from immediately re-grabbing it
+    private Dictionary<Transform, float> lastEngageReleaseTimes = new Dictionary<Transform, float>();
+    private const float RE_ENGAGE_COOLDOWN = 2.5f; 
 
     private void Awake()
     {
@@ -48,96 +60,82 @@ public class GlobalTokenManager : MonoBehaviour
             return;
         }
         Instance = this;
-
-        InitializeTokens();
+        InitializePools();
     }
 
-    private void InitializeTokens()
-    {
-        foreach (var category in tokenCategories)
-        {
-            if (!maxTokenLimits.ContainsKey(category.type))
-            {
-                maxTokenLimits.Add(category.type, category.maxTokens);
-                tokenHolders.Add(category.type, new HashSet<Transform>());
-                tokenSwitchDelays.Add(category.type, category.tokenSwitchDelay);
-                nextAvailableTimes.Add(category.type, 0f);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Attempts to acquire an attack token for a specific enemy transform.
-    /// Returns true if granted, false if capacity is maxed out or switch cooldown is active.
-    /// </summary>
-    public bool RequestToken(Transform enemyTransform, TokenType type)
-    {
-        if (!maxTokenLimits.ContainsKey(type)) return false;
-
-        HashSet<Transform> holders = tokenHolders[type];
-        
-        // If this enemy already holds the token, validate and return true
-        if (holders.Contains(enemyTransform)) return true;
-
-        // Check if the global category switch delay is still active
-        if (Time.time < nextAvailableTimes[type]) return false;
-
-        // Check if category capacity allows issuing a new token
-        if (holders.Count < maxTokenLimits[type])
-        {
-            holders.Add(enemyTransform);
-            SyncInspectorCount(type, holders.Count);
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Releases an attack token held by an enemy and triggers the switch delay cooldown.
-    /// </summary>
-    public void ReleaseToken(Transform enemyTransform, TokenType type)
-    {
-        if (!maxTokenLimits.ContainsKey(type)) return;
-
-        HashSet<Transform> holders = tokenHolders[type];
-        if (holders.Contains(enemyTransform))
-        {
-            holders.Remove(enemyTransform);
-            SyncInspectorCount(type, holders.Count);
-            nextAvailableTimes[type] = Time.time + tokenSwitchDelays[type];
-        }
-    }
-
-    /// <summary>
-    /// Forces clean release of all tokens held by a specific enemy (mandatory on death or pool recycling).
-    /// </summary>
-    public void ReleaseAllTokensForEnemy(Transform enemyTransform)
-    {
-        foreach (var kvp in tokenHolders)
-        {
-            TokenType type = kvp.Key;
-            HashSet<Transform> holders = kvp.Value;
-            if (holders.Contains(enemyTransform))
-            {
-                holders.Remove(enemyTransform);
-                SyncInspectorCount(type, holders.Count);
-                nextAvailableTimes[type] = Time.time + tokenSwitchDelays[type];
-            }
-        }
-    }
-
-    private void SyncInspectorCount(TokenType type, int currentCount)
+    private void InitializePools()
     {
         for (int i = 0; i < tokenCategories.Count; i++)
         {
-            if (tokenCategories[i].type == type)
+            TokenCategory category = tokenCategories[i];
+            if (!pools.ContainsKey(category.type))
             {
-                var cat = tokenCategories[i];
-                cat.activeTokensCount = currentCount;
-                tokenCategories[i] = cat;
-                break;
+                pools.Add(category.type, new TokenPool
+                {
+                    MaxCapacity = category.maxTokens,
+                    CooldownDelay = category.tokenSwitchDelay,
+                    InspectorIndex = i
+                });
             }
         }
+    }
+
+    public bool RequestToken(Transform enemyTransform, TokenType type)
+    {
+        if (!pools.TryGetValue(type, out TokenPool pool)) return false;
+
+        if (pool.ActiveHolders.Contains(enemyTransform)) return true;
+
+        // If requesting an Engage token, check if this specific enemy is on post-attack cooldown
+        if (type == TokenType.Engage && lastEngageReleaseTimes.TryGetValue(enemyTransform, out float lastRelease))
+        {
+            if (Time.time < lastRelease + RE_ENGAGE_COOLDOWN) return false; // Force rotation to a fresh enemy!
+        }
+
+        if (Time.time < pool.NextAvailableTime || pool.ActiveHolders.Count >= pool.MaxCapacity) return false;
+
+        pool.ActiveHolders.Add(enemyTransform);
+        SyncInspectorCount(pool);
+        return true;
+    }
+
+    public void ReleaseToken(Transform enemyTransform, TokenType type)
+    {
+        if (pools.TryGetValue(type, out TokenPool pool))
+        {
+            if (pool.ActiveHolders.Remove(enemyTransform))
+            {
+                SyncInspectorCount(pool);
+                pool.NextAvailableTime = Time.time + pool.CooldownDelay;
+
+                if (type == TokenType.Engage)
+                {
+                    if (lastEngageReleaseTimes.ContainsKey(enemyTransform))
+                        lastEngageReleaseTimes[enemyTransform] = Time.time;
+                    else
+                        lastEngageReleaseTimes.Add(enemyTransform, Time.time);
+                }
+            }
+        }
+    }
+
+    public void ReleaseAllTokensForEnemy(Transform enemyTransform)
+    {
+        foreach (var pool in pools.Values)
+        {
+            if (pool.ActiveHolders.Remove(enemyTransform))
+            {
+                SyncInspectorCount(pool);
+                pool.NextAvailableTime = Time.time + pool.CooldownDelay;
+            }
+        }
+        lastEngageReleaseTimes.Remove(enemyTransform);
+    }
+
+    private void SyncInspectorCount(TokenPool pool)
+    {
+        var category = tokenCategories[pool.InspectorIndex];
+        category.activeTokensCount = pool.ActiveHolders.Count;
+        tokenCategories[pool.InspectorIndex] = category;
     }
 }
