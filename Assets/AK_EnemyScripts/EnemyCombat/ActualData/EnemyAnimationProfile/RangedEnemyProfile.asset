@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
   m_Name: RangedEnemyProfile
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
-  idleClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
+  idleClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
   idleTransitionDuration: 0.15
-  walkClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
+  walkClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
   walkTransitionDuration: 0.15
-  runClip: {fileID: -203655887218126122, guid: 177258501051e054fad5aceb9bc7fb57, type: 3}
+  runClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
   runTransitionDuration: 0.15
   strafeLeftClip: {fileID: -203655887218126122, guid: e4f1add906ff34943b5caa679aa11c99, type: 3}
   strafeRightClip: {fileID: -203655887218126122, guid: 8a896a1ca835f514db335f06b322c149, type: 3}
@@ -31,8 +31,8 @@ MonoBehaviour:
   standUpPlaybackSpeed: 1
   standUpToIdleTransitionDuration: 0.25
   namedAttacks:
-  - attackNameKey: RangedAttack
-    attackClip: {fileID: -203655887218126122, guid: 5b73b8ad34a51414794804f173a11b16, type: 3}
+  - attackNameKey: fireball
+    attackClip: {fileID: -203655887218126122, guid: 138ec2419fe3940439ed20927b6b7188, type: 3}
   attackReactions:
   - {fileID: 11400000, guid: d8021ea590a8abc4baa9bb1a64c65ae2, type: 2}
   - {fileID: 11400000, guid: 20c3b58b8335b484b8db600c7d44ca12, type: 2}

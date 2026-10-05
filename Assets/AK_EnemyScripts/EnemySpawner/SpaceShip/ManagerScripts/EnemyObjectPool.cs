@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using CombatSystem.Controllers;
+using UnityEngine.Pool;
 
 public class EnemyObjectPool : MonoBehaviour
 {
@@ -17,11 +17,10 @@ public class EnemyObjectPool : MonoBehaviour
     }
 
     [Header("Inspector Pool Configuration")]
-    [Tooltip("Add enemy types here to automatically pre-warm their object pools on startup.")]
-    [SerializeField] private List<PoolConfig> poolsToPreWarm = new List<PoolConfig>();
+    public List<PoolConfig> poolsToPreWarm = new List<PoolConfig>();
 
-    private Dictionary<int, Queue<GameObject>> poolDictionary = new Dictionary<int, Queue<GameObject>>();
-    private Dictionary<int, GameObject> instanceToPrefabMap = new Dictionary<int, GameObject>();
+    private Dictionary<int, IObjectPool<GameObject>> poolDictionary = new Dictionary<int, IObjectPool<GameObject>>();
+    private Dictionary<int, int> instanceToPrefabMap = new Dictionary<int, int>();
 
     private void Awake()
     {
@@ -39,23 +38,42 @@ public class EnemyObjectPool : MonoBehaviour
         foreach (var config in poolsToPreWarm)
         {
             if (config.enemyPrefab == null) continue;
-
+            
             int prefabKey = config.enemyPrefab.GetInstanceID();
+            poolDictionary[prefabKey] = CreateNativePool(config.enemyPrefab);
 
-            if (!poolDictionary.ContainsKey(prefabKey))
-            {
-                poolDictionary[prefabKey] = new Queue<GameObject>();
-            }
-
+            List<GameObject> prewarmedObjects = new List<GameObject>();
             for (int i = 0; i < config.initialPoolSize; i++)
             {
-                GameObject instance = Instantiate(config.enemyPrefab, transform);
-                instance.SetActive(false);
-                poolDictionary[prefabKey].Enqueue(instance);
-                
-                instanceToPrefabMap[instance.GetInstanceID()] = config.enemyPrefab;
+                prewarmedObjects.Add(poolDictionary[prefabKey].Get());
+            }
+            foreach (var obj in prewarmedObjects)
+            {
+                poolDictionary[prefabKey].Release(obj);
             }
         }
+    }
+
+    private IObjectPool<GameObject> CreateNativePool(GameObject prefab)
+    {
+        return new ObjectPool<GameObject>(
+            createFunc: () =>
+            {
+                GameObject instance = Instantiate(prefab, transform);
+                instanceToPrefabMap[instance.GetInstanceID()] = prefab.GetInstanceID();
+                return instance;
+            },
+            actionOnGet: (instance) => { },
+            actionOnRelease: (instance) =>
+            {
+                instance.SetActive(false);
+                instance.transform.SetParent(transform);
+            },
+            actionOnDestroy: (instance) => Destroy(instance),
+            collectionCheck: false,
+            defaultCapacity: 20,
+            maxSize: 200
+        );
     }
 
     public GameObject GetPooledEnemy(GameObject enemyPrefab, Vector3 position, Quaternion rotation)
@@ -66,46 +84,26 @@ public class EnemyObjectPool : MonoBehaviour
 
         if (!poolDictionary.ContainsKey(prefabKey))
         {
-            poolDictionary[prefabKey] = new Queue<GameObject>();
+            poolDictionary[prefabKey] = CreateNativePool(enemyPrefab);
         }
 
-        GameObject enemyInstance;
+        GameObject enemyInstance = poolDictionary[prefabKey].Get();
 
-        if (poolDictionary[prefabKey].Count > 0)
-        {
-            enemyInstance = poolDictionary[prefabKey].Dequeue();
-        }
-        else
-        {
-            enemyInstance = Instantiate(enemyPrefab, transform);
-            instanceToPrefabMap[enemyInstance.GetInstanceID()] = enemyPrefab;
-        }
-
-        // 1. Temporarily disable physics to prevent snapping
-        CharacterController charController = enemyInstance.GetComponent<CharacterController>();
+        // 1. Keep physics/controllers strictly disabled before mounting
+        var charController = enemyInstance.GetComponent<CharacterController>();
         if (charController != null) charController.enabled = false;
 
-        // 2. Apply transformations
+        var collider = enemyInstance.GetComponent<Collider>();
+        if (collider != null) collider.enabled = false;
+
+        var brain = enemyInstance.GetComponent<UltraInstinctCapsule>();
+        if (brain != null) brain.enabled = false;
+
+        // 2. Set transform safely
         enemyInstance.transform.SetPositionAndRotation(position, rotation);
-        
-        // 3. Activate Object FIRST so OnEnable subscriptions fire properly
+
+        // 3. Activate instance (Ship passenger script will handle setup right after)
         enemyInstance.SetActive(true);
-
-        // 4. Re-enable Behaviours disabled by BaseEnemyBrain.HandleDeath
-        BaseEnemyBrain brain = enemyInstance.GetComponent<BaseEnemyBrain>();
-        if (brain != null) brain.enabled = true;
-
-        EnemyDummyController dummyController = enemyInstance.GetComponent<EnemyDummyController>();
-        if (dummyController != null) dummyController.enabled = true;
-
-        // 5. Fire logic resets now that components are active and listening
-        DummyHealth health = enemyInstance.GetComponent<DummyHealth>();
-        if (health != null) health.Revive();
-
-        if (brain != null) brain.ResetBrain();
-
-        // 6. Restore physics
-        if (charController != null) charController.enabled = true;
 
         return enemyInstance;
     }
@@ -116,30 +114,15 @@ public class EnemyObjectPool : MonoBehaviour
 
         int instanceKey = enemyInstance.GetInstanceID();
 
-        if (!instanceToPrefabMap.ContainsKey(instanceKey))
+        if (instanceToPrefabMap.TryGetValue(instanceKey, out int prefabKey))
         {
-            Destroy(enemyInstance);
-            return;
+            if (poolDictionary.TryGetValue(prefabKey, out var pool))
+            {
+                pool.Release(enemyInstance);
+                return;
+            }
         }
 
-        GameObject originalPrefab = instanceToPrefabMap[instanceKey];
-        int prefabKey = originalPrefab.GetInstanceID();
-
-        CharacterController charController = enemyInstance.GetComponent<CharacterController>();
-        if (charController != null) charController.enabled = false;
-
-        enemyInstance.SetActive(false);
-        enemyInstance.transform.SetParent(transform);
-
-        if (!poolDictionary.ContainsKey(prefabKey))
-        {
-            poolDictionary[prefabKey] = new Queue<GameObject>();
-        }
-
-        // Prevent double-pooling corruption if already enqueued
-        if (!poolDictionary[prefabKey].Contains(enemyInstance))
-        {
-            poolDictionary[prefabKey].Enqueue(enemyInstance);
-        }
+        Destroy(enemyInstance);
     }
 }

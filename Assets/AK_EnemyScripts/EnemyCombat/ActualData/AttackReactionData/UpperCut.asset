@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.AttackReactionData
   attackID: 104
   orientTowardsAttacker: 1
-  isAirborneLaunch: 1
+  canFallDown: 0
+  canBeInterrupted: 1
+  isAirborneLaunch: 0
   launchUpwardForce: 5
   customStandUpAnimation: {fileID: 11400000, guid: 67adefd37ef6b7f43a8d0917af46774b, type: 2}
   reactionFront: {fileID: 11400000, guid: 70bff48fb00e9cc488e5e8d3286e2415, type: 2}

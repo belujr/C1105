@@ -6164,7 +6164,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3925226445046316536}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -6288,8 +6288,18 @@ MonoBehaviour:
   playerDodgeRange: 5
   attackCorridorWidth: 1.2
   lungeSpeed: 2
+  comboLungeDistances:
+  - 1
+  - 1
+  - 3
   retreatDistance: 10
   retreatSpeed: 10
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxStepUp: 0.5
+  maxStepDown: 1.5
+  groundFollowSpeed: 25
 --- !u!95 &2083567803679576740
 Animator:
   serializedVersion: 7

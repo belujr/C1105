@@ -1884,7 +1884,7 @@ GameObject:
   m_Layer: 6
   m_Name: MinionEnemy
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -1944,7 +1944,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MinionEnemyBrain
   enemyData: {fileID: 11400000, guid: ddcfdf170c977b544aec5bedbf38d24a, type: 2}
+  animProfile: {fileID: 0}
+  directDeathClip: {fileID: 0}
+  directHitClip: {fileID: 0}
   maxHealth: 60
+  outerRingDistance: 8
+  assignedZone: {fileID: 0}
+  patrolSpeed: 2
+  waypointWaitTime: 2
+  bumpTurnRadius: 1
+  bumpTurnDistance: 4
+  obstacleAvoidanceDistance: 2.5
+  avoidanceWeight: 3
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  separationRadius: 2.2
+  separationWeight: 4.5
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  visionRange: 10
+  visionFOVThreshold: 0.5
+  exclamationMarkVisual: {fileID: 0}
+  alertFreezeDuration: 0.6
 --- !u!95 &7185991076286389422
 Animator:
   serializedVersion: 7

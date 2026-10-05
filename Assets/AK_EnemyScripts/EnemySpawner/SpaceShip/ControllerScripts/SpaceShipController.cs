@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SpaceshipController : MonoBehaviour
@@ -15,9 +16,12 @@ public class SpaceshipController : MonoBehaviour
     private float dropTimer = 0f;
     private int enemiesDroppedCount = 0;
 
-    [Header("Drop Bay Configuration")]
-    [Tooltip("Child Transform representing the cargo bay / hatch under the ship where enemies drop from. If left empty, defaults to ship center.")]
-    [SerializeField] private Transform dropBayPoint;
+    [Header("Passenger Mount Points")]
+    [Tooltip("Assign empty Transforms located on the ship (e.g., under wings or along side rails) where enemies will hang.")]
+    [SerializeField] private Transform[] passengerMountPoints;
+    
+    // Tracks the specific enemies hanging on this ship
+    private List<EnemyShipPassenger> loadedPassengers = new List<EnemyShipPassenger>();
 
     /// <summary>
     /// Initializes and launches the spaceship mission.
@@ -39,15 +43,53 @@ public class SpaceshipController : MonoBehaviour
         // Position the ship at the start waypoint
         transform.position = startPos;
         
-        // Reset counters
+        // Reset counters and clear any old passengers
         enemiesDroppedCount = 0;
         dropTimer = 0f;
+        loadedPassengers.Clear();
 
-        // Ensure GameObject is active so Update() runs immediately
+        // Load all enemies onto the mount points before the ship starts moving
+        LoadPassengers();
+
         gameObject.SetActive(true);
-
-        // Begin flight mission
         currentState = ShipState.FlyingIn;
+    }
+
+    /// <summary>
+    /// Pre-spawns the enemies from the pool and mounts them to the ship's empty points.
+    /// </summary>
+    private void LoadPassengers()
+    {
+        if (shipData.enemyPrefabs == null || shipData.enemyPrefabs.Length == 0) return;
+        
+        if (passengerMountPoints == null || passengerMountPoints.Length == 0)
+        {
+            Debug.LogWarning("[SpaceshipController] No passenger mount points assigned in the Inspector!");
+            return;
+        }
+
+        // Spawn up to the ship data's capacity, capped by how many physical mount points exist
+        int spawnCount = Mathf.Min(shipData.payloadCapacity, passengerMountPoints.Length);
+
+        for (int i = 0; i < spawnCount; i++)
+        {
+            GameObject randomPrefab = shipData.enemyPrefabs[Random.Range(0, shipData.enemyPrefabs.Length)];
+            Transform mountPoint = passengerMountPoints[i];
+
+            // Pull the enemy from the pool and place them at the mount point
+            GameObject spawnedEnemy = EnemyObjectPool.Instance.GetPooledEnemy(randomPrefab, mountPoint.position, mountPoint.rotation);
+
+            if (spawnedEnemy.TryGetComponent<EnemyShipPassenger>(out var passenger))
+            {
+                // Lock physics/AI and play hanging animation
+                passenger.MountToShip(mountPoint);
+                loadedPassengers.Add(passenger);
+            }
+            else
+            {
+                Debug.LogError($"[SpaceshipController] Enemy {randomPrefab.name} is missing the EnemyShipPassenger script!");
+            }
+        }
     }
 
     private void Update()
@@ -75,9 +117,6 @@ public class SpaceshipController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Moves the spaceship smoothly toward a target position and rotates to face movement direction.
-    /// </summary>
     private void MoveTowardsTarget(Vector3 target, float speed, System.Action onArrival)
     {
         transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
@@ -98,7 +137,7 @@ public class SpaceshipController : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles procedural dropping of enemies with time intervals.
+    /// Handles procedural dropping of the pre-loaded enemies with time intervals.
     /// </summary>
     private void HandlePayloadDrop()
     {
@@ -108,9 +147,16 @@ public class SpaceshipController : MonoBehaviour
         {
             dropTimer = 0f;
 
-            if (enemiesDroppedCount < shipData.payloadCapacity)
+            if (enemiesDroppedCount < loadedPassengers.Count)
             {
-                DropSingleEnemy();
+                EnemyShipPassenger passengerToDrop = loadedPassengers[enemiesDroppedCount];
+                
+                // Detach from ship, snap to ground, play landing animation, and activate AI
+                passengerToDrop.DetachAndLand();
+                
+                // Notify the BeaconSpawnerManager that an enemy is officially in the fight
+                onEnemyDroppedCallback?.Invoke(passengerToDrop.gameObject);
+                
                 enemiesDroppedCount++;
             }
             else
@@ -119,29 +165,5 @@ public class SpaceshipController : MonoBehaviour
                 currentState = ShipState.FlyingOut;
             }
         }
-    }
-
-    /// <summary>
-    /// Borrows an enemy from the pool, drops them from the cargo bay point, and deploys them.
-    /// </summary>
-    private void DropSingleEnemy()
-    {
-        if (shipData.enemyPrefabs == null || shipData.enemyPrefabs.Length == 0) return;
-
-        // Pick a random enemy prefab from the ship's payload options
-        GameObject randomPrefab = shipData.enemyPrefabs[Random.Range(0, shipData.enemyPrefabs.Length)];
-
-        // Determine drop origin: Use dropBayPoint if assigned, otherwise fallback to ship center transform
-        Vector3 dropOrigin = dropBayPoint != null ? dropBayPoint.position : transform.position;
-
-        // Calculate a randomized scatter offset on the ground plane
-        Vector2 randomCircle = UnityEngine.Random.insideUnitCircle * shipData.dropScatterRadius;
-        Vector3 finalSpawnPos = new Vector3(dropOrigin.x + randomCircle.x, dropOrigin.y, dropOrigin.z + randomCircle.y);
-
-        // Borrow enemy from our Object Pool (Zero GC allocation)
-        GameObject spawnedEnemy = EnemyObjectPool.Instance.GetPooledEnemy(randomPrefab, finalSpawnPos, Quaternion.identity);
-
-        // Notify Spawner Manager using the correct field name
-        onEnemyDroppedCallback?.Invoke(spawnedEnemy);
     }
 }
