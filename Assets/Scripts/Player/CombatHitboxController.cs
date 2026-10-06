@@ -60,6 +60,9 @@ public class CombatHitboxController : MonoBehaviour
     private GameObject activeSwing;
     private float swingStopTime;
 
+    // True while a SwooshStamp has already been started for the current swing (so TriggerHitbox doesn't start a second one)
+    private bool swingStampStarted;
+
     // Cached references (avoids per-frame lookups)
     private PlayerController player;
     private IsoCameraRig camRig;
@@ -104,7 +107,7 @@ public class CombatHitboxController : MonoBehaviour
         isHitboxActive = true;
 
         // If an earlier BeginSwing event already started the swing VFX, keep it. Otherwise start it now.
-        if (activeSwing == null) StartSwingVFX(currentActiveLimb);
+        if (activeSwing == null && !swingStampStarted) StartSwingVFX(currentActiveLimb);
     }
 
     // OPTIONAL animation event. Put it at the START of the strike motion (the frame the leg begins to lift
@@ -317,6 +320,19 @@ public class CombatHitboxController : MonoBehaviour
             return;
         }
 
+        // SwooshStamp prefabs are NOT attached to the limb: they are placed once and play their own timed animation
+        if (attack.swingVFX.GetComponentInChildren<SwooshStamp>(true) != null)
+        {
+            Transform stampOwner = player != null ? player.transform : transform;
+            GameObject stampObject = Instantiate(attack.swingVFX, limb.position, Quaternion.identity);
+            SwooshStamp stamp = stampObject.GetComponentInChildren<SwooshStamp>(true);
+            stamp.Play(stampOwner, limb, IsLeftLimb(limb));
+            swingStampStarted = true;
+
+            if (debugVFX) Debug.Log("[CombatHitbox] Swoosh stamp started: " + attack.swingVFX.name + " on " + limb.name, this);
+            return;
+        }
+
         activeSwing = Instantiate(attack.swingVFX, limb.position, limb.rotation, limb);
         swingStopTime = Time.unscaledTime + swingMaxDuration;
 
@@ -331,9 +347,17 @@ public class CombatHitboxController : MonoBehaviour
         if (debugVFX) Debug.Log("[CombatHitbox] Swing VFX started: " + attack.swingVFX.name + " on " + limb.name, this);
     }
 
+    private bool IsLeftLimb(Transform limb)
+    {
+        return limb == leftFist || limb == leftFoot || limb == leftElbow || limb == leftKnee;
+    }
+
     // Stops emitting and lets the trail fade out where it is, then cleans up
     private void StopSwingVFX()
     {
+        // A SwooshStamp plays out by itself (time-based), so we only forget about it here
+        swingStampStarted = false;
+
         if (activeSwing == null) return;
 
         GameObject swing = activeSwing;

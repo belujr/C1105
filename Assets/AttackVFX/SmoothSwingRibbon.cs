@@ -3,56 +3,62 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// A smooth ribbon trail for swings (motion lines / swoosh).
+/// A smooth ribbon that follows a limb (kicks, punches) and is drawn as a painted brush stroke.
 ///
-/// Why this exists instead of a Trail Renderer:
-///  - It rebuilds the path as a smooth curve (Catmull-Rom), so animation jitter and lag spikes do
-///    not turn into kinks, zig-zags or stretched ribbons.
-///  - Its length reacts to limb speed: slow wind-up = nothing, fast strike = full ribbon,
-///    and when the limb slows the tail catches up and the ribbon retracts smoothly.
-///  - The ribbon always faces the camera that is looking at it (works in the skill preview too).
+/// What changed from the old version:
+///  - Points age at a CONSTANT rate. The trail no longer retracts all at once when the limb slows down.
+///    The tail is eaten by the shader (noise), so it breaks apart unevenly.
+///  - Every point remembers how fast the limb was when it was created ("strength"). A slow wind-up makes a
+///    thin line, a fast strike makes a fat stroke. Nothing shrinks globally.
+///  - Writes extra mesh data for the VFX/InkRibbon shader: stable distance along the path (so noise stays glued
+///    to each part of the trail instead of crawling) and strength.
+///  - Picks a random shader seed per swing, so no two swings look the same.
 ///
-/// Setup: empty GameObject -> add this component (MeshFilter and MeshRenderer are added for you)
-/// -> assign a material that uses SG_VFX_Trail -> save as a prefab -> put it in AttackData.swingVFX.
+/// Setup: empty GameObject -> add this component (MeshFilter and MeshRenderer are added for you) ->
+/// assign a material that uses the VFX/InkRibbon shader -> save as a prefab -> put it in AttackData.swingVFX.
 /// </summary>
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class SmoothSwingRibbon : MonoBehaviour
 {
     [Header("Shape")]
-    [Tooltip("Seconds a point of the ribbon lives while the limb is moving fast.")]
-    public float lifetime = 0.25f;
-    [Tooltip("Ribbon width in world units at full width.")]
-    public float width = 1.2f;
-    [Tooltip("Width along the ribbon. Left (0) = at the limb, right (1) = oldest part / tail.")]
-    public AnimationCurve widthOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
-    [Tooltip("Opacity along the ribbon (vertex alpha). The shader turns this into strokes that thin out.")]
-    public AnimationCurve alphaOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.35f, 1f), new Keyframe(1f, 0f));
-    [Tooltip("Vertex color. The material's Tint is multiplied with this.")]
+    [Tooltip("Seconds a point of the ribbon lives. Longer = longer trail and more time for the tail to break up.")]
+    public float lifetime = 0.45f;
+    [Tooltip("Ribbon width in world units at full width and full speed.")]
+    public float width = 0.9f;
+    [Tooltip("Width along the ribbon. Left (0) = at the limb, right (1) = oldest part / tail. Start with a sharp point, a thick belly and a thin tail.")]
+    public AnimationCurve widthOverAge = new AnimationCurve(
+        new Keyframe(0f, 0.05f), new Keyframe(0.12f, 1f), new Keyframe(0.6f, 0.55f), new Keyframe(1f, 0f));
+    [Tooltip("Opacity along the ribbon (vertex alpha).")]
+    public AnimationCurve alphaOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.85f, 1f), new Keyframe(1f, 0f));
+    [Tooltip("Vertex color. Multiplied with the material colors.")]
     public Color color = Color.white;
 
     [Header("Smoothness")]
     [Range(8, 64)] public int segments = 32;
-    [Tooltip("How strongly animation jitter is smoothed away. 0 = follow the raw path, 3 = very smooth. Too high rounds off sharp turns.")]
+    [Tooltip("How strongly animation jitter is smoothed away. 0 = raw path, 3 = very smooth.")]
     [Range(0, 6)] public int smoothingPasses = 3;
     [Tooltip("A new point is recorded only after the limb moved this far.")]
     public float minSampleDistance = 0.02f;
     [Tooltip("Frame times longer than this are treated as this long, so lag spikes don't wipe or stretch the ribbon.")]
     public float maxFrameTime = 0.033f;
 
-    [Header("Speed reaction")]
-    [Tooltip("At or below this limb speed the ribbon retracts quickly.")]
+    [Header("Speed reaction (only changes how thick each part is, never how long it lives)")]
+    [Tooltip("At or below this limb speed the stroke is at its thinnest.")]
     public float minSpeed = 2f;
-    [Tooltip("At or above this limb speed the ribbon is at full length.")]
-    public float fullSpeed = 8f;
-    [Tooltip("How much faster the ribbon ages when the limb is slow. Higher = the tail catches up with the limb faster.")]
-    public float slowAgeRate = 6f;
+    [Tooltip("At or above this limb speed the stroke is at full width.")]
+    public float fullSpeed = 9f;
+    [Range(0f, 1f)]
+    [Tooltip("Width factor while the limb is slow (0 = invisible wind-up, 1 = ignore speed).")]
+    public float minWidthFactor = 0.1f;
     [Tooltip("How quickly the speed estimate reacts. Lower = smoother.")]
-    public float speedResponse = 18f;
+    public float speedResponse = 14f;
 
     private struct Sample
     {
         public Vector3 pos;
         public float age;
+        public float dist;      // distance travelled along the path when this point was made (stable)
+        public float strength;  // 0 slow .. 1 fast
     }
 
     private readonly List<Sample> samples = new List<Sample>(64);
@@ -63,22 +69,29 @@ public class SmoothSwingRibbon : MonoBehaviour
 
     private Vector3[] verts;
     private Vector2[] uvs;
+    private Vector2[] uvs2;
     private Color[] cols;
     private int[] tris;
     private bool trianglesValid;
 
     private Vector3[] pts = new Vector3[128];
     private float[] ages = new float[128];
+    private float[] dists = new float[128];
+    private float[] strengths = new float[128];
     private Vector3[] outPos;
     private float[] outAge;
+    private float[] outDist;
+    private float[] outStrength;
     private Vector3[] outSide;
     private Vector3[] outSideSmooth;
 
     private bool emitting = true;
     private Vector3 lastHeadPos;
     private float smoothedSpeed;
+    private float pathDist;
 
     private static Camera[] camBuffer = new Camera[8];
+    private static readonly int ID_Seed = Shader.PropertyToID("_Seed");
 
     private void Awake()
     {
@@ -96,6 +109,11 @@ public class SmoothSwingRibbon : MonoBehaviour
         meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
         meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
 
+        // a different noise pattern for every swing
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        block.SetFloat(ID_Seed, Random.value * 10f);
+        meshRenderer.SetPropertyBlock(block);
+
         AllocateBuffers();
     }
 
@@ -105,6 +123,7 @@ public class SmoothSwingRibbon : MonoBehaviour
         samples.Clear();
         lastHeadPos = transform.position;
         smoothedSpeed = 0f;
+        pathDist = 0f;
     }
 
     private void OnDestroy()
@@ -112,7 +131,7 @@ public class SmoothSwingRibbon : MonoBehaviour
         if (mesh != null) Destroy(mesh);
     }
 
-    /// <summary>Stop adding new points. The ribbon retracts and then removes itself.</summary>
+    /// <summary>Stop adding new points. The ribbon keeps aging, breaks up, and then removes itself.</summary>
     public void StopEmitting()
     {
         emitting = false;
@@ -124,6 +143,7 @@ public class SmoothSwingRibbon : MonoBehaviour
 
         verts = new Vector3[pointCount * 2];
         uvs = new Vector2[pointCount * 2];
+        uvs2 = new Vector2[pointCount * 2];
         cols = new Color[pointCount * 2];
         tris = new int[segments * 6];
 
@@ -141,6 +161,8 @@ public class SmoothSwingRibbon : MonoBehaviour
 
         outPos = new Vector3[pointCount];
         outAge = new float[pointCount];
+        outDist = new float[pointCount];
+        outStrength = new float[pointCount];
         outSide = new Vector3[pointCount];
         outSideSmooth = new Vector3[pointCount];
     }
@@ -148,7 +170,7 @@ public class SmoothSwingRibbon : MonoBehaviour
     private void LateUpdate()
     {
         float realDt = Time.deltaTime;
-        if (realDt <= 0f) return; // fully paused: leave the ribbon exactly as it is
+        if (realDt <= 0f) return; // fully paused (hit stop): leave the ribbon exactly as it is
 
         float dt = Mathf.Min(realDt, maxFrameTime);
         Vector3 head = transform.position;
@@ -161,14 +183,13 @@ public class SmoothSwingRibbon : MonoBehaviour
         }
         lastHeadPos = head;
 
-        float k = emitting ? Mathf.InverseLerp(minSpeed, fullSpeed, smoothedSpeed) : 0f;
-        float ageRate = Mathf.Lerp(slowAgeRate, 1f, k);
+        float strengthNow = Mathf.InverseLerp(minSpeed, fullSpeed, smoothedSpeed);
 
-        // ---- age and remove old points (continuous, so nothing pops) ----
+        // ---- age and remove old points (constant rate: nothing retracts, nothing pops) ----
         for (int i = samples.Count - 1; i >= 0; i--)
         {
             Sample s = samples[i];
-            s.age += dt * ageRate;
+            s.age += dt;
 
             if (s.age >= lifetime) samples.RemoveAt(i);
             else samples[i] = s;
@@ -178,14 +199,23 @@ public class SmoothSwingRibbon : MonoBehaviour
         if (emitting)
         {
             float minSq = minSampleDistance * minSampleDistance;
-            if (samples.Count == 0 || (head - samples[samples.Count - 1].pos).sqrMagnitude >= minSq)
+            if (samples.Count == 0)
             {
-                samples.Add(new Sample { pos = head, age = 0f });
+                samples.Add(new Sample { pos = head, age = 0f, dist = pathDist, strength = strengthNow });
+            }
+            else
+            {
+                Vector3 lastPos = samples[samples.Count - 1].pos;
+                if ((head - lastPos).sqrMagnitude >= minSq)
+                {
+                    pathDist += (head - lastPos).magnitude;
+                    samples.Add(new Sample { pos = head, age = 0f, dist = pathDist, strength = strengthNow });
+                }
             }
         }
         else if (samples.Count == 0)
         {
-            Destroy(gameObject); // finished retracting
+            Destroy(gameObject); // finished breaking up
             return;
         }
 
@@ -194,8 +224,13 @@ public class SmoothSwingRibbon : MonoBehaviour
 
         if (emitting)
         {
+            float headDist = pathDist;
+            if (samples.Count > 0) headDist += (head - samples[samples.Count - 1].pos).magnitude;
+
             pts[n] = head;
             ages[n] = 0f;
+            dists[n] = headDist;
+            strengths[n] = strengthNow;
             n++;
         }
 
@@ -206,6 +241,8 @@ public class SmoothSwingRibbon : MonoBehaviour
 
             pts[n] = p;
             ages[n] = samples[i].age;
+            dists[n] = samples[i].dist;
+            strengths[n] = samples[i].strength;
             n++;
         }
 
@@ -215,7 +252,7 @@ public class SmoothSwingRibbon : MonoBehaviour
             return;
         }
 
-        // ---- remove animation jitter: blur the points a little (the newest and oldest points stay fixed) ----
+        // ---- remove animation jitter: blur the points a little (newest and oldest stay fixed) ----
         for (int pass = 0; pass < smoothingPasses; pass++)
         {
             Vector3 prev = pts[0];
@@ -256,6 +293,8 @@ public class SmoothSwingRibbon : MonoBehaviour
 
             outPos[j] = CatmullRom(p0, p1, p2, p3, t);
             outAge[j] = Mathf.Lerp(ages[i], ages[i + 1], t);
+            outDist[j] = Mathf.Lerp(dists[i], dists[i + 1], t);
+            outStrength[j] = Mathf.Lerp(strengths[i], strengths[i + 1], t);
         }
 
         // ---- sideways direction (faces the camera), kept consistent along the ribbon ----
@@ -295,7 +334,8 @@ public class SmoothSwingRibbon : MonoBehaviour
         for (int j = 0; j < pointCount; j++)
         {
             float ageN = Mathf.Clamp01(outAge[j] / Mathf.Max(lifetime, 0.0001f));
-            float half = 0.5f * width * Mathf.Max(0f, widthOverAge.Evaluate(ageN));
+            float speedFactor = Mathf.Lerp(minWidthFactor, 1f, Mathf.Clamp01(outStrength[j]));
+            float half = 0.5f * width * Mathf.Max(0f, widthOverAge.Evaluate(ageN)) * speedFactor;
 
             Vector3 world = outPos[j];
             Vector3 side = outSideSmooth[j];
@@ -306,6 +346,10 @@ public class SmoothSwingRibbon : MonoBehaviour
             uvs[j * 2] = new Vector2(ageN, 0f);
             uvs[j * 2 + 1] = new Vector2(ageN, 1f);
 
+            Vector2 extra = new Vector2(outDist[j], outStrength[j]);
+            uvs2[j * 2] = extra;
+            uvs2[j * 2 + 1] = extra;
+
             Color c = color;
             c.a *= Mathf.Clamp01(alphaOverAge.Evaluate(ageN));
             cols[j * 2] = c;
@@ -314,6 +358,7 @@ public class SmoothSwingRibbon : MonoBehaviour
 
         mesh.vertices = verts;
         mesh.uv = uvs;
+        mesh.uv2 = uvs2;
         mesh.colors = cols;
 
         if (!trianglesValid)
