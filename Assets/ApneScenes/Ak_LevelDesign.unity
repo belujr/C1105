@@ -170,6 +170,7 @@ MonoBehaviour:
   rotationSpeed: 20
   playerReactionAnimName: Hit_Light
   stunDuration: 0.2
+  debugFiring: 1
   attackAnimationSpeed: 1
   hitReactionClip: {fileID: 0}
   impMoveSpeed: 5.5
@@ -718,6 +719,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeaconSpawnerManager
   beaconHealth: {fileID: 3469287838121968868}
+  maxAliveEnemies: 15
+  maxShipsInTransit: 3
   spaceshipPrefab: {fileID: 3477520251570399128, guid: 6e610d32508cd3347b03b6bb741ed485, type: 3}
   availableShipTypes:
   - {fileID: 11400000, guid: 993a0cb35a811bf498e0e0d566a4a150, type: 2}
@@ -729,10 +732,10 @@ MonoBehaviour:
   - {fileID: 953508766}
   initialShipCount: 1
   allowReinforcements: 1
-  reinforcementThreshold: 2
+  reinforcementThreshold: 1
   initialEscalationDelay: 4
-  intensityAccelerationFactor: 0.558
-  minimumSpawnDelay: 2
+  intensityAccelerationFactor: 0.525
+  minimumSpawnDelay: 10
 --- !u!4 &338829735
 Transform:
   m_ObjectHideFlags: 0
