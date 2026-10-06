@@ -605,7 +605,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8383303331917186552, guid: e57a4bd9ef7a10b4d992c8a525ced3eb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1506803664}
   m_SourcePrefab: {fileID: 100100000, guid: e57a4bd9ef7a10b4d992c8a525ced3eb, type: 3}
 --- !u!1 &301030498
 GameObject:
@@ -728,7 +731,7 @@ MonoBehaviour:
   allowReinforcements: 1
   reinforcementThreshold: 2
   initialEscalationDelay: 4
-  intensityAccelerationFactor: 0.873
+  intensityAccelerationFactor: 0.558
   minimumSpawnDelay: 2
 --- !u!4 &338829735
 Transform:
@@ -851,7 +854,7 @@ Transform:
   m_GameObject: {fileID: 340302108}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.70413893, z: -0, w: 0.71006227}
-  m_LocalPosition: {x: 44.98, y: 0.25, z: 30.9}
+  m_LocalPosition: {x: 44.98, y: 0.21, z: 30.9}
   m_LocalScale: {x: 57.4684, y: 0.45200002, z: 39.92742}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2824,6 +2827,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1445864591}
   m_CullTransparentMesh: 1
+--- !u!1 &1506803661 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8383303331917186552, guid: e57a4bd9ef7a10b4d992c8a525ced3eb, type: 3}
+  m_PrefabInstance: {fileID: 234161960}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1506803664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1506803661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a289899f8f8b14c9757c9f2b7fb921, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassCutManager
+  sweepTime: 0.2
+  blowTime: 0.3
+  raggedEdge: 1
+  stayCutSeconds: 200
+  regrowSeconds: 4
+  shockwaveBendAmount: 3
+  flyDistance: 1.2
+  glowColor: {r: 0.7, g: 1.8, b: 0.5, a: 1}
+  glowIntensity: 1
+  spawnDebris: 1
+  debrisOnlyOnGrass: 1
+  debrisMaterial: {fileID: 0}
+  stretchWithVelocity: 0
+  debrisAspect: 1
+  debrisDensity: 3
+  debrisColorA: {r: 0.25, g: 0.45, b: 0.12, a: 1}
+  debrisColorB: {r: 0.7, g: 0.85, b: 0.3, a: 1}
+  debrisSizeRange: {x: 0.35, y: 0.7}
+  debrisOutSpeed: {x: 2, y: 6}
+  debrisUpSpeed: {x: 2.5, y: 6}
+  debrisLifetime: {x: 0.5, y: 1.1}
+  debrisGravity: 1.5
+  maxDebris: 800
+  affectFlowers: 1
+  cutSound: {fileID: 0}
+  cutSoundVolume: 0.7
+  testOrigin: {fileID: 0}
+  testRadius: 6
+  testConeAngle: 120
 --- !u!4 &1537530453 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 408869210076216818, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}

@@ -204,6 +204,10 @@ public class CombatHitboxController : MonoBehaviour
             if (debugVFX) Debug.Log("[CombatHitbox] AOE branch used by attack: " + currentHit + " (targets hit: " + validHitCount + ")", this);
             SpawnVFX(currentHit.customVFX, player.transform.position, player.transform.forward, aoeVfxHeightOffset, false);
 
+            // Sweep the grass away in the attack's arc, starting at the player and moving outward
+            if (currentHit.cutsGrass)
+                GrassCutManager.Cut(player.transform.position, player.transform.forward, currentHit.aoeRadius, currentHit.coneAngle);
+
             if (validHitCount > 0) TriggerJuice(currentHit);
             StopHitDetection();
         }

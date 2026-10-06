@@ -95,6 +95,14 @@
 
             CBUFFER_END
 
+            // AOE grass cut data (set globally by GrassCutManager)
+            float4 _GrassCutA[8];          // xy = origin XZ, zw = forward direction XZ
+            float4 _GrassCutB[8];          // x = radius, y = cos(half cone angle), z = age in seconds
+            float4 _GrassCutTimings;       // x = sweep time, y = stay-cut time, z = regrow time, w = blow time
+            float4 _GrassCutVisual;        // x = shockwave bend, y = glow intensity, z = ragged edge amount, w = fly distance
+            float4 _GrassCutGlowColor;
+            float _GrassCutCountF;
+
             sampler2D _BaseColorTexture;
             sampler2D _WindTexture;
 
@@ -163,6 +171,11 @@
                 return result;
             }
 
+            float CutRand(float2 p)
+            {
+                return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
+            }
+
             Varyings vert(Attributes IN, uint instanceID : SV_InstanceID)
             {
                 Varyings OUT;
@@ -201,6 +214,53 @@
 
                 bladeDirection.xz += wind * IN.positionOS.y;//Adding wind and multiplying with the Y position to affect the tip only
 
+                // ---- AOE grass cut: when the front reaches a blade it whips outward, flies off and shrinks away ----
+                float cutWave = 0.0;                 // flash
+                float cutBend = 0.0;                 // how far the blade is blown over
+                float cutFly = 0.0;                  // how far the blade has flown off
+                float cutDirStrength = 0.0;
+                float2 cutPushDir = float2(0, 0);
+                int cutCount = (int)(_GrassCutCountF + 0.5);
+
+                [loop]
+                for (int ci = 0; ci < cutCount; ci++)
+                {
+                    float2 toBlade = pivot.xz - _GrassCutA[ci].xy;
+                    float cDist = length(toBlade);
+                    float cRadius = _GrassCutB[ci].x;
+                    if (cDist > cRadius) continue;
+
+                    float cosA = cDist > 0.001 ? dot(toBlade / cDist, _GrassCutA[ci].zw) : 1.0;
+                    float cone = saturate((cosA - _GrassCutB[ci].y) / 0.1 + 0.5);
+                    if (cone <= 0.0) continue;
+
+                    // same timeline as the compute shader: cP goes 0 -> 1 over the blow time, starting when the front reaches this blade
+                    float cAge = _GrassCutB[ci].z;
+                    float cD = cDist + (CutRand(pivot.xz) - 0.5) * _GrassCutVisual.z;
+                    float cEased = saturate(cD / (cRadius + 0.5 * _GrassCutVisual.z));
+                    float cHit = (1.0 - sqrt(1.0 - cEased)) * _GrassCutTimings.x;
+                    float cP = saturate((cAge - cHit) / max(_GrassCutTimings.w, 0.001));
+
+                    float cRegrow = saturate((cAge - _GrassCutTimings.x - _GrassCutTimings.w - _GrassCutTimings.y) / max(_GrassCutTimings.z, 0.001));
+                    cRegrow = cRegrow * cRegrow * (3.0 - 2.0 * cRegrow);
+
+                    float bend = cone * smoothstep(0.0, 0.3, cP) * (1.0 - smoothstep(0.85, 1.0, cP)) * (1.0 - cRegrow);
+                    float g = (cP - 0.12) / 0.18;
+                    float glow = cone * smoothstep(0.0, 0.04, cP) * exp(-g * g);
+                    float fly = cone * smoothstep(0.25, 1.0, cP) * (1.0 - cRegrow);
+
+                    float strength = max(bend, fly);
+                    if (strength > cutDirStrength)
+                    {
+                        cutDirStrength = strength;
+                        cutPushDir = toBlade / max(cDist, 0.001);
+                    }
+                    cutBend = max(cutBend, bend);
+                    cutWave = max(cutWave, glow);
+                    cutFly = max(cutFly, fly);
+                }
+                bladeDirection.xz += cutPushDir * (cutBend * _GrassCutVisual.x * IN.positionOS.y);
+
                 bladeDirection = normalize(bladeDirection);
                 
                 float3 rightTangent = normalize(cross(bladeDirection, cameraTransformForwardWS));//The direction we gonna stretch the blade
@@ -213,6 +273,9 @@
 
                 //posOS -> posWS
                 float3 positionWS = positionOS + pivot;
+
+                // blades flung outward and upward by the AOE cut
+                positionWS += float3(cutPushDir.x, 0.7, cutPushDir.y) * (cutFly * _GrassCutVisual.w);
                 
                 //posWS -> posCS
                 OUT.positionCS = TransformWorldToHClip(positionWS);
@@ -231,6 +294,9 @@
                 half3 V = normalize(_WorldSpaceCameraPos - positionWS);
 
                 float3 lighting = CalculateLighting(albedo, positionWS, N, V, color.a, IN.positionOS.y);
+
+                // glowing band along the leading edge of the grass cut (stronger toward the blade tips)
+                lighting += _GrassCutGlowColor.rgb * (cutWave * _GrassCutVisual.y * lerp(0.4, 1.0, IN.positionOS.y));
                 //I'm also passing the Alpha Channel of the Color Map cause I dont want the blades that are affected with color to receive specular light 
                 //The main use of the color map for me is burning the grass and the burned grass should not receive specular light
                 

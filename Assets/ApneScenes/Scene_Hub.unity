@@ -19055,7 +19055,7 @@ Transform:
   m_GameObject: {fileID: 254807469}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.39938, y: -159.16998, z: 9.799783}
+  m_LocalPosition: {x: 9.39938, y: -159.16998, z: -406}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -222618,6 +222618,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7358388444309884312}
   - component: {fileID: 275689266670615200}
+  - component: {fileID: 8383303332150636851}
   m_Layer: 10
   m_Name: Infinite Grass
   m_TagString: Untagged
@@ -222625,6 +222626,47 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &8383303332150636851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383303332150636850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a289899f8f8b14c9757c9f2b7fb921, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassCutManager
+  sweepTime: 0.2
+  blowTime: 0.3
+  raggedEdge: 1
+  stayCutSeconds: 200
+  regrowSeconds: 4
+  shockwaveBendAmount: 3
+  flyDistance: 1.2
+  glowColor: {r: 0.7, g: 1.8, b: 0.5, a: 1}
+  glowIntensity: 0.5
+  spawnDebris: 1
+  debrisOnlyOnGrass: 1
+  debrisMaterial: {fileID: 2100000, guid: c9bd20aa33c51e4429799ff262894561, type: 2}
+  stretchWithVelocity: 0
+  debrisAspect: 1
+  debrisDensity: 3
+  debrisColorA: {r: 0.25, g: 0.45, b: 0.12, a: 1}
+  debrisColorB: {r: 0.7, g: 0.85, b: 0.3, a: 1}
+  debrisSizeRange: {x: 0.35, y: 0.7}
+  debrisOutSpeed: {x: 2, y: 6}
+  debrisUpSpeed: {x: 2.5, y: 6}
+  debrisLifetime: {x: 0.5, y: 1.1}
+  debrisGravity: 1.5
+  maxDebris: 800
+  affectFlowers: 1
+  cutSound: {fileID: 0}
+  cutSoundVolume: 0.7
+  testOrigin: {fileID: 0}
+  testRadius: 6
+  testConeAngle: 120
 --- !u!1 &8387559256918366251
 GameObject:
   m_ObjectHideFlags: 0

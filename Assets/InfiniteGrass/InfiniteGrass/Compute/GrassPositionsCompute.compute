@@ -30,6 +30,15 @@ float3 _CameraForward;
 
 float4x4 _VPMatrix;
 
+// ---------- Grass cuts (AOE sweep), filled by GrassCutManager ----------
+#define MAX_GRASS_CUTS 8
+float4 _GrassCutA[MAX_GRASS_CUTS];   // xy = origin XZ, zw = forward direction XZ
+float4 _GrassCutB[MAX_GRASS_CUTS];   // x = radius, y = cos(half cone angle), z = age in seconds
+float4 _GrassCutTimings;             // x = sweep time, y = stay-cut time, z = regrow time, w = blow time
+int _GrassCutCount;
+float _GrassCutFlowers;
+float _GrassCutJitter;               // ragged leading edge amount (world units)
+
 SamplerState pointClampSampler;
 SamplerState linearClampSampler;
 
@@ -51,6 +60,53 @@ float random(int index) { return murmurHash3(index) / 4294967295.0; }
 
 float Remap(float In, float2 InMinMax, float2 OutMinMax) {
     return OutMinMax.x + (In - InMinMax.x) * (OutMinMax.y - OutMinMax.x) / (InMinMax.y - InMinMax.x);
+}
+
+float CutRand(float2 p)
+{
+    return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+// 0 -> 1 over the "blow time", starting the moment the cut front reaches this blade.
+float GrassCutProgress(float dist, float2 posXZ, float radius, float age)
+{
+    float d = dist + (CutRand(posXZ) - 0.5) * _GrassCutJitter;            // ragged edge
+    float reach = radius + 0.5 * _GrassCutJitter;                         // distance the front finally reaches
+    float eased = saturate(d / reach);
+    float tHit = (1.0 - sqrt(1.0 - eased)) * _GrassCutTimings.x;          // front = reach * (1 - (1-t)^2), solved for t
+    return saturate((age - tHit) / max(_GrassCutTimings.w, 0.001));
+}
+
+// 0 = untouched, 1 = fully cut. Values in between make the blade shorter.
+float GrassCutAmount(float2 posXZ)
+{
+    float amount = 0.0;
+
+    [loop]
+    for (int i = 0; i < _GrassCutCount; i++)
+    {
+        float2 toBlade = posXZ - _GrassCutA[i].xy;
+        float dist = length(toBlade);
+        float radius = _GrassCutB[i].x;
+        if (dist > radius) continue;
+
+        // inside the cone? (soft angular edge, centred on the cone border)
+        float cosAngle = dist > 0.001 ? dot(toBlade / dist, _GrassCutA[i].zw) : 1.0;
+        float cone = saturate((cosAngle - _GrassCutB[i].y) / 0.1 + 0.5);
+        if (cone <= 0.0) continue;
+
+        float age = _GrassCutB[i].z;
+        float p = GrassCutProgress(dist, posXZ, radius, age);
+        float shrink = smoothstep(0.35, 1.0, p);   // the blade first whips outward (blade shader), then shrinks away
+
+        // after staying cut for a while, the grass grows back
+        float regrow = saturate((age - _GrassCutTimings.x - _GrassCutTimings.w - _GrassCutTimings.y) / max(_GrassCutTimings.z, 0.001));
+        regrow = regrow * regrow * (3.0 - 2.0 * regrow);
+
+        amount = max(amount, cone * shrink * (1.0 - regrow));
+    }
+
+    return amount;
 }
 
 [numthreads(8, 8, 1)]
@@ -95,7 +151,12 @@ void CSGrass(uint3 id : SV_DispatchThreadID)
         {
             // Blades near a thin/faded edge (low combinedWeight) grow in shorter instead of popping to full height.
             float heightScale = lerp(_FadeMinHeightScale, 1.0, combinedWeight);
-            _GrassPositions.Append(float4(positionWS, heightScale));
+
+            // AOE grass cut: blades shrink as the sweep passes, then disappear
+            float cutAmount = GrassCutAmount(positionXZ);
+            heightScale *= (1.0 - cutAmount);
+            if (cutAmount < 0.98)
+                _GrassPositions.Append(float4(positionWS, heightScale));
         }
     }
 }
@@ -155,7 +216,9 @@ void CSFlower(uint3 id : SV_DispatchThreadID)
 
         if (insideDensityLevel && absPosCS.z <= absPosCS.w && absPosCS.y <= absPosCS.w * 2.0 && absPosCS.x <= absPosCS.w * 1.4 && absPosCS.w <= _DrawDistance)
         {
-            _FlowerPositions.Append(positionWS);
+            // Flowers can't shrink (no height scale), so they simply disappear when the cut sweep reaches them
+            if (_GrassCutFlowers < 0.5 || GrassCutAmount(positionXZ) < 0.5)
+                _FlowerPositions.Append(positionWS);
         }
     }
 }

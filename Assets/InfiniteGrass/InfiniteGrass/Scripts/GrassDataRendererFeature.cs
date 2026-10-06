@@ -271,6 +271,7 @@ public class GrassDataRendererFeature : ScriptableRendererFeature
                     cmd.SetComputeVectorParam(data.computeShader, CenterPosID, centerPos);
                     cmd.SetComputeFloatParam(data.computeShader, TextureUpdateThresholdID, texThresh);
                     cmd.SetComputeFloatParam(data.computeShader, MaxDrawDistanceID, maxDraw);
+                    GrassCutManager.UploadTo(cmd, data.computeShader);   // AOE grass cut data
 
                     int kernelGrass = data.computeShader.FindKernel("CSGrass");
                     int kernelFlower = data.computeShader.FindKernel("CSFlower");
