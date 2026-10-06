@@ -380,6 +380,13 @@ public class CombatHitboxController : MonoBehaviour
             linger = Mathf.Max(linger, ribbon.lifetime);
         }
 
+        // Fist / kick speed streaks: freeze where they are and break up over time
+        foreach (FistStreak streak in swing.GetComponentsInChildren<FistStreak>())
+        {
+            streak.Release();
+            linger = Mathf.Max(linger, streak.ReleaseDuration);
+        }
+
         foreach (ParticleSystem ps in swing.GetComponentsInChildren<ParticleSystem>())
         {
             ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
@@ -463,8 +470,22 @@ public class CombatHitboxController : MonoBehaviour
         return max + 0.1f;
     }
 
+    // Makes the swing ribbon flash bright and fat for a moment when a hit lands (visible during hit stop too)
+    private void PulseSwing()
+    {
+        if (activeSwing == null) return;
+        foreach (SmoothSwingRibbon ribbon in activeSwing.GetComponentsInChildren<SmoothSwingRibbon>())
+            ribbon.Pulse();
+
+        // speed streaks freeze right at the impact
+        foreach (FistStreak streak in activeSwing.GetComponentsInChildren<FistStreak>())
+            streak.Pulse();
+    }
+
     private void TriggerJuice(AttackData hitData)
     {
+        PulseSwing();
+
         if (!isHitStopping)
         {
             StartCoroutine(HitStopRoutine(hitData.hitStopDuration));

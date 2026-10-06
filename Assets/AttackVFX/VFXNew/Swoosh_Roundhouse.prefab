@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2719593143585523669}
-  - component: {fileID: 7717598091835684190}
+  - component: {fileID: 9115011467250572366}
   m_Layer: 0
   m_Name: Swoosh_Roundhouse
   m_TagString: Untagged
@@ -34,7 +34,7 @@ Transform:
   - {fileID: 3649162453516742285}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7717598091835684190
+--- !u!114 &9115011467250572366
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -56,29 +56,22 @@ MonoBehaviour:
     fadeDelay: 0.34
     fadeTime: 0.14
     sizeMultiplier: 1
-  - name: Quad_Thin
-    quad: {fileID: 8933388701303416517}
-    startDelay: 0
-    revealTime: 0.1
-    erodeDelay: 0.08
-    erodeTime: 0.36
-    fadeDelay: 0.34
-    fadeTime: 0.14
-    sizeMultiplier: 1
-  anchor: 0
-  heightOffset: -1
-  forwardOffset: 0
+  orientMode: 1
+  foreshortenMin: 0.5
+  anchor: 2
+  heightOffset: 0
+  forwardOffset: 0.3
   cameraFacing: 0.3
   followOwner: 1
-  randomRoll: 6
+  randomRoll: 3
   randomSize: 0.08
   mirrorForLeftLimbs: 1
   mirrorAxis: 0
   useUnscaledTime: 0
   loopForTuning: 1
   loopGap: 0.6
-  scrubPreview: 1
-  scrubTime: 0.169
+  scrubPreview: 0
+  scrubTime: 0.3
 --- !u!1 &2478943595614871127
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,7 +89,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3649162453516742285
 Transform:
   m_ObjectHideFlags: 0
@@ -195,13 +188,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7283005236622599092}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 2, z: 0}
-  m_LocalScale: {x: -3.4, y: 3.4, z: 1}
+  m_LocalScale: {x: 2.5, y: 0.55, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2719593143585523669}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5945177434428814343
 MeshFilter:
   m_ObjectHideFlags: 0

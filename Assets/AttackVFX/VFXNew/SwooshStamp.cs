@@ -26,6 +26,12 @@ public class SwooshStamp : MonoBehaviour
         PlayerAtLimbHeight   // above the player's centre, but at the height of the limb
     }
 
+    public enum OrientMode
+    {
+        GroundPlane,   // lies on a plane around the player (arcs)
+        ScreenAligned  // faces the camera and points along the punch direction as seen ON SCREEN (punches, front kicks)
+    }
+
     public enum MirrorAxis
     {
         QuadX, // arcs: flips left/right, so left limbs swing the other way
@@ -67,6 +73,12 @@ public class SwooshStamp : MonoBehaviour
 
     [Header("Layers (one per quad)")]
     public List<Layer> layers = new List<Layer>();
+
+    [Header("Orientation")]
+    [Tooltip("ScreenAligned: the quad faces the camera and its texture points along the punch direction on screen. Quad rotation is ignored (set it to 0,0,0). Texture head must be on the RIGHT, so keep Quad Scale X positive.")]
+    public OrientMode orientMode = OrientMode.GroundPlane;
+    [Tooltip("ScreenAligned only: when the punch goes straight toward or away from the camera the streak gets this much shorter (it is foreshortened).")]
+    [Range(0.2f, 1f)] public float foreshortenMin = 0.5f;
 
     [Header("Placement")]
     public AnchorMode anchor = AnchorMode.PlayerRoot;
@@ -185,6 +197,9 @@ public class SwooshStamp : MonoBehaviour
         gapTimer = 0f;
         playing = true;
 
+        bool screenAligned = orientMode == OrientMode.ScreenAligned;
+        float lengthScale = 1f;
+
         // ---- placement (skipped if there is no owner, e.g. a stamp sitting alone in the scene)
         if (owner != null)
         {
@@ -200,8 +215,25 @@ public class SwooshStamp : MonoBehaviour
             Vector3 pos = anchorPos + Vector3.up * heightOffset + forward * forwardOffset;
             Quaternion rot = Quaternion.LookRotation(forward, Vector3.up);
 
+            if (screenAligned)
+            {
+                // face the camera and point the texture along the punch direction as it appears on screen
+                Camera cam = PickCamera(pos);
+                if (cam != null)
+                {
+                    Vector3 camRight = cam.transform.right;
+                    Vector3 camUp = cam.transform.up;
+                    float x = Vector3.Dot(forward, camRight);
+                    float y = Vector3.Dot(forward, camUp);
+                    float proj = Mathf.Sqrt(x * x + y * y); // 1 = across the screen, 0 = straight at / away from the camera
+                    float angle = proj > 0.01f ? Mathf.Atan2(y, x) * Mathf.Rad2Deg : 0f;
+
+                    rot = Quaternion.LookRotation(cam.transform.forward, camUp) * Quaternion.Euler(0f, 0f, angle);
+                    lengthScale = Mathf.Lerp(foreshortenMin, 1f, Mathf.Clamp01(proj));
+                }
+            }
             // tilt the plane toward the camera so a flat arc doesn't look squashed
-            if (cameraFacing > 0f)
+            else if (cameraFacing > 0f)
             {
                 Camera cam = PickCamera(pos);
                 if (cam != null)
@@ -228,9 +260,13 @@ public class SwooshStamp : MonoBehaviour
             l.seed = Random.value;
 
             Transform q = l.quad.transform;
-            q.localRotation = l.baseRotation * Quaternion.Euler(0f, 0f, roll); // roll around the quad's own normal
+            // roll around the quad's own normal (in ScreenAligned mode the authored rotation is ignored)
+            q.localRotation = screenAligned
+                ? Quaternion.Euler(0f, 0f, roll)
+                : l.baseRotation * Quaternion.Euler(0f, 0f, roll);
 
             Vector3 s = l.baseScale * (size * l.sizeMultiplier);
+            s.x *= lengthScale;
             if (flip)
             {
                 if (mirrorAxis == MirrorAxis.QuadX) s.x = -s.x;

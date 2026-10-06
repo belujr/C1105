@@ -22,16 +22,20 @@ public class SmoothSwingRibbon : MonoBehaviour
 {
     [Header("Shape")]
     [Tooltip("Seconds a point of the ribbon lives. Longer = longer trail and more time for the tail to break up.")]
-    public float lifetime = 0.45f;
+    public float lifetime = 0.55f;
     [Tooltip("Ribbon width in world units at full width and full speed.")]
-    public float width = 0.9f;
-    [Tooltip("Width along the ribbon. Left (0) = at the limb, right (1) = oldest part / tail. Start with a sharp point, a thick belly and a thin tail.")]
-    public AnimationCurve widthOverAge = new AnimationCurve(
-        new Keyframe(0f, 0.05f), new Keyframe(0.12f, 1f), new Keyframe(0.6f, 0.55f), new Keyframe(1f, 0f));
+    public float width = 1.5f;
+    [Tooltip("Width along the ribbon. Keep this FLAT at 1: the VFX/InkRibbon shader shapes the pointed head and the thin tail, and the extra width is used by the strands.")]
+    public AnimationCurve widthOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 1f));
     [Tooltip("Opacity along the ribbon (vertex alpha).")]
-    public AnimationCurve alphaOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.85f, 1f), new Keyframe(1f, 0f));
+    public AnimationCurve alphaOverAge = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.92f, 1f), new Keyframe(1f, 0f));
     [Tooltip("Vertex color. Multiplied with the material colors.")]
     public Color color = Color.white;
+
+    [Header("Variation (changes every swing)")]
+    [Range(0f, 0.4f)]
+    [Tooltip("Random change of width and lifetime for every swing (plus or minus, as a fraction).")]
+    public float variation = 0.15f;
 
     [Header("Smoothness")]
     [Range(8, 64)] public int segments = 32;
@@ -51,7 +55,14 @@ public class SmoothSwingRibbon : MonoBehaviour
     [Tooltip("Width factor while the limb is slow (0 = invisible wind-up, 1 = ignore speed).")]
     public float minWidthFactor = 0.1f;
     [Tooltip("How quickly the speed estimate reacts. Lower = smoother.")]
-    public float speedResponse = 14f;
+    public float speedResponse = 10f;
+    [Range(0, 12)]
+    [Tooltip("Blurs the thickness along the ribbon so it grows gradually instead of jumping from thin to thick.")]
+    public int strengthSmoothing = 5;
+
+    [Header("Impact flash (called when a hit lands)")]
+    [Tooltip("Seconds the ribbon stays bright and fat after a hit. Uses real time, so it is visible during hit stop.")]
+    public float flashDuration = 0.2f;
 
     private struct Sample
     {
@@ -70,6 +81,7 @@ public class SmoothSwingRibbon : MonoBehaviour
     private Vector3[] verts;
     private Vector2[] uvs;
     private Vector2[] uvs2;
+    private Vector2[] uvs3;
     private Color[] cols;
     private int[] tris;
     private bool trianglesValid;
@@ -92,6 +104,11 @@ public class SmoothSwingRibbon : MonoBehaviour
 
     private static Camera[] camBuffer = new Camera[8];
     private static readonly int ID_Seed = Shader.PropertyToID("_Seed");
+    private static readonly int ID_Flash = Shader.PropertyToID("_Flash");
+
+    private MaterialPropertyBlock block;
+    private float seedValue;
+    private float flash;
 
     private void Awake()
     {
@@ -109,9 +126,15 @@ public class SmoothSwingRibbon : MonoBehaviour
         meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
         meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
 
+        // every swing gets a slightly different size and length
+        width *= 1f + Random.Range(-variation, variation);
+        lifetime *= 1f + Random.Range(-variation, variation);
+
         // a different noise pattern for every swing
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-        block.SetFloat(ID_Seed, Random.value * 10f);
+        block = new MaterialPropertyBlock();
+        seedValue = Random.value * 10f;
+        block.SetFloat(ID_Seed, seedValue);
+        block.SetFloat(ID_Flash, 0f);
         meshRenderer.SetPropertyBlock(block);
 
         AllocateBuffers();
@@ -131,6 +154,21 @@ public class SmoothSwingRibbon : MonoBehaviour
         if (mesh != null) Destroy(mesh);
     }
 
+    /// <summary>Flashes the ribbon bright and fat for a moment. The controller calls this when a hit lands.</summary>
+    public void Pulse()
+    {
+        flash = 1f;
+        ApplyFlash();
+    }
+
+    private void ApplyFlash()
+    {
+        if (block == null) return;
+        block.SetFloat(ID_Seed, seedValue);
+        block.SetFloat(ID_Flash, flash);
+        meshRenderer.SetPropertyBlock(block);
+    }
+
     /// <summary>Stop adding new points. The ribbon keeps aging, breaks up, and then removes itself.</summary>
     public void StopEmitting()
     {
@@ -144,6 +182,7 @@ public class SmoothSwingRibbon : MonoBehaviour
         verts = new Vector3[pointCount * 2];
         uvs = new Vector2[pointCount * 2];
         uvs2 = new Vector2[pointCount * 2];
+        uvs3 = new Vector2[pointCount * 2];
         cols = new Color[pointCount * 2];
         tris = new int[segments * 6];
 
@@ -169,6 +208,13 @@ public class SmoothSwingRibbon : MonoBehaviour
 
     private void LateUpdate()
     {
+        // the flash fades in REAL time, so it stays visible while hit stop freezes the game
+        if (flash > 0f)
+        {
+            flash = Mathf.Max(0f, flash - Time.unscaledDeltaTime / Mathf.Max(flashDuration, 0.01f));
+            ApplyFlash();
+        }
+
         float realDt = Time.deltaTime;
         if (realDt <= 0f) return; // fully paused (hit stop): leave the ribbon exactly as it is
 
@@ -250,6 +296,18 @@ public class SmoothSwingRibbon : MonoBehaviour
         {
             ClearMesh();
             return;
+        }
+
+        // ---- smooth the thickness along the ribbon (the newest and oldest values stay fixed) ----
+        for (int pass = 0; pass < strengthSmoothing; pass++)
+        {
+            float prevStrength = strengths[0];
+            for (int i = 1; i < n - 1; i++)
+            {
+                float cur = strengths[i];
+                strengths[i] = (prevStrength + 2f * cur + strengths[i + 1]) * 0.25f;
+                prevStrength = cur;
+            }
         }
 
         // ---- remove animation jitter: blur the points a little (newest and oldest stay fixed) ----
@@ -334,7 +392,9 @@ public class SmoothSwingRibbon : MonoBehaviour
         for (int j = 0; j < pointCount; j++)
         {
             float ageN = Mathf.Clamp01(outAge[j] / Mathf.Max(lifetime, 0.0001f));
-            float speedFactor = Mathf.Lerp(minWidthFactor, 1f, Mathf.Clamp01(outStrength[j]));
+            float st = Mathf.Clamp01(outStrength[j]);
+            st = st * st * (3f - 2f * st); // ease in and out
+            float speedFactor = Mathf.Lerp(minWidthFactor, 1f, st);
             float half = 0.5f * width * Mathf.Max(0f, widthOverAge.Evaluate(ageN)) * speedFactor;
 
             Vector3 world = outPos[j];
@@ -350,6 +410,11 @@ public class SmoothSwingRibbon : MonoBehaviour
             uvs2[j * 2] = extra;
             uvs2[j * 2 + 1] = extra;
 
+            // distance from the front end and from the back end (world units), so the shader can keep both tips pointed
+            Vector2 ends = new Vector2(outDist[0] - outDist[j], outDist[j] - outDist[pointCount - 1]);
+            uvs3[j * 2] = ends;
+            uvs3[j * 2 + 1] = ends;
+
             Color c = color;
             c.a *= Mathf.Clamp01(alphaOverAge.Evaluate(ageN));
             cols[j * 2] = c;
@@ -359,6 +424,7 @@ public class SmoothSwingRibbon : MonoBehaviour
         mesh.vertices = verts;
         mesh.uv = uvs;
         mesh.uv2 = uvs2;
+        mesh.uv3 = uvs3;
         mesh.colors = cols;
 
         if (!trianglesValid)
