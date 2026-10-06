@@ -60,6 +60,18 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
     public string playerReactionAnimName = "Hit_Light";
     public float stunDuration = 0.2f;
 
+    [Header("Debug")]
+    public bool debugFiring = true;
+    private float nextDebugTime;
+    private Collider[] ownColliders;
+
+    private void FireLog(string msg)
+        {
+            if (!debugFiring || Time.time < nextDebugTime) return;
+            nextDebugTime = Time.time + 2f;
+            Debug.Log($"[Imp:{name}] {msg}", this);
+        }
+
     [Header("Animation Controls")]
     public float attackAnimationSpeed = 1.0f;
     public AnimationClip hitReactionClip;
@@ -85,7 +97,7 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
     public event Action OnDeath;
     public event Action OnRevive;
 
-    public void ForceDisableUntilGrounded() => enabled = false;
+    public void ForceDisableUntilGrounded() { enabled = false; }
 
     public void AuthorizeGroundContactAndEnable()
     {
@@ -95,6 +107,8 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
 
     private void Awake()
     {
+
+        ownColliders = GetComponentsInChildren<Collider>(true);
         cachedTransform = transform;
         charController = GetComponent<CharacterController>();
         capsuleCollider = GetComponent<Collider>(); 
@@ -200,8 +214,19 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
                 }
                 UpdateLocomotionAnimation("Charging", animProfile != null ? animProfile.idleClip : null, 0.1f);
                 break;
+                
+                case ImpState.Firing:
+    if (charController != null && charController.enabled)
+    {
+        charController.Move(new Vector3(0, fallVelocity, 0) * Time.deltaTime);
+    }
+
+    break;
+
         }
     }
+
+   
 
     private Vector3 CalculateSeparationForce()
     {
@@ -296,71 +321,79 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
         }
     }
 
+    private void EndAttack()
+{
+    currentChargeProgress = 0f;
+    UpdateHumpVisuals(0f);
+    ReleaseTokenSafely();
+    activeActionRoutine = null;
+    if (!isDead) { impState = ImpState.Strafing; strafeTimer = 0f; }
+}
+
     private IEnumerator ChargeAndFireRoutine()
+{
+    float elapsed = 0f;
+    currentChargeProgress = 0f;
+
+    while (elapsed < chargeDuration)
     {
-        float elapsed = 0f;
-        currentChargeProgress = 0f;
-
-        while (elapsed < chargeDuration)
-        {
-            if (isDead || playerTransform == null || isReacting) yield break;
-            elapsed += Time.deltaTime;
-            currentChargeProgress = Mathf.Clamp01(elapsed / chargeDuration);
-            UpdateHumpVisuals(currentChargeProgress);
-            yield return null;
-        }
-
-        impState = ImpState.Firing;
-        
-        AnimationClip shootClip = rangedAttackClip != null ? rangedAttackClip : (animProfile != null ? animProfile.GetAnimationClip("RangedAttack") : null);
-        float speedMultiplier = Mathf.Max(0.01f, attackAnimationSpeed);
-        float clipDuration = shootClip != null ? (shootClip.length / speedMultiplier) : 1.0f;
-
-        if (animationEngine != null && shootClip != null)
-        {
-            animationEngine.PlayAnimation(shootClip, 0.05f, speedMultiplier);
-            lastPlayedLocomotionState = "RangedAttack";
-        }
-
-        yield return new WaitForSeconds(clipDuration * 0.4f);
-
-        if (!isDead && !isReacting) SpawnFireball();
-        
-        currentChargeProgress = 0f;
-        UpdateHumpVisuals(0f);
-
-        yield return new WaitForSeconds(clipDuration * 0.6f); 
-
-        ReleaseTokenSafely();
-        impState = ImpState.Strafing;
-        strafeTimer = 0f; 
-        currentAttackCooldown = baseAttackCooldown + Random.Range(-0.5f, 0.5f);
+        if (isDead || playerTransform == null || isReacting) { EndAttack(); yield break; }
+        elapsed += Time.deltaTime;
+        currentChargeProgress = Mathf.Clamp01(elapsed / chargeDuration);
+        UpdateHumpVisuals(currentChargeProgress);
+        yield return null;
     }
 
+    impState = ImpState.Firing;
+
+    AnimationClip shootClip = rangedAttackClip != null ? rangedAttackClip : (animProfile != null ? animProfile.GetAnimationClip("RangedAttack") : null);
+    float speedMultiplier = Mathf.Max(0.01f, attackAnimationSpeed);
+    float clipDuration = shootClip != null ? (shootClip.length / speedMultiplier) : 1.0f;
+
+    if (animationEngine != null && shootClip != null)
+    {
+        animationEngine.PlayAnimation(shootClip, 0.05f, speedMultiplier);
+        lastPlayedLocomotionState = "RangedAttack";
+    }
+
+    yield return new WaitForSeconds(clipDuration * 0.4f);
+    if (!isDead && !isReacting) SpawnFireball();
+
+    currentChargeProgress = 0f;
+    UpdateHumpVisuals(0f);
+
+    yield return new WaitForSeconds(clipDuration * 0.6f);
+
+    EndAttack();
+    currentAttackCooldown = baseAttackCooldown + Random.Range(-0.5f, 0.5f);
+}
     private void SpawnFireball()
+{
+    if (fireballPrefab == null)
     {
-        if (fireballPrefab == null || playerTransform == null) return;
-
-        // Spawn well clear of the enemy's body collider
-        Vector3 spawnPos = firePoint != null ? firePoint.position : cachedTransform.position + Vector3.up * 1.5f + (cachedTransform.forward * 2.0f);
-        Vector3 targetPos = playerTransform.position + Vector3.up * 1.0f;
-        Vector3 dirToTarget = (targetPos - spawnPos).normalized;
-
-        GameObject fbObj = Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(dirToTarget));
-        
-        // Force ignore collisions with the enemy's colliders so it never destroys itself on spawn
-        Collider projCol = fbObj.GetComponent<Collider>();
-        if (projCol != null)
-        {
-            if (capsuleCollider != null) Physics.IgnoreCollision(projCol, capsuleCollider);
-            if (charController != null) Physics.IgnoreCollision(projCol, charController);
-        }
-
-        if (fbObj.TryGetComponent<ImpFireball>(out var fireball))
-        {
-            fireball.Initialize(cachedTransform, playerTransform, fireballDamage, playerReactionAnimName, stunDuration);
-        }
+        Debug.LogError($"[Imp:{name}] fireballPrefab is not assigned on the Imp prefab.", this);
+        return;
     }
+    if (playerTransform == null) return;
+
+    Vector3 spawnPos = firePoint != null ? firePoint.position : cachedTransform.position + Vector3.up * 1.5f + (cachedTransform.forward * 2.0f);
+    Vector3 targetPos = playerTransform.position + Vector3.up * 1.0f;
+    Vector3 dirToTarget = (targetPos - spawnPos).normalized;
+
+    GameObject fbObj = Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(dirToTarget));
+
+    foreach (var projCol in fbObj.GetComponentsInChildren<Collider>())
+        foreach (var own in ownColliders)
+            if (own != null) Physics.IgnoreCollision(projCol, own);
+
+    if (fbObj.TryGetComponent<ImpFireball>(out var fireball))
+        fireball.Initialize(cachedTransform, playerTransform, fireballDamage, playerReactionAnimName, stunDuration);
+    else
+        Debug.LogError($"[Imp:{name}] fireballPrefab has no ImpFireball component on its root.", fbObj);
+
+    if (debugFiring) Debug.Log($"[Imp:{name}] fireball spawned", this);
+}
+
     private void UpdateHumpVisuals(float progress)
     {
         if (humpSphereTransform == null) return;

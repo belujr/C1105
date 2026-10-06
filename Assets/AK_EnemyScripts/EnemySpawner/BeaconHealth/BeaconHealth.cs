@@ -107,25 +107,18 @@ public class BeaconHealth : MonoBehaviour, IDamageable
         }
     }
 
-    public void RegisterEnemyKilled()
-    {
-        if (!isActivated || isDestroyed)
-        {
-            ActivateBeacon();
-        }
+   public void RegisterEnemyKilled()
+{
+    if (isDestroyed) return; // FIX: Prevent zombie reactivation of the beacon
+    if (!isActivated) ActivateBeacon();
+    if (!isShieldActive) return;
 
-        if (!isShieldActive || isDestroyed) return;
+    currentKills++;
+    currentKills = Mathf.Min(currentKills, requiredKillQuota);
+    OnQuotaUpdated?.Invoke(currentKills, requiredKillQuota);
 
-        currentKills++;
-        currentKills = Mathf.Min(currentKills, requiredKillQuota);
-
-        OnQuotaUpdated?.Invoke(currentKills, requiredKillQuota);
-
-        if (currentKills >= requiredKillQuota)
-        {
-            DropShield();
-        }
-    }
+    if (currentKills >= requiredKillQuota) DropShield();
+}
 
     private void DropShield()
     {

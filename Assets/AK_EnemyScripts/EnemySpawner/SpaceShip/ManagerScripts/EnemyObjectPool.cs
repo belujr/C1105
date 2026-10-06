@@ -56,6 +56,7 @@ public class EnemyObjectPool : MonoBehaviour
 
     private IObjectPool<GameObject> CreateNativePool(GameObject prefab)
     {
+        
         return new ObjectPool<GameObject>(
             createFunc: () =>
             {
@@ -70,7 +71,7 @@ public class EnemyObjectPool : MonoBehaviour
                 instance.transform.SetParent(transform);
             },
             actionOnDestroy: (instance) => Destroy(instance),
-            collectionCheck: false,
+            collectionCheck: true,
             defaultCapacity: 20,
             maxSize: 200
         );
@@ -95,9 +96,11 @@ public class EnemyObjectPool : MonoBehaviour
 
         var collider = enemyInstance.GetComponent<Collider>();
         if (collider != null) collider.enabled = false;
+        var capsuleBrain = enemyInstance.GetComponent<UltraInstinctCapsule>();
+if (capsuleBrain != null) capsuleBrain.enabled = false;
 
-        var brain = enemyInstance.GetComponent<UltraInstinctCapsule>();
-        if (brain != null) brain.enabled = false;
+var impBrain = enemyInstance.GetComponent<ImpBrain>();
+if (impBrain != null) impBrain.enabled = false;
 
         // 2. Set transform safely
         enemyInstance.transform.SetPositionAndRotation(position, rotation);

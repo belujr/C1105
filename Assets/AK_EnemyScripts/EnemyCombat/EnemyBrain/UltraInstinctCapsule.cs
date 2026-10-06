@@ -14,6 +14,8 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
     public enum HitDirection { Front, Back, Left, Right }
     public enum MeleeBehaviorState { Approach, ArcStrafe, Wait, AttackLunge, Retreat }
 
+private CharacterController charController;
+
     [System.Serializable]
     public struct DodgeMapping
     {
@@ -141,6 +143,10 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
         capsuleCollider = GetComponent<Collider>();
         enemyRenderers = GetComponentsInChildren<Renderer>();
 
+        charController = GetComponent<CharacterController>();
+    cachedTransform = transform;
+    animationEngine = GetComponent<EnemyAnimationEngine>();
+
         foreach (var r in enemyRenderers)
         {
             Color[] colors = new Color[r.materials.Length];
@@ -202,6 +208,9 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
         activeEnemyComboRoutine = null;
         lastProcessedAttackData = null;
         lastPlayedLocomotionState = "";
+
+        groundYCoord = transform.position.y;
+        charController = GetComponent<CharacterController>();
 
         if (cachedTransform == null) cachedTransform = transform;
         
@@ -434,7 +443,7 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
         return separationMove;
     }
 
-    private void HandleMeleeMovement(float distToPlayer, Vector3 currentPos, Vector3 playerPos)
+   private void HandleMeleeMovement(float distToPlayer, Vector3 currentPos, Vector3 playerPos)
     {
         Vector3 dirToPlayer = playerPos - currentPos;
         dirToPlayer.y = 0f;
@@ -443,6 +452,9 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
         Vector3 rightDir = Vector3.Cross(Vector3.up, dirToPlayer).normalized;
         Vector3 separation = CalculateSeparationForce(currentPos);
         float deltaTime = Time.deltaTime;
+        
+        // Base gravity applied across all states to ensure they snap natively
+        float gravityPull = -9.81f * deltaTime;
 
         switch (currentMeleeState)
         {
@@ -450,7 +462,8 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
                 if (distToPlayer > stoppingDistance)
                 {
                     Vector3 moveDelta = (dirToPlayer * randomizedMoveSpeed + rightDir * (randomizedStrafeSpeed * 0.2f * strafeDirectionSign) + separation) * deltaTime;
-                    cachedTransform.position = currentPos + moveDelta;
+                    moveDelta.y = gravityPull;
+                    charController.Move(moveDelta);
                     
                     if (animProfile != null)
                         UpdateLocomotionAnimation("Approach", animProfile.walkClip, animProfile.walkTransitionDuration);
@@ -475,7 +488,9 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
                 float distanceError = distToPlayer - stoppingDistance;
                 strafeDelta += dirToPlayer * (distanceError * randomizedMoveSpeed);
                 
-                cachedTransform.position = currentPos + strafeDelta * deltaTime;
+                Vector3 moveStrafe = strafeDelta * deltaTime;
+                moveStrafe.y = gravityPull;
+                charController.Move(moveStrafe);
 
                 if (animProfile != null)
                 {
@@ -517,7 +532,10 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
                 {
                     holdDelta = dirToPlayer * (waitDistError * randomizedMoveSpeed * 0.5f);
                 }
-                cachedTransform.position = currentPos + (holdDelta + separation) * deltaTime;
+                
+                Vector3 moveWait = (holdDelta + separation) * deltaTime;
+                moveWait.y = gravityPull;
+                charController.Move(moveWait);
 
                 if (animProfile != null)
                     UpdateLocomotionAnimation("Wait_Idle", animProfile.idleClip, animProfile.idleTransitionDuration);
@@ -538,7 +556,9 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
                 break;
 
             case MeleeBehaviorState.Retreat:
-                cachedTransform.position = currentPos - (dirToPlayer * retreatSpeed - separation) * deltaTime;
+                Vector3 moveRetreat = -(dirToPlayer * retreatSpeed - separation) * deltaTime;
+                moveRetreat.y = gravityPull;
+                charController.Move(moveRetreat);
 
                 if (animProfile != null)
                     UpdateLocomotionAnimation("Retreat", animProfile.walkClip, animProfile.walkTransitionDuration);

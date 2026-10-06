@@ -1209,8 +1209,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9aef346cb3a73334394759950f862757, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShipPassenger
-  hangingClip: {fileID: -203655887218126122, guid: 005a1d34e74da214abbd39767beed8e8, type: 3}
+  hangingClip: {fileID: -203655887218126122, guid: 7a7d742ae98080e4a908c10dd751259d, type: 3}
   landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1024
   landingDuration: 1
   enemyBrain: {fileID: 2797239759207238605}
 --- !u!1 &2094032937273667583

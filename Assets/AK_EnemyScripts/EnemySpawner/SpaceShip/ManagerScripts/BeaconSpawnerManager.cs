@@ -7,6 +7,9 @@ public class BeaconSpawnerManager : MonoBehaviour
     [Tooltip("Reference to the BeaconHealth component in the scene.")]
     [SerializeField] private BeaconHealth beaconHealth;
 
+    [SerializeField] private int maxAliveEnemies = 15;
+[SerializeField] private int maxShipsInTransit = 3;
+
     [Header("Spaceship Configuration")]
     [Tooltip("Prefab of the spaceship (must have SpaceshipController attached).")]
     [SerializeField] private GameObject spaceshipPrefab;
@@ -105,6 +108,8 @@ public class BeaconSpawnerManager : MonoBehaviour
         }
     }
 
+    
+
     private System.Collections.IEnumerator SpawnReinforcementWaveRoutine()
     {
         isWaitingForReinforcements = true;
@@ -202,12 +207,12 @@ public class BeaconSpawnerManager : MonoBehaviour
             beaconHealth.RegisterEnemyKilled();
         }
     }
-
-    public void RegisterEnemyDefeated(GameObject enemy)
-    {
-        RegisterOnlyKill(enemy);
-        EnemyObjectPool.Instance.ReturnToPool(enemy);
-    }
+public void RegisterEnemyDefeated(GameObject enemy)
+{
+    if (!activeEnemies.Contains(enemy)) return;
+    RegisterOnlyKill(enemy);
+    EnemyObjectPool.Instance.ReturnToPool(enemy);
+}
 
     private void OnShieldDropped()
     {
@@ -216,19 +221,21 @@ public class BeaconSpawnerManager : MonoBehaviour
         escalationRoutine = StartCoroutine(EscalationSpawnRoutine());
     }
 
-    private System.Collections.IEnumerator EscalationSpawnRoutine()
-    {
-        float currentDelay = initialEscalationDelay;
-        yield return new WaitForSeconds(currentDelay);
+private System.Collections.IEnumerator EscalationSpawnRoutine()
+{
+    float currentDelay = initialEscalationDelay;
+    yield return new WaitForSeconds(currentDelay);
 
-        while (isEncounterRunning && beaconHealth != null && !beaconHealth.IsShieldActive)
+    while (isEncounterRunning && beaconHealth != null && !beaconHealth.IsShieldActive)
+    {
+        if (activeEnemies.Count < maxAliveEnemies && activeShipsInTransit < maxShipsInTransit)
         {
             DispatchRandomSpaceship();
             currentDelay = Mathf.Max(minimumSpawnDelay, currentDelay * intensityAccelerationFactor);
-            yield return new WaitForSeconds(currentDelay);
         }
+        yield return new WaitForSeconds(currentDelay);
     }
-
+}
     
 
     private void OnBeaconDestroyed()
