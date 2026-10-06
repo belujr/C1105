@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b484e5bccb6e151469dfd298ef65e046, type: 2}
+  - {fileID: 2100000, guid: cc079e66ca67fcb4aa554e538b765127, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103,8 +103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fbbed83c8d8c0e4b818ffd294f5c65f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmoothSwingRibbon
-  lifetime: 1
-  width: 1.2
+  lifetime: 0.45
+  width: 0.9
   widthOverAge:
     serializedVersion: 2
     m_Curve:
@@ -163,11 +163,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   color: {r: 1, g: 1, b: 1, a: 1}
-  segments: 19
-  smoothingPasses: 2
+  segments: 32
+  smoothingPasses: 3
   minSampleDistance: 0.02
   maxFrameTime: 0.033
-  minSpeed: 3
-  fullSpeed: 10
-  slowAgeRate: 6
+  minSpeed: 2
+  fullSpeed: 9
+  minWidthFactor: 0.1
   speedResponse: 10
