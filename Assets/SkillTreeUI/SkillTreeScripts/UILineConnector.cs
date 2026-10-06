@@ -8,8 +8,9 @@ public class UILineConnector : MonoBehaviour
     public RectTransform parentTransform;
     
     [Header("Line Visuals")]
-    public float thickness = 4f;
-    public Color lineColor = Color.white; 
+    [Tooltip("Increase thickness (e.g., 24-32) to allow room for the outer electric glow.")]
+    public float thickness = 28f;
+    public Material lineMaterial;
     public float drawDuration = 0.35f;
 
     private RectTransform myRect;
@@ -26,17 +27,21 @@ public class UILineConnector : MonoBehaviour
     {
         GameObject lineObj = new GameObject("Line_To_Parent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         
-        // Parent the line to the same container as this node
         lineObj.transform.SetParent(transform.parent, false);
         lineObj.transform.SetSiblingIndex(0);
 
         lineRect = lineObj.GetComponent<RectTransform>();
         lineImage = lineObj.GetComponent<Image>();
 
-        lineImage.color = lineColor;
-        
-        // Center-left pivot ensures it stretches correctly toward the target
+        // Lock anchors to middle-center to prevent layout stretching distortion
+        lineRect.anchorMin = new Vector2(0.5f, 0.5f);
+        lineRect.anchorMax = new Vector2(0.5f, 0.5f);
         lineRect.pivot = new Vector2(0f, 0.5f);
+
+        if (lineMaterial != null)
+        {
+            lineImage.material = lineMaterial;
+        }
     }
 
     public void AnimateLine()
@@ -49,18 +54,24 @@ public class UILineConnector : MonoBehaviour
 
     private IEnumerator DrawLineRoutine()
     {
-        RectTransform lineParent = lineRect.parent as RectTransform;
+        RectTransform lineContainer = lineRect.parent as RectTransform;
 
-        // Convert the actual world positions of the nodes into the line's local space.
-        // This makes the lines perfectly accurate regardless of your UI Anchors.
-        Vector3 startLocal = lineParent.InverseTransformPoint(parentTransform.position);
-        Vector3 endLocal = lineParent.InverseTransformPoint(myRect.position);
+        // 1. Calculate true visual center of both UI nodes (ignores pivot settings)
+        Vector3 startWorld = GetRectCenterWorld(parentTransform);
+        Vector3 endWorld = GetRectCenterWorld(myRect);
+
+        // 2. Convert world centers to the local space of the line's parent
+        Vector3 startLocal = lineContainer.InverseTransformPoint(startWorld);
+        Vector3 endLocal = lineContainer.InverseTransformPoint(endWorld);
+
+        // 3. Flatten Z-depth to force exact 2D alignment
+        startLocal.z = 0f;
+        endLocal.z = 0f;
 
         Vector2 direction = (Vector2)endLocal - (Vector2)startLocal;
         float targetDistance = direction.magnitude;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        // Set the line to start exactly at the parent's center point
         lineRect.localPosition = startLocal;
         lineRect.localRotation = Quaternion.Euler(0, 0, angle);
 
@@ -70,11 +81,18 @@ public class UILineConnector : MonoBehaviour
             elapsed += Time.deltaTime;
             float currentLength = Mathf.Lerp(0f, targetDistance, elapsed / drawDuration);
             
-            // Stretch the line width over time
             lineRect.sizeDelta = new Vector2(currentLength, thickness);
             yield return null;
         }
 
         lineRect.sizeDelta = new Vector2(targetDistance, thickness);
+    }
+
+    // Calculates true bounding-box center regardless of RectTransform Pivot settings
+    private Vector3 GetRectCenterWorld(RectTransform rect)
+    {
+        Vector3[] corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        return (corners[0] + corners[2]) * 0.5f;
     }
 }
