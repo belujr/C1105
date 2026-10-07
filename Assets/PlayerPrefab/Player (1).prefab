@@ -687,6 +687,8 @@ MonoBehaviour:
   aoeVfxHeightOffset: 0.1
   vfxTowardCameraOffset: 0.5
   debugVFX: 0
+  enemyHitFeedback: 1
+  heavyHitDamage: 30
   vfxAnchor: 0
   vfxFollowsTarget: 1
   swingMaxDuration: 0.8
@@ -2566,6 +2568,37 @@ Transform:
   - {fileID: 1715387954884294460}
   m_Father: {fileID: 4092799496163608708}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2141347111900099106
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4432506926662416790}
+  m_Layer: 14
+  m_Name: SoulTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4432506926662416790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141347111900099106}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.084, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4254808727282991730}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2212947852890980840
 GameObject:
   m_ObjectHideFlags: 0
@@ -4428,6 +4461,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4925451266433520127}
+  - {fileID: 4432506926662416790}
   m_Father: {fileID: 65076679802069093}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3412420052740901273

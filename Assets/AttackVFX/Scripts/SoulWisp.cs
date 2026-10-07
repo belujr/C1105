@@ -35,6 +35,10 @@ public class SoulWisp : MonoBehaviour
     private float arriveRadius;
     private float orbSize;
     private float fadeTimer;
+    private float distToTarget = 99f;
+    private float retractTimer;
+    private float trailBaseTime;
+    private const float RetractTime = 0.18f;
 
     public void Init(HitFeedbackManager manager, TrailRenderer trailRenderer, Transform orbTransform, ParticleSystem sparkSystem)
     {
@@ -64,11 +68,16 @@ public class SoulWisp : MonoBehaviour
         maxSpeed = m.wispHomeMaxSpeed * Random.Range(0.9f, 1.15f);
         rampTime = m.wispHomeRampTime;
         turnRate = m.wispTurnRate;
-        arriveRadius = m.wispArriveRadius;
+        arriveRadius = m.wispEnterDistance;
+        distToTarget = 99f;
         orbSize = m.wispOrbSize * Random.Range(0.8f, 1.2f);
 
         age = 0f;
         phase = Phase.Flying;
+
+        trailBaseTime = m.wispTrailTime;
+        trail.time = trailBaseTime;
+        trail.widthMultiplier = m.wispTrailWidth;
 
         transform.position = origin;
         gameObject.SetActive(true);
@@ -84,7 +93,8 @@ public class SoulWisp : MonoBehaviour
         }
     }
 
-    private void Update()
+    // Runs from LateUpdate, AFTER the animation of this frame, so the aim point inside the player is current
+    private void Move()
     {
         if (phase == Phase.Idle) return;
 
@@ -92,8 +102,28 @@ public class SoulWisp : MonoBehaviour
 
         if (phase == Phase.Fading)
         {
-            // wait until the trail has faded away, then go back to the pool
-            fadeTimer -= Time.unscaledDeltaTime;
+            float udt = Time.unscaledDeltaTime;
+
+            if (retractTimer > 0f)
+            {
+                // the trail is sucked into the player: the head stays glued inside the moving body
+                // while the tail quickly retracts toward it
+                retractTimer -= udt;
+                float k = 1f - Mathf.Clamp01(retractTimer / RetractTime);
+                if (target != null) transform.position = mgr.GetAimPoint(target, targetHeight);
+                trail.time = Mathf.Lerp(trailBaseTime, 0.08f, k);
+
+                if (retractTimer <= 0f)
+                {
+                    trail.emitting = false;
+                    float sparkLife = sparks != null ? sparks.main.startLifetime.constantMax : 0f;
+                    fadeTimer = Mathf.Max(0.12f, sparkLife) + 0.05f;
+                }
+                return;
+            }
+
+            // wait until the last sparks and trail pieces have faded away, then go back to the pool
+            fadeTimer -= udt;
             if (fadeTimer <= 0f) Recycle();
             return;
         }
@@ -102,7 +132,7 @@ public class SoulWisp : MonoBehaviour
         age += dt;
 
         Vector3 pos = transform.position;
-        Vector3 targetPos = target != null ? target.position + Vector3.up * targetHeight : pos;
+        Vector3 targetPos = target != null ? mgr.GetAimPoint(target, targetHeight) : pos;
 
         if (age < homingStart)
         {
@@ -122,14 +152,23 @@ public class SoulWisp : MonoBehaviour
 
             Vector3 to = targetPos - pos;
             float dist = to.magnitude;
-            if (dist <= arriveRadius || age > maxLife)
+            distToTarget = dist;
+
+            Vector3 desired = to / Mathf.Max(dist, 0.0001f) * speed;
+            velocity = Vector3.Lerp(velocity, desired, 1f - Mathf.Exp(-turnRate * (0.5f + t) * dt));
+
+            // final approach: steer straight into the body so the curve ends INSIDE the player
+            if (dist < 1.5f)
+                velocity = Vector3.Lerp(velocity, desired, 1f - Mathf.Exp(-25f * dt));
+
+            // never overshoot or stop short in the air: if this step reaches the target, finish exactly on it
+            Vector3 step = velocity * dt;
+            if (dist <= step.magnitude + arriveRadius || age > maxLife)
             {
-                Arrive(pos);
+                transform.position = targetPos;
+                Arrive(targetPos);
                 return;
             }
-
-            Vector3 desired = to / dist * speed;
-            velocity = Vector3.Lerp(velocity, desired, 1f - Mathf.Exp(-turnRate * (0.5f + t) * dt));
         }
 
         transform.position = pos + velocity * dt;
@@ -137,6 +176,7 @@ public class SoulWisp : MonoBehaviour
 
     private void LateUpdate()
     {
+        Move();
         if (phase != Phase.Flying) return;
 
         Camera cam = HitFeedbackManager.PickCamera(transform.position);
@@ -165,16 +205,19 @@ public class SoulWisp : MonoBehaviour
         // the head pulses a little, and swells while it travels fast
         float pulse = 1f + 0.18f * Mathf.Sin(age * 24f + swirlPhase);
         float speedSwell = 1f + Mathf.Clamp01(velocity.magnitude / 14f) * 0.35f;
-        orb.localScale = new Vector3(mgr.wispHeadStretch.x, mgr.wispHeadStretch.y, 1f) * (orbSize * pulse * speedSwell);
+        // the head shrinks as it sinks into the body
+        float sink = age >= homingStart ? Mathf.Lerp(0.3f, 1f, Mathf.Clamp01(distToTarget / 1.0f)) : 1f;
+        trail.widthMultiplier = mgr.wispTrailWidth * Mathf.Lerp(0.4f, 1f, sink);
+        orb.localScale = new Vector3(mgr.wispHeadStretch.x, mgr.wispHeadStretch.y, 1f) * (orbSize * pulse * speedSwell * sink);
     }
 
     private void Arrive(Vector3 position)
     {
         phase = Phase.Fading;
-        trail.emitting = false;
         orb.gameObject.SetActive(false);
         if (sparks != null) sparks.Stop(true, ParticleSystemStopBehavior.StopEmitting); // existing sparks finish on their own
-        fadeTimer = Mathf.Max(trail.time, sparks != null ? sparks.main.startLifetime.constantMax : 0f) + 0.05f;
+        retractTimer = RetractTime;   // the trail keeps emitting for a moment while it is pulled into the player
+        fadeTimer = 0f;
 
         mgr.OnWispArrived(position, target);
     }

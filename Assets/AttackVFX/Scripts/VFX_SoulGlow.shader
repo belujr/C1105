@@ -29,7 +29,7 @@ Shader "VFX/SoulGlow"
             Name "SoulGlow"
             Blend One One
             ZWrite Off
-            ZTest LEqual
+            ZTest Always   // souls are never hidden behind the player or the scenery
             Cull Off
 
             HLSLPROGRAM

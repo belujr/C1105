@@ -44,12 +44,22 @@ public class HitFeedbackManager : MonoBehaviour
     // ------------------------------------------------------------------ distortion
     [Header("Distortion (material with VFX/HitDistortion, needs Opaque Texture in the URP asset)")]
     public Material distortionMaterial;
-    [Tooltip("Size of the distortion quad (world units). Keep it small so it stays local to the hit.")]
-    public float distortionSize = 1.6f;
-    public float distortionDuration = 0.28f;
-    [Tooltip("Moves the quad toward the camera so it is not buried inside the enemy.")]
-    public float distortionCameraOffset = 0.35f;
-    [Range(0f, 0.1f)] public float distortionStrength = 0.03f;
+    [Header("Hit distortion (every time you hit an enemy)")]
+    [Tooltip("Size of the distortion at the hit point (world units).")]
+    public float hitDistortionSize = 2.2f;
+    public float hitDistortionDuration = 0.3f;
+    [Range(0f, 0.15f)] public float hitDistortionStrength = 0.05f;
+    [Tooltip("Moves the distortion toward the camera so it is not buried inside the enemy. Raise it if the hit distortion is not visible.")]
+    public float hitDistortionCameraOffset = 0.5f;
+
+    [Header("Kill distortion (when an enemy dies and the souls burst out)")]
+    public bool killDistortionEnabled = true;
+    public float killDistortionSize = 2.4f;
+    public float killDistortionDuration = 0.4f;
+    [Range(0f, 0.15f)] public float killDistortionStrength = 0.035f;
+    public float killDistortionCameraOffset = 0.35f;
+
+    [Header("Distortion debug")]
     [Tooltip("Tints the distortion area magenta so you can see where it appears. If you see the magenta circle but nothing bends, 'Opaque Texture' is off in the URP asset.")]
     public bool distortionDebugTint = false;
 
@@ -97,11 +107,43 @@ public class HitFeedbackManager : MonoBehaviour
     public float wispHomeRampTime = 0.6f;
     [Tooltip("How sharply it steers toward the player. Lower = wider curves.")]
     public float wispTurnRate = 7f;
-    public float wispArriveRadius = 0.45f;
+    [Tooltip("The wisp is counted as inside the player when it is this close to the aim point.")]
+    public float wispEnterDistance = 0.12f;
     public float wispOrbSize = 0.32f;
     public float wispTrailTime = 0.5f;
     public float wispTrailWidth = 0.16f;
     [ColorUsage(true, true)] public Color soulColor = new Color(1.8f, 1.1f, 0.3f, 1f);
+
+    [Header("Soul absorb: what the player does when a soul arrives")]
+    public bool enableAbsorb = true;
+    [Tooltip("Material with VFX/SoulBody: glow and energy veins over the player's body.")]
+    public Material absorbBodyMaterial;
+    [Tooltip("Material with VFX/SoulRing: thin rings of energy that contract into the chest.")]
+    public Material absorbRingMaterial;
+    [ColorUsage(true, true)] public Color absorbEdgeColor = new Color(1.5f, 0.45f, 0.1f, 1f);
+    [Tooltip("Energy added by each soul that arrives.")]
+    public float absorbPerSoul = 0.6f;
+    [Tooltip("Maximum energy level (several souls in a row stack up to this).")]
+    public float absorbMax = 1.5f;
+    [Tooltip("Seconds for the energy to fade from 1 to 0.")]
+    public float absorbDecay = 0.9f;
+    [Tooltip("Glow and energy veins on the body. Set to 0 to turn the body glow off and keep only the rings.")]
+    public float absorbBodyIntensity = 1.2f;
+    [Header("Absorb rings")]
+    public float absorbRingIntensity = 2.5f;
+    [Tooltip("Radius the ring starts at (world units).")]
+    public float absorbRingStartRadius = 1.0f;
+    [Tooltip("Radius the ring shrinks to, inside the body.")]
+    public float absorbRingEndRadius = 0.2f;
+    [Tooltip("Seconds for a ring to contract into the chest.")]
+    public float absorbRingDuration = 0.55f;
+    [Tooltip("How fast the energy arcs spin around the ring.")]
+    public float absorbRingSpin = 2.2f;
+    public float absorbScrollSpeed = 2.5f;
+    [Tooltip("Orbiting sparks per second at full energy.")]
+    public float absorbSparkRate = 45f;
+    [Tooltip("Shifts the aim point toward the camera. Keep at 0 so souls end INSIDE the body (they are drawn on top anyway).")]
+    public float soulAimTowardCamera = 0f;
 
     [Header("Soul glow, head shape and trail sparks")]
     [Tooltip("How bright the head glows. With Bloom on, higher = bigger glow.")]
@@ -153,6 +195,10 @@ public class HitFeedbackManager : MonoBehaviour
     private Transform wispRoot;
     private Material runtimeSoulTrail;
     private Material runtimeSoulOrb;
+    private Transform cachedAbsorbTarget;
+    private PlayerSoulAbsorbFX cachedAbsorb;
+    private Material runtimeAbsorbBody;
+    private Material runtimeAbsorbRing;
 
     // ------------------------------------------------------------------ lifetime
     public static HitFeedbackManager Get()
@@ -223,7 +269,8 @@ public class HitFeedbackManager : MonoBehaviour
             }
         }
 
-        if (enableDistortion) SpawnDistortion(point, intensity, 1f);
+        if (enableDistortion)
+            SpawnDistortion(point, intensity, hitDistortionSize, hitDistortionDuration, hitDistortionStrength, hitDistortionCameraOffset);
 
         // shards leave from the BACK of the enemy (the side away from the player)
         Vector3 behind = point + hitDirection * 0.25f;
@@ -238,7 +285,8 @@ public class HitFeedbackManager : MonoBehaviour
         if (awayDirection.sqrMagnitude < 0.0001f) awayDirection = Vector3.forward;
         awayDirection.Normalize();
 
-        if (enableDistortion) SpawnDistortion(center, 1f, 1.5f);
+        if (enableDistortion && killDistortionEnabled)
+            SpawnDistortion(center, 1f, killDistortionSize, killDistortionDuration, killDistortionStrength, killDistortionCameraOffset);
         if (enableDebris) EmitDebris(center, awayDirection, debrisOnKill);
         if (enableSouls) SpawnWisps(center, awayDirection, Random.Range(soulsPerKillMin, Mathf.Max(soulsPerKillMin, soulsPerKillMax) + 1));
     }
@@ -297,7 +345,7 @@ public class HitFeedbackManager : MonoBehaviour
     }
 
     // ------------------------------------------------------------------ distortion + flashes
-    private void SpawnDistortion(Vector3 point, float intensity, float sizeScale)
+    private void SpawnDistortion(Vector3 point, float intensity, float size, float duration, float strength, float cameraOffset)
     {
         Material mat = GetDistortionMaterial();
         if (mat == null) return;
@@ -308,13 +356,13 @@ public class HitFeedbackManager : MonoBehaviour
         Pulse p = freePulses.Count > 0 ? freePulses.Pop() : CreatePulse("HitDistortion", mat);
 
         p.isFlash = false;
-        p.size = distortionSize * (0.8f + 0.5f * intensity) * sizeScale;
-        p.dur = distortionDuration;
+        p.size = size * (0.85f + 0.3f * intensity);
+        p.dur = duration;
         p.t0 = Time.unscaledTime;
-        p.strength = distortionStrength * (0.6f + 0.8f * intensity);
+        p.strength = strength * (0.8f + 0.4f * intensity);
         p.seed = Random.value * 10f;
 
-        p.tf.position = point + (cam.transform.position - point).normalized * distortionCameraOffset;
+        p.tf.position = point + (cam.transform.position - point).normalized * cameraOffset;
         p.tf.localScale = Vector3.one * p.size;
         p.tf.gameObject.SetActive(true);
         activePulses.Add(p);
@@ -655,12 +703,72 @@ public class HitFeedbackManager : MonoBehaviour
     public void OnWispArrived(Vector3 position, Transform target)
     {
         SpawnAbsorbFlash(position);
+        if (enableAbsorb)
+        {
+            PlayerSoulAbsorbFX fx = GetAbsorbFx(target);
+            if (fx != null) fx.Absorb();
+        }
         if (WispArrived != null) WispArrived(1);
     }
 
     public void ReturnWisp(SoulWisp wisp)
     {
         wispPool.Push(wisp);
+    }
+
+    // ------------------------------------------------------------------ player absorb
+    private PlayerSoulAbsorbFX GetAbsorbFx(Transform target)
+    {
+        if (target == null) return null;
+        if (target == cachedAbsorbTarget && cachedAbsorb != null) return cachedAbsorb;
+
+        PlayerSoulAbsorbFX fx = target.GetComponent<PlayerSoulAbsorbFX>();
+        if (fx == null) fx = target.gameObject.AddComponent<PlayerSoulAbsorbFX>();
+        fx.Init(this);
+
+        cachedAbsorbTarget = target;
+        cachedAbsorb = fx;
+        return fx;
+    }
+
+    /// <summary>The point souls fly to: the middle of the player's body, a little toward the camera.</summary>
+    public Vector3 GetAimPoint(Transform target, float fallbackHeight)
+    {
+        Vector3 p = target.position + Vector3.up * fallbackHeight;
+
+        PlayerSoulAbsorbFX fx = enableAbsorb ? GetAbsorbFx(target) : null;
+        if (fx != null) p = fx.ChestPoint;
+
+        Camera cam = PickCamera(p);
+        if (cam != null && soulAimTowardCamera > 0f)
+            p += (cam.transform.position - p).normalized * soulAimTowardCamera;
+
+        return p;
+    }
+
+    public Material GetAbsorbBodyMaterial()
+    {
+        if (absorbBodyMaterial != null) return absorbBodyMaterial;
+        if (runtimeAbsorbBody != null) return runtimeAbsorbBody;
+        Shader s = Shader.Find("VFX/SoulBody");
+        if (s == null) { Debug.LogError("[HitFeedbackManager] Assign a material with the VFX/SoulBody shader."); return null; }
+        runtimeAbsorbBody = new Material(s);
+        return runtimeAbsorbBody;
+    }
+
+    public Material GetAbsorbRingMaterial()
+    {
+        if (absorbRingMaterial != null) return absorbRingMaterial;
+        if (runtimeAbsorbRing != null) return runtimeAbsorbRing;
+        Shader s = Shader.Find("VFX/SoulRing");
+        if (s == null) { Debug.LogError("[HitFeedbackManager] Assign a material with the VFX/SoulRing shader."); return null; }
+        runtimeAbsorbRing = new Material(s);
+        return runtimeAbsorbRing;
+    }
+
+    public Material GetSoulOrbMaterial()
+    {
+        return GetSoulMaterial(true);
     }
 
     // ------------------------------------------------------------------ helpers

@@ -349,11 +349,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_Name
@@ -361,7 +361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5856193800140614583, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -727,11 +727,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_Name
@@ -739,7 +739,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5856193800140614583, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2110,11 +2110,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_Name
@@ -2122,7 +2122,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5856193800140614583, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2479,10 +2479,15 @@ MonoBehaviour:
   glowIntensity: 1
   logGlowShells: 0
   distortionMaterial: {fileID: 2100000, guid: 9980cb50b932d7d4db334927b846beae, type: 2}
-  distortionSize: 1.6
-  distortionDuration: 0.28
-  distortionCameraOffset: 0.35
-  distortionStrength: 0.05
+  hitDistortionSize: 2.2
+  hitDistortionDuration: 0.3
+  hitDistortionStrength: 0.1116
+  hitDistortionCameraOffset: 0.5
+  killDistortionEnabled: 1
+  killDistortionSize: 2.4
+  killDistortionDuration: 0.4
+  killDistortionStrength: 0.035
+  killDistortionCameraOffset: 0.35
   distortionDebugTint: 0
   debrisMaterial: {fileID: 0}
   debrisColorA: {r: 0.12, g: 0.2, b: 0.22, a: 1}
@@ -2512,11 +2517,27 @@ MonoBehaviour:
   wispHomeMaxSpeed: 24
   wispHomeRampTime: 0.6
   wispTurnRate: 7
-  wispArriveRadius: 0.45
+  wispEnterDistance: 0.12
   wispOrbSize: 0.1
   wispTrailTime: 0.5
   wispTrailWidth: 0.16
   soulColor: {r: 1.8, g: 1.1, b: 0.3, a: 1}
+  enableAbsorb: 1
+  absorbBodyMaterial: {fileID: 2100000, guid: 82d2a93c1e43dfe4a970a0cfd98b53c3, type: 2}
+  absorbRingMaterial: {fileID: 2100000, guid: 0582d3a7ea19f8749ae4dbe968d92485, type: 2}
+  absorbEdgeColor: {r: 1.5, g: 0.45, b: 0.1, a: 1}
+  absorbPerSoul: 0.6
+  absorbMax: 1.5
+  absorbDecay: 0.9
+  absorbBodyIntensity: 1.6
+  absorbRingIntensity: 2.5
+  absorbRingStartRadius: 1
+  absorbRingEndRadius: 0.2
+  absorbRingDuration: 0.55
+  absorbRingSpin: 2.2
+  absorbScrollSpeed: 2.5
+  absorbSparkRate: 45
+  soulAimTowardCamera: 0
   wispOrbIntensity: 3.5
   wispTrailIntensity: 2.5
   wispHeadShape: {fileID: 2800000, guid: 84ffdfb6738576943a88f60e0e787a86, type: 3}
@@ -3778,11 +3799,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2666779237141920311, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_Name
@@ -3790,7 +3811,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4866244256743725726, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5856193800140614583, guid: 00633c23c312a054cbc7a4b80846d49b, type: 3}
       propertyPath: m_LocalPosition.x
