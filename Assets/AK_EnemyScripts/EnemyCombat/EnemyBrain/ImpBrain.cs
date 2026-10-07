@@ -20,6 +20,19 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
     private CharacterController charController;
     private Collider capsuleCollider; 
 
+    [Header("Movement Stability")]
+[SerializeField] private float rangeBuffer = 1.0f;
+[SerializeField] private float minModeHold = 0.4f;
+[SerializeField] private float dirSmoothing = 8f;
+[SerializeField] private LayerMask enemyLayers = ~0;
+
+private enum MoveMode { Strafe, Backpedal, Approach }
+private MoveMode moveMode = MoveMode.Strafe;
+private float moveModeTimer;
+private Vector3 smoothedDir;[Header("Movement Stability")]
+
+
+
     [Header("Core References & Animation Profiles")]
     public PlayerController player;
     public EnemyAnimProfile animProfile;
@@ -152,6 +165,8 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
         UpdateHumpVisuals(0f);
         FindPlayerReference();
         OnRevive?.Invoke();
+
+        moveMode = MoveMode.Strafe; moveModeTimer = 0f; smoothedDir = Vector3.zero;
     }
 
     private void OnDisable()
@@ -261,43 +276,79 @@ public class ImpBrain : MonoBehaviour, IDamageable, IHealable
             lastPlayedLocomotionState = stateKey;
             if (clip != null) animationEngine.PlayAnimation(clip, duration, speedMultiplier);
         }
+        
     }
 
-    private void HandlePureRangedMovement(float distToTarget)
+   private void HandlePureRangedMovement(float distToTarget)
+{
+    float dt = Time.deltaTime;
+
+    strafeTimer -= dt;
+    if (strafeTimer <= 0f)
     {
-        strafeTimer -= Time.deltaTime;
-        if (strafeTimer <= 0f)
-        {
-            strafeTimer = Random.Range(1.5f, 3.0f);
-            strafeDir = Random.value > 0.5f ? 1 : -1;
-        }
-
-        Vector3 dirToTarget = (playerTransform.position - cachedTransform.position).normalized;
-        dirToTarget.y = 0f;
-        Vector3 rightDir = Vector3.Cross(Vector3.up, dirToTarget).normalized;
-        Vector3 separationForce = CalculateSeparationForce();
-        Vector3 moveDir = Vector3.zero;
-
-        if (distToTarget < minimumSafeDistance) moveDir = -dirToTarget + separationForce;
-        else if (distToTarget > preferredRange) moveDir = dirToTarget + separationForce;
-        else moveDir = (rightDir * strafeDir) + (dirToTarget * 0.15f) + separationForce;
-
-        moveDir.Normalize();
-
-        if (charController != null && charController.enabled)
-        {
-            charController.Move((moveDir * impMoveSpeed + new Vector3(0, fallVelocity, 0)) * Time.deltaTime);
-        }
-
-        if (animProfile != null)
-        {
-            AnimationClip moveClip = distToTarget < minimumSafeDistance ? animProfile.walkClip : (strafeDir > 0 ? animProfile.strafeRightClip : animProfile.strafeLeftClip);
-            if (moveClip == null) moveClip = animProfile.walkClip;
-            
-            string moveKey = distToTarget < minimumSafeDistance ? "Backpedal" : (strafeDir > 0 ? "StrafeRight" : "StrafeLeft");
-            UpdateLocomotionAnimation(moveKey, moveClip, animProfile.walkTransitionDuration);
-        }
+        strafeTimer = Random.Range(1.5f, 3.0f);
+        strafeDir = Random.value > 0.5f ? 1 : -1;
     }
+
+    // Buffer plus minimum hold: the Imp can't flip modes every frame
+    moveModeTimer -= dt;
+    if (moveModeTimer <= 0f)
+    {
+        MoveMode wanted = moveMode;
+        switch (moveMode)
+        {
+            case MoveMode.Strafe:
+                if (distToTarget < minimumSafeDistance) wanted = MoveMode.Backpedal;
+                else if (distToTarget > preferredRange) wanted = MoveMode.Approach;
+                break;
+            case MoveMode.Backpedal:
+                if (distToTarget > minimumSafeDistance + rangeBuffer) wanted = MoveMode.Strafe;
+                break;
+            case MoveMode.Approach:
+                if (distToTarget < preferredRange - rangeBuffer) wanted = MoveMode.Strafe;
+                break;
+        }
+        if (wanted != moveMode) { moveMode = wanted; moveModeTimer = minModeHold; }
+    }
+
+    Vector3 dirToTarget = playerTransform.position - cachedTransform.position;
+    dirToTarget.y = 0f;
+    dirToTarget.Normalize();
+    Vector3 rightDir = Vector3.Cross(Vector3.up, dirToTarget);
+    Vector3 sep = Vector3.ClampMagnitude(CalculateSeparationForce(), 1f);
+
+    Vector3 desired;
+    switch (moveMode)
+    {
+        case MoveMode.Backpedal: desired = -dirToTarget + sep; break;
+        case MoveMode.Approach:  desired = dirToTarget + sep; break;
+        default:                 desired = rightDir * strafeDir + dirToTarget * 0.15f + sep; break;
+    }
+    desired.y = 0f;
+    if (desired.sqrMagnitude > 0.0001f) desired.Normalize();
+
+    smoothedDir = Vector3.Lerp(smoothedDir, desired, 1f - Mathf.Exp(-dirSmoothing * dt));
+
+    if (charController != null && charController.enabled)
+        charController.Move((smoothedDir * impMoveSpeed + new Vector3(0f, fallVelocity, 0f)) * dt);
+
+    if (animProfile != null)
+    {
+        AnimationClip clip; string key;
+        if (moveMode == MoveMode.Strafe)
+        {
+            clip = strafeDir > 0 ? animProfile.strafeRightClip : animProfile.strafeLeftClip;
+            key = strafeDir > 0 ? "StrafeRight" : "StrafeLeft";
+        }
+        else
+        {
+            clip = animProfile.walkClip;
+            key = moveMode == MoveMode.Backpedal ? "Backpedal" : "Approach";
+        }
+        if (clip == null) clip = animProfile.walkClip;
+        UpdateLocomotionAnimation(key, clip, animProfile.walkTransitionDuration);
+    }
+}
 
     private void TryInitiateAttackToken(float distToTarget)
     {

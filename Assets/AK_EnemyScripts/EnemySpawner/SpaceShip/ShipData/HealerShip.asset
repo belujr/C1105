@@ -13,11 +13,71 @@ MonoBehaviour:
   m_Name: HealerShip
   m_EditorClassIdentifier: Assembly-CSharp::SpaceshipData
   shipTypeName: Medium Dropper
-  shipPrefab: {fileID: 0}
+  shipPrefab: {fileID: 919132149155446097, guid: 5754e3bb5a2f158409b7fb1d71ddd201, type: 3}
   enemyPrefabs:
   - {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
-  payloadCapacity: 1
-  flyInSpeed: 15
-  flyOutSpeed: 20
+  - {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
+  payloadCapacity: 3
   dropInterval: 0.5
   dropScatterRadius: 3
+  approachDuration: 2
+  exitDuration: 1.5
+  approachCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  exitCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  springStiffness: 150
+  springDamping: 10
+  settleVelocityThreshold: 0.5
+  hoverAltitude: 8
+  noiseBobAmplitude: 0.5
+  noiseBobSpeed: 2
+  maxBankAngle: 25
+  maxPitchAngle: 15
+  anticipationDuration: 0.4
+  anticipationDipAmount: 1.5
+  anticipationPitch: -10

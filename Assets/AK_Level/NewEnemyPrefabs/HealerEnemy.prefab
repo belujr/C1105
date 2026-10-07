@@ -1564,10 +1564,8 @@ GameObject:
   - component: {fileID: 3407209324302937694}
   - component: {fileID: 3800094729827894006}
   - component: {fileID: 949792039063650934}
-  - component: {fileID: -2929144680375706838}
   - component: {fileID: -283457519853075153}
-  - component: {fileID: -2207842003765525363}
-  - component: {fileID: -6477008709368830855}
+  - component: {fileID: -8700245977824716450}
   m_Layer: 6
   m_Name: HealerEnemy
   m_TagString: Untagged
@@ -1850,18 +1848,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5655663c2e28cc845aea328b62ac78bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Animation.EnemyAnimationEngine
---- !u!114 &-2929144680375706838
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5078519104124031077}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dbcaf9228fab1442a4d532b12a11614, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconEnemyLink
 --- !u!143 &-283457519853075153
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1887,7 +1873,7 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-2207842003765525363
+--- !u!114 &-8700245977824716450
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1896,26 +1882,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 5078519104124031077}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5526c34f93834d344a5b32f85a2e8323, type: 3}
+  m_Script: {fileID: 11500000, guid: 9aef346cb3a73334394759950f862757, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyGravityHandler
-  gravityForce: 20
-  ignoreGravityLayers:
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyShipPassenger
+  hangingClip: {fileID: -203655887218126122, guid: 7a7d742ae98080e4a908c10dd751259d, type: 3}
+  landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  gravity: 25
+  maxFallSpeed: 40
+  groundMask:
     serializedVersion: 2
-    m_Bits: 0
---- !u!114 &-6477008709368830855
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5078519104124031077}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7413432bf592a8948b9e50504407101f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyDropCollisionController
-  groundCheckDistance: 0.3
+    m_Bits: 1024
+  landingDuration: 1
+  enemyBrain: {fileID: 3407209324302937694}
 --- !u!1 &5087399752066316084
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,7 +8,7 @@ public class BeaconSpawnerManager : MonoBehaviour
     [SerializeField] private BeaconHealth beaconHealth;
 
     [SerializeField] private int maxAliveEnemies = 15;
-[SerializeField] private int maxShipsInTransit = 3;
+    [SerializeField] private int maxShipsInTransit = 3;
 
     [Header("Spaceship Configuration")]
     [Tooltip("Prefab of the spaceship (must have SpaceshipController attached).")]
@@ -130,6 +130,11 @@ public class BeaconSpawnerManager : MonoBehaviour
             return;
         }
 
+        if (IsoCameraRig.Instance != null)
+        {
+            IsoCameraRig.Instance.IsMidCombat = (activeEnemies.Count > 0);
+        }
+
         SpaceshipData selectedData = availableShipTypes[Random.Range(0, availableShipTypes.Length)];
 
         Vector3 spawnPos = spawnWaypoints.Length > 0 ? spawnWaypoints[Random.Range(0, spawnWaypoints.Length)].position : transform.position + Vector3.back * 30f;
@@ -181,14 +186,17 @@ public class BeaconSpawnerManager : MonoBehaviour
         {
             if (enemy != null && enemy.activeInHierarchy)
             {
-                DummyHealth health = enemy.GetComponent<DummyHealth>();
-                if (health != null)
+                // FIX: Both ImpBrain and UltraInstinctCapsule implement IDamageable. 
+                IDamageable damageable = enemy.GetComponentInChildren<IDamageable>();
+                
+                if (damageable != null)
                 {
-                   health.TakeDamage(99999f, enemy.transform.position, Vector3.up);
+                   // FIX: Filled in the missing parameters (force, sound, attackID, isAOE)
+                   damageable.TakeDamage(99999f, enemy.transform.position, Vector3.up, 0f, null, 0, false);
                 }
                 else
                 {
-                    EnemyObjectPool.Instance?.ReturnToPool(enemy);
+                    Debug.LogWarning($"[Spawner] No IDamageable found on {enemy.name}. Cannot kill!");
                 }
             }
         }
@@ -250,7 +258,10 @@ private System.Collections.IEnumerator EscalationSpawnRoutine()
         }
 
         StopAllCoroutines();
-        activeEnemies.Clear();
+        
+        // FIX: Instantly deal lethal damage to all spawned enemies before shutting down
+        KillAllActiveEnemies(); 
+        
         activeShipsInTransit = 0;
     }
 }

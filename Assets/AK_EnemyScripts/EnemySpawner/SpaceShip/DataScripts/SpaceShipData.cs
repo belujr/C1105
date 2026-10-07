@@ -4,31 +4,39 @@ using UnityEngine;
 public class SpaceshipData : ScriptableObject
 {
     [Header("Ship Identity")]
-    [Tooltip("Name identifier for this ship type (e.g., Medium Dropper, Large Dropper, Elite Dropper).")]
     public string shipTypeName = "Medium Dropper";
-    
-    [Tooltip("The visual prefab representing the spaceship model.")]
     public GameObject shipPrefab;
 
     [Header("Payload Configuration")]
-    [Tooltip("The list of possible enemy prefabs this ship can deploy.")]
     public GameObject[] enemyPrefabs;
-
-    [Range(1, 10)]
-    [Tooltip("Exact number of enemies this ship will drop per trip.")]
-    public int payloadCapacity = 4;
-
-    [Header("Flight Parameters")]
-    [Tooltip("Speed at which the ship flies into the drop zone.")]
-    public float flyInSpeed = 15f;
-
-    [Tooltip("Speed at which the ship flies away after dropping its payload.")]
-    public float flyOutSpeed = 20f;
-
-    [Header("Drop Mechanics")]
-    [Tooltip("Delay in seconds between each individual enemy drop.")]
+    [Range(1, 10)] public int payloadCapacity = 4;
     public float dropInterval = 0.5f;
-
-    [Tooltip("Maximum scatter radius around the drop target where enemies land, preventing them from stacking.")]
     public float dropScatterRadius = 3f;
+
+    [Header("Flight Timing & Speed")]
+    [Tooltip("Duration in seconds of the approach phase.")]
+    public float approachDuration = 2.0f;
+    [Tooltip("Duration in seconds of the exit phase.")]
+    public float exitDuration = 1.5f;
+    public AnimationCurve approachCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    public AnimationCurve exitCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    
+    [Header("Stabilize Spring (Overshoot)")]
+    public float springStiffness = 150f;
+    public float springDamping = 10f;
+    [Tooltip("How close the spring velocity must be to 0 to allow dropping.")]
+    public float settleVelocityThreshold = 0.5f;
+
+    [Header("Hover Visuals")]
+    public float hoverAltitude = 8f;
+    public float noiseBobAmplitude = 0.5f;
+    public float noiseBobSpeed = 2f;
+    public float maxBankAngle = 25f;
+    public float maxPitchAngle = 15f;
+    
+    [Header("Exit Anticipation")]
+    [Tooltip("Time spent dipping before accelerating away.")]
+    public float anticipationDuration = 0.4f;
+    public float anticipationDipAmount = 1.5f;
+    public float anticipationPitch = -10f;
 }

@@ -21,6 +21,7 @@ public class HealerController : MonoBehaviour, IDamageable
     public Transform staffTransform;
     public GameObject batPrefab;
     private LineRenderer healBeam;
+    private Collider bodyCollider;
 
     [Header("Core References & Animation Profiles")]
     public EnemyAnimProfile animProfile;
@@ -74,11 +75,47 @@ public class HealerController : MonoBehaviour, IDamageable
     private float strafeChangeTimer = 0f;
     private int strafeDirectionSign = 1;
 
+    [Header("State Stability")]
+    [Tooltip("Extra distance the player must retreat before the Healer stops backing away.")]
+    [SerializeField] private float distanceBuffer = 1.5f;
+    [Tooltip("Extra distance past Heal Range before the Healer stops healing and walks to the ally.")]
+    [SerializeField] private float healRangeBuffer = 1.0f;
+    [Tooltip("Seconds between ally searches.")]
+    [SerializeField] private float allySearchInterval = 0.3f;
+
+    private bool isBackingAway;
+    private bool isHealingInRange;
+    private float allySearchTimer;
+
+    [Header("Camera Visibility Gate")]
+    [Tooltip("The Healer never spawns bats until it has been inside the camera view at least once.")]
+    [SerializeField] private bool requireSightingBeforeSpawning = true;
+    [Tooltip("If on, the bat timer also pauses whenever the Healer is off-screen, not only before the first sighting.")]
+    [SerializeField] private bool spawnOnlyWhileVisible = false;
+    [Tooltip("How far inside the screen edge (0-0.5 of the screen) the Healer must be to count as seen.")]
+    [SerializeField] private float viewportEdgePadding = 0.03f;
+    [Tooltip("Height above the Healer's pivot used for the visibility check (about chest height).")]
+    [SerializeField] private float visibilityHeightOffset = 1.0f;
+
+    private Camera viewCamera;
+    private bool hasBeenSeen;
+
+    private void OnDisable()
+    {
+        // Disabling the script (pool / ship passenger) must also cancel a running spawn sequence
+        StopAllCoroutines();
+        spawnRoutine = null;
+        isSpawning = false;
+        pendingSpawnAfterHit = false;
+        if (healBeam != null) healBeam.enabled = false;
+    }
+
     private void Awake()
     {
         healBeam = GetComponent<LineRenderer>();
         healBeam.enabled = false;
         healBeam.useWorldSpace = true; // Prevents LineRenderer stretching glitches
+        bodyCollider = GetComponent<Collider>();
         animationEngine = GetComponent<EnemyAnimationEngine>();
 
         if (animProfile != null) animProfile.InitializeDictionary();
@@ -99,10 +136,19 @@ public class HealerController : MonoBehaviour, IDamageable
         currentAllyTarget = null;
         lastPlayedLocomotionState = "";
 
+        isBackingAway = false;
+        isHealingInRange = false;
+        allySearchTimer = 0f;
+        hasBeenSeen = !requireSightingBeforeSpawning;
+
+        // The pool disables the collider before mounting; make sure the Healer is hittable once active
+        if (bodyCollider != null) bodyCollider.enabled = true;
+
         if (playerTransform == null) playerTransform = FindObjectOfType<PlayerController>()?.transform;
 
-        // Play spawn hand-raise animation on start/enable
-        TriggerSpawnSequence();
+        // The opening hand-raise and first bats now wait for the first camera sighting
+        // (handled in HandleBatSpawningTimer). With the gate turned off, spawn immediately as before.
+        if (hasBeenSeen) TriggerSpawnSequence();
     }
 
     private void TriggerSpawnSequence()
@@ -214,6 +260,21 @@ public class HealerController : MonoBehaviour, IDamageable
 
     private void HandleBatSpawningTimer()
     {
+        bool visible = IsInPlayerCameraView();
+
+        // Gate: no bats until the camera has seen this Healer
+        if (!hasBeenSeen)
+        {
+            if (!visible) return;
+
+            hasBeenSeen = true;
+            spawnTimer = batSpawnInterval;
+            TriggerSpawnSequence(); // opening hand-raise + first bats, now that the player can see it
+            return;
+        }
+
+        if (spawnOnlyWhileVisible && !visible) return;
+
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f)
         {
@@ -222,15 +283,40 @@ public class HealerController : MonoBehaviour, IDamageable
         }
     }
 
+    private bool IsInPlayerCameraView()
+    {
+        if (viewCamera == null)
+        {
+            viewCamera = Camera.main;
+            if (viewCamera == null) return false;
+        }
+
+        Vector3 vp = viewCamera.WorldToViewportPoint(transform.position + Vector3.up * visibilityHeightOffset);
+
+        return vp.z > 0f
+            && vp.x > viewportEdgePadding && vp.x < 1f - viewportEdgePadding
+            && vp.y > viewportEdgePadding && vp.y < 1f - viewportEdgePadding;
+    }
+
     private void ManageBehavior()
     {
         float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // 1. BACKWALK: If player gets too close, back away while facing the player
-        if (distToPlayer < maintainPlayerDistance)
+        // 1. BACKWALK: If player gets too close, back away while facing the player.
+        // Hysteresis: starts below maintainPlayerDistance, stops only beyond maintainPlayerDistance + distanceBuffer.
+        if (isBackingAway)
+        {
+            if (distToPlayer > maintainPlayerDistance + distanceBuffer) isBackingAway = false;
+        }
+        else if (distToPlayer < maintainPlayerDistance)
+        {
+            isBackingAway = true;
+        }
+
+        if (isBackingAway)
         {
             StopHealing();
-            
+
             Vector3 dirAwayFromPlayer = (transform.position - playerTransform.position).normalized;
             dirAwayFromPlayer.y = 0f;
             transform.position += dirAwayFromPlayer * moveSpeed * Time.deltaTime;
@@ -242,11 +328,22 @@ public class HealerController : MonoBehaviour, IDamageable
             return;
         }
 
-        // 2. FIND ALLY: Look for someone to heal
-        if (currentAllyTarget == null || !currentAllyTarget.NeedsHealing())
+        // 2. FIND ALLY: Look for someone to heal (throttled search, no per-frame overlap queries)
+        if (currentAllyTarget != null && !currentAllyTarget.NeedsHealing())
+        {
+            currentAllyTarget = null;
+            isHealingInRange = false;
+        }
+
+        if (currentAllyTarget == null)
         {
             StopHealing();
-            FindLowestHealthAlly();
+            allySearchTimer -= Time.deltaTime;
+            if (allySearchTimer <= 0f)
+            {
+                allySearchTimer = allySearchInterval;
+                FindLowestHealthAlly();
+            }
         }
 
         // 3. MOVE TO OR HEAL ALLY
@@ -255,14 +352,27 @@ public class HealerController : MonoBehaviour, IDamageable
             Transform allyTransform = currentAllyTarget.GetTransform();
             float distToAlly = Vector3.Distance(transform.position, allyTransform.position);
 
-            if (distToAlly > healRange)
+            // Heal-range hysteresis: enters at healRange, leaves only beyond healRange + healRangeBuffer
+            if (isHealingInRange)
+            {
+                if (distToAlly > healRange + healRangeBuffer) isHealingInRange = false;
+            }
+            else if (distToAlly <= healRange)
+            {
+                isHealingInRange = true;
+            }
+
+            if (!isHealingInRange)
             {
                 // Move towards ally
                 StopHealing();
                 Vector3 moveDir = (allyTransform.position - transform.position).normalized;
                 moveDir.y = 0f;
                 transform.position += moveDir * moveSpeed * Time.deltaTime;
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDir), 10f * Time.deltaTime);
+                if (moveDir != Vector3.zero)
+                {
+                    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDir), 10f * Time.deltaTime);
+                }
 
                 UpdateLocomotionAnimation("MoveToAlly", animProfile != null ? animProfile.walkClip : null, 0.15f, walkAnimationSpeed);
             }
@@ -318,20 +428,20 @@ public class HealerController : MonoBehaviour, IDamageable
     {
         currentAllyTarget = null;
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, allySearchRadius, searchBuffer);
-        
+
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = searchBuffer[i];
             if (hit.gameObject != gameObject)
             {
                 IHealable healableAlly = hit.GetComponentInParent<IHealable>();
-                
+
                 if (healableAlly != null && healableAlly.GetTransform() != transform)
                 {
                     if (healableAlly.NeedsHealing())
                     {
                         currentAllyTarget = healableAlly;
-                        break; 
+                        break;
                     }
                 }
             }
@@ -345,7 +455,10 @@ public class HealerController : MonoBehaviour, IDamageable
         // Look at ally
         Vector3 lookDir = (allyTransform.position - transform.position).normalized;
         lookDir.y = 0f;
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDir), 10f * Time.deltaTime);
+        if (lookDir != Vector3.zero)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDir), 10f * Time.deltaTime);
+        }
 
         // Point staff at ally
         if (staffTransform != null)
@@ -369,7 +482,7 @@ public class HealerController : MonoBehaviour, IDamageable
     private void StopHealing()
     {
         healBeam.enabled = false;
-        
+
         if (staffTransform != null)
         {
             staffTransform.localRotation = Quaternion.Slerp(staffTransform.localRotation, Quaternion.identity, 10f * Time.deltaTime);
@@ -382,10 +495,10 @@ public class HealerController : MonoBehaviour, IDamageable
 
         StopHealing();
         currentHealth -= damage;
-        
+
         Vector3 pushDir = hitDirection;
         pushDir.y = 0f;
-        transform.position += pushDir.normalized * (force * 0.5f); 
+        transform.position += pushDir.normalized * (force * 0.5f);
 
         // If he gets hit while spawning, cancel the current spawn sequence immediately so bats don't spawn
         if (isSpawning)
@@ -448,7 +561,7 @@ public class HealerController : MonoBehaviour, IDamageable
         isSpawning = false;
         pendingSpawnAfterHit = false;
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
-        
+
         if (animProfile != null && animProfile.deathClip != null && animationEngine != null)
         {
             animationEngine.PlayAnimation(animProfile.deathClip, animProfile.deathTransitionDuration, animProfile.deathPlaybackSpeed);

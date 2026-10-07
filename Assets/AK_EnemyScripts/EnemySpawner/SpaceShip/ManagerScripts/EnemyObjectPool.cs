@@ -96,11 +96,15 @@ public class EnemyObjectPool : MonoBehaviour
 
         var collider = enemyInstance.GetComponent<Collider>();
         if (collider != null) collider.enabled = false;
-        var capsuleBrain = enemyInstance.GetComponent<UltraInstinctCapsule>();
-if (capsuleBrain != null) capsuleBrain.enabled = false;
 
-var impBrain = enemyInstance.GetComponent<ImpBrain>();
-if (impBrain != null) impBrain.enabled = false;
+        var capsuleBrain = enemyInstance.GetComponent<UltraInstinctCapsule>();
+        if (capsuleBrain != null) capsuleBrain.enabled = false;
+
+        var impBrain = enemyInstance.GetComponent<ImpBrain>();
+        if (impBrain != null) impBrain.enabled = false;
+
+        var healerBrain = enemyInstance.GetComponent<HealerController>();
+        if (healerBrain != null) healerBrain.enabled = false;
 
         // 2. Set transform safely
         enemyInstance.transform.SetPositionAndRotation(position, rotation);
