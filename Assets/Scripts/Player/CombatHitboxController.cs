@@ -28,6 +28,12 @@ public class CombatHitboxController : MonoBehaviour
     [Tooltip("Logs to the Console every time a VFX is spawned (or when one is missing).")]
     public bool debugVFX = false;
 
+    [Header("Enemy hit feedback (glow, distortion, debris, soul wisps)")]
+    [Tooltip("Plays the HitFeedbackManager effects on the enemy when a hit lands.")]
+    public bool enemyHitFeedback = true;
+    [Tooltip("Damage that counts as a full-strength hit for the feedback effects.")]
+    public float heavyHitDamage = 30f;
+
     public enum VFXAnchor { Limb, ContactPoint, Midpoint, EnemyBody }
     [Tooltip("Where single-target VFX spawn:\n" +
              "Limb = on the striking fist/foot\n" +
@@ -198,6 +204,7 @@ public class CombatHitboxController : MonoBehaviour
 
                         Vector3 hitDirection = forceVector.normalized;
                         damageable.TakeDamage(finalDamage, hitPoint, hitDirection, finalForce, currentHit.customHitSound, currentHit.attackID, true);
+                        PlayEnemyHitFeedback(damageable as Component, hitPoint, hitDirection, finalDamage);
                         validHitCount++;
                     }
                 }
@@ -236,6 +243,10 @@ public class CombatHitboxController : MonoBehaviour
                     Vector3 exactHitPoint = enemyCol.ClosestPoint(currentActiveLimb.position);
 
                     damageable.TakeDamage(finalDamage, exactHitPoint, hitDirection, finalKnockback, currentHit.customHitSound, currentHit.attackID, false);
+
+                    // glow + distortion + debris + soul wisps on the enemy (skill preview uses its fixed hit point)
+                    Vector3 feedbackPoint = (previewAttack != null && previewHitPoint != null) ? previewHitPoint.position : exactHitPoint;
+                    PlayEnemyHitFeedback(damageable as Component, feedbackPoint, hitDirection, finalDamage);
 
                     if (debugVFX)
                     {
@@ -468,6 +479,16 @@ public class CombatHitboxController : MonoBehaviour
             max = Mathf.Max(max, total);
         }
         return max + 0.1f;
+    }
+
+    // Enemy-side feedback: energy ripple on the body, local distortion, alien shards and soul wisps
+    private void PlayEnemyHitFeedback(Component enemy, Vector3 point, Vector3 direction, int damage)
+    {
+        if (!enemyHitFeedback || enemy == null) return;
+
+        HitFeedbackManager manager = HitFeedbackManager.Get();
+        float intensity = Mathf.Clamp01(damage / Mathf.Max(1f, heavyHitDamage));
+        manager.PlayHit(enemy.gameObject, point, direction, intensity, player != null ? player.transform : transform);
     }
 
     // Makes the swing ribbon flash bright and fat for a moment when a hit lands (visible during hit stop too)
