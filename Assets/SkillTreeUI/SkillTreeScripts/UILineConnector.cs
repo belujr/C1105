@@ -2,15 +2,21 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
+[RequireComponent(typeof(RectTransform))]
 public class UILineConnector : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Connections")]
     public RectTransform parentTransform;
-    
+
     [Header("Line Visuals")]
-    [Tooltip("Increase thickness (e.g., 24-32) to allow room for the outer electric glow.")]
-    public float thickness = 28f;
+    [Tooltip("Line thickness in pixels.")]
+    public float thickness = 6f;
+    [Tooltip("Color of the connector line.")]
+    public Color lineColor = Color.white;
+    [Tooltip("Optional sprite or material texture.")]
     public Material lineMaterial;
+    
+    [Header("Animation")]
     public float drawDuration = 0.35f;
 
     private RectTransform myRect;
@@ -28,15 +34,17 @@ public class UILineConnector : MonoBehaviour
         GameObject lineObj = new GameObject("Line_To_Parent", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         
         lineObj.transform.SetParent(transform.parent, false);
-        lineObj.transform.SetSiblingIndex(0);
+        lineObj.transform.SetSiblingIndex(0); // Place line behind the node icon
 
         lineRect = lineObj.GetComponent<RectTransform>();
         lineImage = lineObj.GetComponent<Image>();
 
-        // Lock anchors to middle-center to prevent layout stretching distortion
+        // Middle-left pivot so scaling out stretches the line from parent to child
         lineRect.anchorMin = new Vector2(0.5f, 0.5f);
         lineRect.anchorMax = new Vector2(0.5f, 0.5f);
         lineRect.pivot = new Vector2(0f, 0.5f);
+
+        lineImage.color = lineColor;
 
         if (lineMaterial != null)
         {
@@ -56,15 +64,21 @@ public class UILineConnector : MonoBehaviour
     {
         RectTransform lineContainer = lineRect.parent as RectTransform;
 
-        // 1. Calculate true visual center of both UI nodes (ignores pivot settings)
+        // Apply updated color from inspector
+        if (lineImage != null)
+        {
+            lineImage.color = lineColor;
+            if (lineMaterial != null) lineImage.material = lineMaterial;
+        }
+
+        // 1. Calculate world positions of node centers
         Vector3 startWorld = GetRectCenterWorld(parentTransform);
         Vector3 endWorld = GetRectCenterWorld(myRect);
 
-        // 2. Convert world centers to the local space of the line's parent
+        // 2. Convert to UI local container space
         Vector3 startLocal = lineContainer.InverseTransformPoint(startWorld);
         Vector3 endLocal = lineContainer.InverseTransformPoint(endWorld);
 
-        // 3. Flatten Z-depth to force exact 2D alignment
         startLocal.z = 0f;
         endLocal.z = 0f;
 
@@ -74,6 +88,13 @@ public class UILineConnector : MonoBehaviour
 
         lineRect.localPosition = startLocal;
         lineRect.localRotation = Quaternion.Euler(0, 0, angle);
+
+        // If drawDuration is 0, draw instantly
+        if (drawDuration <= 0f)
+        {
+            lineRect.sizeDelta = new Vector2(targetDistance, thickness);
+            yield break;
+        }
 
         float elapsed = 0f;
         while (elapsed < drawDuration)
@@ -88,7 +109,6 @@ public class UILineConnector : MonoBehaviour
         lineRect.sizeDelta = new Vector2(targetDistance, thickness);
     }
 
-    // Calculates true bounding-box center regardless of RectTransform Pivot settings
     private Vector3 GetRectCenterWorld(RectTransform rect)
     {
         Vector3[] corners = new Vector3[4];

@@ -18,6 +18,17 @@ public class SkillPreviewManager : MonoBehaviour
     public Image knockbackBarImage;
     public Image rangeBarImage;
 
+    [Header("UI Stat Texts")]
+    public TextMeshProUGUI damageText;
+    public TextMeshProUGUI knockbackText;
+    public TextMeshProUGUI rangeText;
+
+    [Header("Stat Text Formatting")]
+    [Tooltip("Optional label/prefix before stat level numbers, e.g. 'Damage: ', 'DMG: ', or 'Lv. '")]
+    public string damagePrefix = "DMG: ";
+    public string knockbackPrefix = "KB: ";
+    public string rangePrefix = "RNG: ";
+
     [Header("Player Dummy References")]
     public Animator dummyAnimator;
     public Transform dummySpawnPoint;
@@ -106,9 +117,10 @@ public class SkillPreviewManager : MonoBehaviour
         if (descriptionText != null)
             descriptionText.text = attack.description;
 
-        UpdateStatSprite(damageBarImage, attack.damageLevel);
-        UpdateStatSprite(knockbackBarImage, attack.knockbackLevel);
-        UpdateStatSprite(rangeBarImage, attack.rangeLevel);
+        // Update both bar sprites and stat text labels
+        UpdateStatDisplay(damageBarImage, damageText, attack.damageLevel, damagePrefix);
+        UpdateStatDisplay(knockbackBarImage, knockbackText, attack.knockbackLevel, knockbackPrefix);
+        UpdateStatDisplay(rangeBarImage, rangeText, attack.rangeLevel, rangePrefix);
 
         // Restarting the animation can skip its "end hitbox" event, which would leave the hitbox
         // stuck active and fire a VFX at the wrong time. Always clear it, and tell it which attack to use.
@@ -181,14 +193,22 @@ public class SkillPreviewManager : MonoBehaviour
         if (cc != null) cc.enabled = true;
     }
 
-    private void UpdateStatSprite(Image targetImage, int statLevel)
+    private void UpdateStatDisplay(Image targetImage, TextMeshProUGUI targetText, int statLevel, string prefix)
     {
-        if (targetImage == null || pipSprites == null || pipSprites.Length < 5) return;
-
-        int spriteIndex = Mathf.Clamp(statLevel - 1, 0, pipSprites.Length - 1);
-        if (pipSprites[spriteIndex] != null)
+        // Update Pip Bar Sprite
+        if (targetImage != null && pipSprites != null && pipSprites.Length >= 5)
         {
-            targetImage.sprite = pipSprites[spriteIndex];
+            int spriteIndex = Mathf.Clamp(statLevel - 1, 0, pipSprites.Length - 1);
+            if (pipSprites[spriteIndex] != null)
+            {
+                targetImage.sprite = pipSprites[spriteIndex];
+            }
+        }
+
+        // Update Stat Text Label
+        if (targetText != null)
+        {
+            targetText.text = $"{prefix}{statLevel}";
         }
     }
 }

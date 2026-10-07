@@ -25,6 +25,9 @@ public class DialogueUI : MonoBehaviour
     [Tooltip("Assign the UI Image / GameObject located at the bottom right corner indicating skip prompt.")]
     public GameObject skipPromptUI;
 
+    [Tooltip("Delay in seconds before the skip prompt arrow appears on screen for a dialogue line.")]
+    public float skipPromptDelay = 3.0f;
+
     // Static event for player controller subscription
     public static event Action<bool> OnPlayerMovementStateChanged;
 
@@ -133,11 +136,11 @@ public class DialogueUI : MonoBehaviour
 
         dialogueText.text = currentLine.GetRandomText();
 
-        if (currentAdvanceMode == DialogueAdvanceMode.PlayerInteractionBased)
-        {
-            promptDelayCoroutine = StartCoroutine(ShowPromptDelayRoutine(1.0f));
-        }
-        else if (currentAdvanceMode == DialogueAdvanceMode.Continuous)
+        // 1. Show skip prompt arrow after skipPromptDelay for ALL modes
+        promptDelayCoroutine = StartCoroutine(ShowPromptDelayRoutine(skipPromptDelay));
+
+        // 2. In Continuous mode, also run the auto-advance timer in parallel
+        if (currentAdvanceMode == DialogueAdvanceMode.Continuous)
         {
             autoAdvanceCoroutine = StartCoroutine(AutoAdvanceRoutine(currentAutoAdvanceTime));
         }
