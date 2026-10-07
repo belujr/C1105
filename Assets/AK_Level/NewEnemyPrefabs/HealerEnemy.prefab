@@ -1798,7 +1798,7 @@ MonoBehaviour:
   batPrefab: {fileID: 8269301639626466558, guid: e425c426407af384785be4aa1d1dfbb0, type: 3}
   animProfile: {fileID: 11400000, guid: f9e3c9f6ef95f1649851658d06cf2ee5, type: 2}
   spawnAnimationClip: {fileID: -203655887218126122, guid: ef25105ec6dcfa04593cad17f17e600e, type: 3}
-  backwalkAnimationClip: {fileID: -203655887218126122, guid: bdd4d4189eeb59d4cad03925308fa968, type: 3}
+  backwalkAnimationClip: {fileID: 7400000, guid: 38d950ecf8ee061498d6479837d21d77, type: 3}
   healAnimationClip: {fileID: -203655887218126122, guid: 5b4577a5cca4f8746a7489db428c70d9, type: 3}
   spawnAnimationSpeed: 1
   backwalkAnimationSpeed: 1
@@ -1814,6 +1814,13 @@ MonoBehaviour:
   healAmountPerSecond: 15
   maintainPlayerDistance: 6
   allySearchRadius: 15
+  distanceBuffer: 1.5
+  healRangeBuffer: 1
+  allySearchInterval: 0.3
+  requireSightingBeforeSpawning: 1
+  spawnOnlyWhileVisible: 0
+  viewportEdgePadding: 0.03
+  visibilityHeightOffset: 1
 --- !u!95 &3800094729827894006
 Animator:
   serializedVersion: 7

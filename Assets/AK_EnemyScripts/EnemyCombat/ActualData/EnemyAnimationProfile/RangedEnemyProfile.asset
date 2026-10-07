@@ -12,21 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
   m_Name: RangedEnemyProfile
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
-  idleClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
+  idleClip: {fileID: 7400000, guid: 94c75858633b4e04f9e28db3b52b2bba, type: 3}
   idleTransitionDuration: 0.15
-  walkClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
+  walkClip: {fileID: 7400000, guid: a7e98d51bd73b0348b47acf6a9f02766, type: 3}
   walkTransitionDuration: 0.15
-  runClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
+  runClip: {fileID: 7400000, guid: a7e98d51bd73b0348b47acf6a9f02766, type: 3}
   runTransitionDuration: 0.15
-  strafeLeftClip: {fileID: -203655887218126122, guid: e4f1add906ff34943b5caa679aa11c99, type: 3}
-  strafeRightClip: {fileID: -203655887218126122, guid: 8a896a1ca835f514db335f06b322c149, type: 3}
-  landingClip: {fileID: -203655887218126122, guid: 19d6dc2af032d094db4bf8f44d5b730e, type: 3}
+  strafeLeftClip: {fileID: 7400000, guid: 443693849a2f4e741afac059a470e10e, type: 3}
+  strafeRightClip: {fileID: 7400000, guid: 35ea729f36e02794d8cf0b418642050a, type: 3}
+  landingClip: {fileID: 7400000, guid: 8164d5f25ce079442917b5582dfdbf2b, type: 3}
   landingTransitionDuration: 0.1
   landingPlaybackSpeed: 1
-  deathClip: {fileID: -203655887218126122, guid: 19514a27413206345b3fb9f41018f066, type: 3}
+  deathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   deathTransitionDuration: 0.1
   deathPlaybackSpeed: 1
-  standUpClip: {fileID: -203655887218126122, guid: 448b0d5eb6ff88d4e9dc2a87d10c1fe6, type: 3}
+  standUpClip: {fileID: 7400000, guid: aee3a8eae90af134a88f3b6209e7cbdc, type: 3}
   standUpTransitionDuration: 0.15
   standUpPlaybackSpeed: 1
   standUpToIdleTransitionDuration: 0.25

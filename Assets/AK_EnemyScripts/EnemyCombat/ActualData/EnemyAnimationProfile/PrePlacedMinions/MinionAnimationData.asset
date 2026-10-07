@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
-  m_Name: HealerEnemyData
+  m_Name: MinionAnimationData
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
   idleClip: {fileID: 7400000, guid: 94c75858633b4e04f9e28db3b52b2bba, type: 3}
   idleTransitionDuration: 0.15
@@ -18,26 +18,26 @@ MonoBehaviour:
   walkTransitionDuration: 0.15
   runClip: {fileID: 7400000, guid: a3c7daf5dbba19245938db35245052fa, type: 3}
   runTransitionDuration: 0.15
-  strafeLeftClip: {fileID: 7400000, guid: 38d950ecf8ee061498d6479837d21d77, type: 3}
-  strafeRightClip: {fileID: 7400000, guid: 7cb280337cb0fdd4399af55c6ab24dc7, type: 3}
-  landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  strafeLeftClip: {fileID: 7400000, guid: af2453d50b96fc949891d7b278aaf733, type: 3}
+  strafeRightClip: {fileID: 7400000, guid: 6cbfc0656c630a3449739ce9ddffed2f, type: 3}
+  landingClip: {fileID: -203655887218126122, guid: 19d6dc2af032d094db4bf8f44d5b730e, type: 3}
   landingTransitionDuration: 0.1
   landingPlaybackSpeed: 1
-  deathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
+  deathClip: {fileID: -203655887218126122, guid: 19514a27413206345b3fb9f41018f066, type: 3}
   deathTransitionDuration: 0.1
   deathPlaybackSpeed: 3
   standUpClip: {fileID: -203655887218126122, guid: 4860ed92af68d6e4382d6194b71cfb0c, type: 3}
   standUpTransitionDuration: 0.15
   standUpPlaybackSpeed: 1
   standUpToIdleTransitionDuration: 0.25
-  namedAttacks: []
+  namedAttacks:
+  - attackNameKey: MinionSlash
+    attackClip: {fileID: 7400000, guid: 95dc4fbaa01379f4f908847fb44054d4, type: 3}
   attackReactions:
   - {fileID: 11400000, guid: d8021ea590a8abc4baa9bb1a64c65ae2, type: 2}
   - {fileID: 11400000, guid: 20c3b58b8335b484b8db600c7d44ca12, type: 2}
   - {fileID: 11400000, guid: 361bccece8cb182419460f1e0dda1319, type: 2}
-  - {fileID: 11400000, guid: e647349731822be44ba9b380a3344083, type: 2}
-  - {fileID: 11400000, guid: 6c3e9c91e17df3b46a3da2ac19612f34, type: 2}
-  defaultHitFront: {fileID: 11400000, guid: 72e4dbf7a1e11274a8a789214983181c, type: 2}
+  defaultHitFront: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
   defaultHitBack: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
-  defaultHitLeft: {fileID: 11400000, guid: 72e4dbf7a1e11274a8a789214983181c, type: 2}
-  defaultHitRight: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitLeft: {fileID: 11400000, guid: db125ab8102512046908d3896c29c283, type: 2}
+  defaultHitRight: {fileID: 0}

@@ -721,6 +721,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ImpBrain
   maxHealth: 40
   deathDisappearDelay: 2
+  rangeBuffer: 1
+  minModeHold: 0.4
+  dirSmoothing: 8
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   player: {fileID: 0}
   animProfile: {fileID: 11400000, guid: 18c37bfa427558248ac5e4ae741a2d8f, type: 2}
   tokenType: 4
@@ -738,9 +744,10 @@ MonoBehaviour:
   rotationSpeed: 10
   playerReactionAnimName: Hit_Light
   stunDuration: 0.2
+  debugFiring: 1
   attackAnimationSpeed: 1.3
   hitReactionClip: {fileID: -203655887218126122, guid: c5b212a25671d8f4a85b971402db272d, type: 3}
-  impMoveSpeed: 2.5
+  impMoveSpeed: 5.5
   panicLeapDistance: 4
   panicLeapSpeed: 9
 --- !u!114 &7676587401125791012
@@ -757,6 +764,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShipPassenger
   hangingClip: {fileID: -203655887218126122, guid: 7a7d742ae98080e4a908c10dd751259d, type: 3}
   landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  gravity: 25
+  maxFallSpeed: 40
   groundMask:
     serializedVersion: 2
     m_Bits: 1024
