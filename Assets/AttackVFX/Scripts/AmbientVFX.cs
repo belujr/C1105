@@ -17,8 +17,10 @@ using UnityEngine.Rendering;
 public class AmbientVFX : MonoBehaviour
 {
     [Header("General")]
-    [Tooltip("What the effects follow. Empty = the player (found automatically), or the main camera.")]
+    [Tooltip("What the effects follow. Empty = the player is found automatically, even if it is spawned later (e.g. by LevelSpawner).")]
     public Transform follow;
+    [Tooltip("If 'Follow' is empty, objects with this tag are looked for (together with every PlayerController). The tag must exist in the project.")]
+    public string playerTag = "Player";
     [Tooltip("Size of the area around the target that is filled with motes and dust (world units).")]
     public Vector3 area = new Vector3(26f, 6f, 26f);
 
@@ -32,7 +34,8 @@ public class AmbientVFX : MonoBehaviour
     public Color moteColorB = new Color(0.55f, 1f, 0.9f);
     [Tooltip("Brightness. With Bloom on, higher = bigger glow.")]
     public float moteIntensity = 2.5f;
-    [Range(0f, 1.5f)] [Tooltip("How much each mote twinkles (its size breathes).")]
+    [Range(0f, 1.5f)]
+    [Tooltip("How much each mote twinkles (its size breathes).")]
     public float moteTwinkle = 0.8f;
 
     [Header("Dust")]
@@ -67,7 +70,8 @@ public class AmbientVFX : MonoBehaviour
     public float shaftRadius = 15f;
     [Tooltip("...but not closer than this, so they never cover the player.")]
     public float shaftMinDistance = 3f;
-    [Range(0f, 30f)] [Tooltip("Random tilt of each beam (degrees).")]
+    [Range(0f, 30f)]
+    [Tooltip("Random tilt of each beam (degrees).")]
     public float shaftTilt = 8f;
 
     [Header("Materials (optional, needed for built games)")]
@@ -94,6 +98,10 @@ public class AmbientVFX : MonoBehaviour
 
     private Transform root;
     private Transform target;
+    private float nextSearchTime;
+    private float nextRecheckTime;
+    private Transform lastLoggedTarget;
+    private readonly List<Transform> candidates = new List<Transform>();
     private readonly List<Shaft> shafts = new List<Shaft>();
     private readonly List<Material> madeMaterials = new List<Material>();
     private Material shaftMat;
@@ -104,7 +112,20 @@ public class AmbientVFX : MonoBehaviour
     // ------------------------------------------------------------------ lifetime
     private void OnEnable()
     {
-        if (Application.isPlaying && root == null) Build();
+        if (Application.isPlaying) TryBuild();
+    }
+
+    // builds the effects around the player, if there is one yet
+    private bool TryBuild()
+    {
+        if (root != null) return true;
+
+        Transform t = ResolveTarget();
+        if (t == null) return false;
+
+        target = t;
+        Build();
+        return root != null;
     }
 
     private void OnDisable()
@@ -122,7 +143,7 @@ public class AmbientVFX : MonoBehaviour
     {
         if (!Application.isPlaying) return;
         Clear();
-        Build();
+        TryBuild();
     }
 
     private void Clear()
@@ -133,6 +154,7 @@ public class AmbientVFX : MonoBehaviour
         madeMaterials.Clear();
         shafts.Clear();
         root = null;
+        target = null;
     }
 
     // ------------------------------------------------------------------ build
@@ -147,8 +169,13 @@ public class AmbientVFX : MonoBehaviour
             return;
         }
 
+        if (target != lastLoggedTarget)
+        {
+            lastLoggedTarget = target;
+            Debug.Log("[AmbientVFX] Following '" + target.name + "' (position " + target.position + ").", target);
+        }
+
         block = new MaterialPropertyBlock();
-        target = ResolveTarget();
         root = new GameObject("AmbientVFX_Generated").transform;
         root.SetParent(null);
         FollowTarget();
@@ -202,19 +229,72 @@ public class AmbientVFX : MonoBehaviour
         if (enableShafts) BuildShafts(shaftShader);
     }
 
+    // Finds the player. Returns null while there is none (the effects then wait, instead of following a camera).
     private Transform ResolveTarget()
     {
         if (follow != null) return follow;
 
-#if UNITY_2023_1_OR_NEWER
-        PlayerController pc = FindFirstObjectByType<PlayerController>();
-#else
-        PlayerController pc = FindObjectOfType<PlayerController>();
-#endif
-        if (pc != null) return pc.transform;
+        // every possible player: objects with the player tag, and every PlayerController
+        candidates.Clear();
+        if (!string.IsNullOrEmpty(playerTag))
+        {
+            try
+            {
+                GameObject[] tagged = GameObject.FindGameObjectsWithTag(playerTag);
+                for (int i = 0; i < tagged.Length; i++)
+                    if (tagged[i] != null && tagged[i].activeInHierarchy) AddCandidate(tagged[i].transform);
+            }
+            catch (UnityException)
+            {
+                // the tag does not exist in this project: ignore it
+            }
+        }
 
-        Camera c = Camera.main;
-        return c != null ? c.transform : null;
+#if UNITY_2023_1_OR_NEWER
+        PlayerController[] players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+#else
+        PlayerController[] players = FindObjectsOfType<PlayerController>();
+#endif
+        for (int i = 0; i < players.Length; i++)
+            if (players[i] != null && players[i].isActiveAndEnabled) AddCandidate(players[i].transform);
+
+        if (candidates.Count == 0) return null;
+        if (candidates.Count == 1) return candidates[0];
+
+        // several candidates (a leftover player, a preview dummy ...): the real one is in front of the game camera
+        Camera view = GetViewCamera();
+        if (view == null) return candidates[0];
+
+        Transform best = null;
+        float bestDist = float.MaxValue;
+        Vector3 cp = view.transform.position;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            float d = (candidates[i].position - cp).sqrMagnitude;
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = candidates[i];
+            }
+        }
+        return best;
+    }
+
+    private void AddCandidate(Transform t)
+    {
+        if (t != null && !candidates.Contains(t)) candidates.Add(t);
+    }
+
+    // the camera the player is watching through (not a camera that renders into a texture, like the skill preview)
+    private static Camera GetViewCamera()
+    {
+        Camera main = Camera.main;
+        if (main != null && main.isActiveAndEnabled && main.targetTexture == null) return main;
+
+        Camera[] cams = Camera.allCameras;
+        for (int i = 0; i < cams.Length; i++)
+            if (cams[i] != null && cams[i].isActiveAndEnabled && cams[i].targetTexture == null) return cams[i];
+        return null;
     }
 
     private Material MakeParticleMaterial(Shader shader, bool additive, Color color, float intensity, float power)
@@ -402,9 +482,8 @@ public class AmbientVFX : MonoBehaviour
     // ------------------------------------------------------------------ run
     private void FollowTarget()
     {
-        if (root == null) return;
-        if (target == null) target = ResolveTarget();
-        if (target != null) root.position = target.position;
+        if (root == null || target == null) return;
+        root.position = target.position;
     }
 
     private void LateUpdate()
@@ -415,7 +494,43 @@ public class AmbientVFX : MonoBehaviour
             Rebuild();
             return;
         }
-        if (root == null) return;
+
+        // no effects yet: wait for the player to appear (checked a few times per second)
+        if (root == null)
+        {
+            if (Time.unscaledTime >= nextSearchTime)
+            {
+                nextSearchTime = Time.unscaledTime + 0.25f;
+                TryBuild();
+            }
+            return;
+        }
+
+        // the player was destroyed (level cleared): remove the effects and wait for the next one
+        if (target == null)
+        {
+            Clear();
+            return;
+        }
+
+        // if no player is assigned by hand, keep checking that the effects follow the right one
+        if (follow == null && Time.unscaledTime >= nextRecheckTime)
+        {
+            nextRecheckTime = Time.unscaledTime + 0.5f;
+            Transform best = ResolveTarget();
+            if (best != null && best != target)
+            {
+                Camera view = GetViewCamera();
+                bool clearlyBetter = view == null ||
+                    ((target.position - view.transform.position).magnitude - (best.position - view.transform.position).magnitude) > 4f;
+                if (clearlyBetter)
+                {
+                    Clear();
+                    TryBuild();
+                    return;
+                }
+            }
+        }
 
         FollowTarget();
         UpdateShafts();
