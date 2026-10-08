@@ -30,6 +30,20 @@ public class HubNarrativeManager : MonoBehaviour
 
     private HashSet<DialogueSequence> completedSequences = new HashSet<DialogueSequence>();
 
+    // Add this inside HubNarrativeManager.cs
+    // Add this method inside HubNarrativeManager.cs
+    public bool HasActiveStep(HubNPC.NPCType role)
+    {
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null) return false;
+
+        return currentRunData.steps.Exists(step =>
+            step.triggerNPC == role &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
+    }
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
