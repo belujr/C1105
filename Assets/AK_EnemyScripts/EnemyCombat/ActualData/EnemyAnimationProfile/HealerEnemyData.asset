@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
   m_Name: HealerEnemyData
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
-  idleClip: {fileID: -203655887218126122, guid: 648b3da8a87138949ba0e172aff23d1f, type: 3}
+  idleClip: {fileID: 7400000, guid: 94c75858633b4e04f9e28db3b52b2bba, type: 3}
   idleTransitionDuration: 0.15
-  walkClip: {fileID: -203655887218126122, guid: 648b3da8a87138949ba0e172aff23d1f, type: 3}
+  walkClip: {fileID: 7400000, guid: a3c7daf5dbba19245938db35245052fa, type: 3}
   walkTransitionDuration: 0.15
-  runClip: {fileID: -203655887218126122, guid: 648b3da8a87138949ba0e172aff23d1f, type: 3}
+  runClip: {fileID: 7400000, guid: a3c7daf5dbba19245938db35245052fa, type: 3}
   runTransitionDuration: 0.15
-  strafeLeftClip: {fileID: -203655887218126122, guid: 713a037f799548e46bb1aed74d06a672, type: 3}
-  strafeRightClip: {fileID: -203655887218126122, guid: 8ae731836da6ca4408c73212b49fb818, type: 3}
+  strafeLeftClip: {fileID: 7400000, guid: 38d950ecf8ee061498d6479837d21d77, type: 3}
+  strafeRightClip: {fileID: 7400000, guid: 7cb280337cb0fdd4399af55c6ab24dc7, type: 3}
   landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
   landingTransitionDuration: 0.1
   landingPlaybackSpeed: 1
-  deathClip: {fileID: -203655887218126122, guid: 19514a27413206345b3fb9f41018f066, type: 3}
+  deathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   deathTransitionDuration: 0.1
   deathPlaybackSpeed: 3
   standUpClip: {fileID: -203655887218126122, guid: 4860ed92af68d6e4382d6194b71cfb0c, type: 3}

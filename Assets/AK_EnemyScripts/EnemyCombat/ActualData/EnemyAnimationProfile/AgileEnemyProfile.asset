@@ -12,21 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4d3d24de3916a45b07ee5df65e0ece, type: 3}
   m_Name: AgileEnemyProfile
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.EnemyAnimProfile
-  idleClip: {fileID: -203655887218126122, guid: 826ce0ae9b81c8e4a85b434fcdf68d78, type: 3}
+  idleClip: {fileID: 7400000, guid: 94c75858633b4e04f9e28db3b52b2bba, type: 3}
   idleTransitionDuration: 0.15
-  walkClip: {fileID: -203655887218126122, guid: e43a9ffd407c7b94f81a4f151970863f, type: 3}
+  walkClip: {fileID: 7400000, guid: a3c7daf5dbba19245938db35245052fa, type: 3}
   walkTransitionDuration: 0.15
-  runClip: {fileID: -203655887218126122, guid: 56c3e5b4a8c32694fa872c31dfc3691d, type: 3}
+  runClip: {fileID: 7400000, guid: 443693849a2f4e741afac059a470e10e, type: 3}
   runTransitionDuration: 0.06
-  strafeLeftClip: {fileID: -203655887218126122, guid: e4f1add906ff34943b5caa679aa11c99, type: 3}
-  strafeRightClip: {fileID: -203655887218126122, guid: 8a896a1ca835f514db335f06b322c149, type: 3}
-  landingClip: {fileID: -203655887218126122, guid: 19d6dc2af032d094db4bf8f44d5b730e, type: 3}
+  strafeLeftClip: {fileID: 7400000, guid: af2453d50b96fc949891d7b278aaf733, type: 3}
+  strafeRightClip: {fileID: 7400000, guid: 6cbfc0656c630a3449739ce9ddffed2f, type: 3}
+  landingClip: {fileID: 7400002, guid: 39c1e8b66fab3ba418b191caaf714f42, type: 3}
   landingTransitionDuration: 0.1
   landingPlaybackSpeed: 1
-  deathClip: {fileID: -203655887218126122, guid: 19514a27413206345b3fb9f41018f066, type: 3}
+  deathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   deathTransitionDuration: 0.1
   deathPlaybackSpeed: 1
-  standUpClip: {fileID: -203655887218126122, guid: 448b0d5eb6ff88d4e9dc2a87d10c1fe6, type: 3}
+  standUpClip: {fileID: 7400000, guid: aee3a8eae90af134a88f3b6209e7cbdc, type: 3}
   standUpTransitionDuration: 0.15
   standUpPlaybackSpeed: 1
   standUpToIdleTransitionDuration: 0.25
@@ -45,6 +45,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 44d1420f3fcdd2e4dbe89e34175d79a3, type: 2}
   - {fileID: 11400000, guid: 6c3e9c91e17df3b46a3da2ac19612f34, type: 2}
   defaultHitFront: {fileID: 11400000, guid: ddca9f345be8fdd47b4a3582a8280341, type: 2}
-  defaultHitBack: {fileID: 11400000, guid: 9627be5412a31ab46be040eee2178670, type: 2}
-  defaultHitLeft: {fileID: 11400000, guid: 6a8f935b1f84af24ab707da5495ff328, type: 2}
+  defaultHitBack: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}
+  defaultHitLeft: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}
   defaultHitRight: {fileID: 11400000, guid: 45d9720879d6ed34b8e24cbc2784b7bf, type: 2}
