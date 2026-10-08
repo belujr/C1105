@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3858a1d6addc1f845afd17843d8eb7e1, type: 3}
   m_Name: RangedAttack
   m_EditorClassIdentifier: Assembly-CSharp::StandardMeleeAttackSO
-  attackName: Fireball
+  attackName: RangedAttackAnim
   requiredTokenType: 4
   startupTime: 0.3
   activeTime: 0.2
@@ -23,5 +23,5 @@ MonoBehaviour:
   knockbackForce: 5
   stunDuration: 0.2
   hitSound: {fileID: 0}
-  animationClipName: Fireball
+  animationClipName: Wizardess attack 1
   playerReactionAnimName: Hit_Light
