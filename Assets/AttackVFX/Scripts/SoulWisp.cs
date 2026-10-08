@@ -98,7 +98,8 @@ public class SoulWisp : MonoBehaviour
     {
         if (phase == Phase.Idle) return;
 
-        float dt = Time.deltaTime;
+        // a long frame must not make the wisp skip through the last stretch before the body
+        float dt = Mathf.Min(Time.deltaTime, 0.033f);
 
         if (phase == Phase.Fading)
         {
@@ -206,7 +207,7 @@ public class SoulWisp : MonoBehaviour
         float pulse = 1f + 0.18f * Mathf.Sin(age * 24f + swirlPhase);
         float speedSwell = 1f + Mathf.Clamp01(velocity.magnitude / 14f) * 0.35f;
         // the head shrinks as it sinks into the body
-        float sink = age >= homingStart ? Mathf.Lerp(0.3f, 1f, Mathf.Clamp01(distToTarget / 1.0f)) : 1f;
+        float sink = age >= homingStart ? Mathf.Lerp(0.55f, 1f, Mathf.Clamp01(distToTarget / 0.6f)) : 1f;
         trail.widthMultiplier = mgr.wispTrailWidth * Mathf.Lerp(0.4f, 1f, sink);
         orb.localScale = new Vector3(mgr.wispHeadStretch.x, mgr.wispHeadStretch.y, 1f) * (orbSize * pulse * speedSwell * sink);
     }

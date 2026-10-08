@@ -142,6 +142,14 @@ public class HitFeedbackManager : MonoBehaviour
     public float absorbScrollSpeed = 2.5f;
     [Tooltip("Orbiting sparks per second at full energy.")]
     public float absorbSparkRate = 45f;
+    [Tooltip("When a soul arrives, the body itself lights up with an energy ripple from the chest (a pop on the body).")]
+    public bool absorbBodyPop = true;
+    public float absorbPopIntensity = 1.4f;
+    [Tooltip("How far the ripple travels over the body (world units).")]
+    public float absorbPopRadius = 1.3f;
+    public float absorbPopDuration = 0.35f;
+    [Tooltip("Draws a cyan sphere (Scene view, or Game view with Gizmos on) where souls aim, so you can see if it is the SoulTarget.")]
+    public bool showAimPoint = false;
     [Tooltip("Shifts the aim point toward the camera. Keep at 0 so souls end INSIDE the body (they are drawn on top anyway).")]
     public float soulAimTowardCamera = 0f;
 
@@ -185,6 +193,7 @@ public class HitFeedbackManager : MonoBehaviour
         public float seed;
         public bool isFlash;
         public float size;
+        public Transform follow;   // the absorb flash sticks to this (the player), so it never stays behind
     }
 
     private readonly List<Pulse> activePulses = new List<Pulse>();
@@ -369,15 +378,16 @@ public class HitFeedbackManager : MonoBehaviour
         UpdatePulse(p, 0f, cam);
     }
 
-    private void SpawnAbsorbFlash(Vector3 position)
+    private void SpawnAbsorbFlash(Vector3 position, Transform follow)
     {
         Material mat = GetSoulMaterial(true);
         if (mat == null) return;
 
         Pulse p = freeFlashes.Count > 0 ? freeFlashes.Pop() : CreatePulse("SoulFlash", mat);
         p.isFlash = true;
-        p.size = wispOrbSize * 5f;
+        p.size = wispOrbSize * 3.2f;
         p.dur = 0.25f;
+        p.follow = follow;
         p.t0 = Time.unscaledTime;
         p.tf.position = position;
         p.tf.gameObject.SetActive(true);
@@ -415,6 +425,9 @@ public class HitFeedbackManager : MonoBehaviour
                 if (p.isFlash) freeFlashes.Push(p); else freePulses.Push(p);
                 continue;
             }
+
+            // the absorb flash stays glued to the moving player
+            if (p.isFlash && p.follow != null) p.tf.position = GetAimPoint(p.follow, wispTargetHeight);
 
             UpdatePulse(p, progress, PickCamera(p.tf.position));
         }
@@ -702,11 +715,24 @@ public class HitFeedbackManager : MonoBehaviour
     // called by SoulWisp
     public void OnWispArrived(Vector3 position, Transform target)
     {
-        SpawnAbsorbFlash(position);
+        SpawnAbsorbFlash(position, target);
         if (enableAbsorb)
         {
             PlayerSoulAbsorbFX fx = GetAbsorbFx(target);
             if (fx != null) fx.Absorb();
+
+            // pop on the body: an energy ripple spreads over the player's mesh from the chest
+            if (absorbBodyPop && target != null)
+            {
+                Material popMat = GetGlowMaterial();
+                if (popMat != null)
+                {
+                    EnemyHitFX pop = target.GetComponent<EnemyHitFX>();
+                    if (pop == null) pop = target.gameObject.AddComponent<EnemyHitFX>();
+                    pop.PlayGlow(popMat, GetAimPoint(target, wispTargetHeight), absorbPopIntensity, absorbPopDuration,
+                                 absorbPopRadius, soulColor, absorbEdgeColor);
+                }
+            }
         }
         if (WispArrived != null) WispArrived(1);
     }

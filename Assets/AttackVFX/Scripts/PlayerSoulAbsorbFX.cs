@@ -99,7 +99,12 @@ public class PlayerSoulAbsorbFX : MonoBehaviour
         // a) an empty named "SoulTarget" somewhere below the player
         foreach (Transform t in GetComponentsInChildren<Transform>(true))
         {
-            if (t.name == "SoulTarget") { aimAnchor = t; return; }
+            if (t.name.Trim() == "SoulTarget")
+            {
+                aimAnchor = t;
+                Debug.Log("[PlayerSoulAbsorbFX] Souls aim at your SoulTarget: " + GetPath(t), t);
+                return;
+            }
         }
 
         // b) the chest bone of a Humanoid rig
@@ -109,8 +114,38 @@ public class PlayerSoulAbsorbFX : MonoBehaviour
             Transform bone = anim.GetBoneTransform(HumanBodyBones.UpperChest);
             if (bone == null) bone = anim.GetBoneTransform(HumanBodyBones.Chest);
             if (bone == null) bone = anim.GetBoneTransform(HumanBodyBones.Spine);
-            if (bone != null) aimAnchor = bone;
+            if (bone != null)
+            {
+                aimAnchor = bone;
+                Debug.Log("[PlayerSoulAbsorbFX] No object named SoulTarget found under " + name +
+                          ". Souls aim at the humanoid chest bone: " + GetPath(bone), bone);
+                return;
+            }
         }
+
+        Debug.LogWarning("[PlayerSoulAbsorbFX] No object named SoulTarget found under " + name +
+                         " (the empty must be a CHILD of the player object the controller uses and be named exactly SoulTarget). " +
+                         "Souls aim at the middle of the player's meshes instead.", this);
+    }
+
+    private static string GetPath(Transform t)
+    {
+        string path = t.name;
+        while (t.parent != null)
+        {
+            t = t.parent;
+            path = t.name + "/" + path;
+        }
+        return path;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying || !built || mgr == null || !mgr.showAimPoint) return;
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(ChestPoint, 0.15f);
+        Gizmos.DrawLine(ChestPoint + Vector3.left * 0.3f, ChestPoint + Vector3.right * 0.3f);
+        Gizmos.DrawLine(ChestPoint + Vector3.forward * 0.3f, ChestPoint + Vector3.back * 0.3f);
     }
 
     private Vector3 ComputeChest()
