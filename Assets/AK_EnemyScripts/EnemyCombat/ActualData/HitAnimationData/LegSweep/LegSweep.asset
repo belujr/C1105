@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b2596d3894203e4ba460ad7208a6e75, type: 3}
   m_Name: LegSweep
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Data.HitAnimationData
-  clip: {fileID: -203655887218126122, guid: 3c08379d240df2a4191ca668fb204c21, type: 3}
+  clip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   transitionDuration: 0.001
   playbackSpeed: 1
   knockbackCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 1
+      time: 0.012500763
+      value: 0.9928589
       inSlope: 0
       outSlope: 0
       tangentMode: 0

@@ -1100,17 +1100,27 @@ MonoBehaviour:
   anticipationFlashColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   anticipationFlashDuration: 0.1
   enableDodging: 1
-  postDodgeBuffer: 0.12
+  postDodgeBuffer: 0
   reflexRange: 2.5
   dodgeMappings:
   - attackName: RightKick
     attackID: 4
-    direction: 1
+    direction: 0
     reactionDelay: 0
     dodgeDuration: 0.15
-  - attackName: Sweep
-    attackID: 8
-    direction: 2
+  - attackName: LeftKick
+    attackID: 6
+    direction: 1
+    reactionDelay: -0.24
+    dodgeDuration: 0.5
+  - attackName: Punch1
+    attackID: 0
+    direction: 0
+    reactionDelay: 0
+    dodgeDuration: 0.93
+  - attackName: Punch2
+    attackID: 1
+    direction: 1
     reactionDelay: 0
     dodgeDuration: 0.93
   baseMoveSpeed: 3.5
@@ -1211,6 +1221,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShipPassenger
   hangingClip: {fileID: -203655887218126122, guid: 7a7d742ae98080e4a908c10dd751259d, type: 3}
   landingClip: {fileID: -203655887218126122, guid: 585ba51f54748e94799dd65ba1e7fe05, type: 3}
+  gravity: 25
+  maxFallSpeed: 40
   groundMask:
     serializedVersion: 2
     m_Bits: 1024
