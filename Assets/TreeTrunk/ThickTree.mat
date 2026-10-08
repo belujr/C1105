@@ -116,11 +116,13 @@ Material:
     - _Normal_Strength: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
-    - _PropHoleSize: 0.1
-    - _PropSmoothness: 0.1
+    - _PropHoleSize: 0
+    - _PropSmoothness: 0
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _SeeThroughPropHoleSize: 0.1
+    - _SeeThroughPropSmoothness: 0.05
     - _Smoothness: 0.981
     - _SmoothnessTextureChannel: 0
     - _Smoothness_Multiplier: 0.451

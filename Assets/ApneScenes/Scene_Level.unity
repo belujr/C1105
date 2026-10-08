@@ -54095,7 +54095,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSeeThrough
   player: {fileID: 408869210076216818, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
-  treeMaterial: {fileID: 0}
+  holeSize: 0.55
+  smoothness: 1.9
+  propHoleSize: 0.4
+  propSmoothness: 0.25
+  fadeSpeed: 6
+  blockerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  onlyWhenBlocked: 1
 --- !u!114 &1290044373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -185703,7 +185711,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4349809612514102728, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_Mesh
