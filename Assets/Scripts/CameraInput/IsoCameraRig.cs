@@ -22,6 +22,7 @@ public class IsoCameraRig : MonoBehaviour
     [SerializeField] private float poiTransitionSpeed = 2f;
 
     public bool IsMidCombat { get; set; } = false;
+    public Transform Target => target;
 
     private float shakeTimer;
     private float shakeIntensity;
