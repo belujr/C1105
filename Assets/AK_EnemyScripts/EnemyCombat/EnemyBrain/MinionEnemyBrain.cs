@@ -849,6 +849,10 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         if (characterController != null) characterController.enabled = false;
         if (exclamationMarkVisual != null) exclamationMarkVisual.SetActive(false);
 
+        if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
+        {
+            soulDrop.TriggerSoulDrop();
+        }
         animLocked = true;
         currentAnim = AnimKey.Death;
         lastLocoClip = null;

@@ -2136,6 +2136,7 @@ GameObject:
   - component: {fileID: 8424838543763413324}
   - component: {fileID: 7185991076286389422}
   - component: {fileID: 2845370007556556877}
+  - component: {fileID: 2738409288031471915}
   m_Layer: 6
   m_Name: MinionEnemy
   m_TagString: Untagged
@@ -2300,6 +2301,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5655663c2e28cc845aea328b62ac78bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Animation.EnemyAnimationEngine
+--- !u!114 &2738409288031471915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126fd39090fd091498bdc641be086ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
+  soulEnergyValue: 40
+  wispTravelDelay: 0.6
 --- !u!1 &7690767802400152074
 GameObject:
   m_ObjectHideFlags: 0

@@ -572,6 +572,11 @@ private Vector3 smoothedDir;[Header("Movement Stability")]
         if (isDead) return;
         isDead = true;
         OnDeath?.Invoke();
+        
+        if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
+        {
+            soulDrop.TriggerSoulDrop();
+        }
 
         if (activeActionRoutine != null) StopCoroutine(activeActionRoutine);
         if (activeKnockbackRoutine != null) StopCoroutine(activeKnockbackRoutine);

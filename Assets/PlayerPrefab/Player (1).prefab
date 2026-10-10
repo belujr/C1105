@@ -823,7 +823,8 @@ MonoBehaviour:
   hitEffectPrefab: {fileID: 0}
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
-  deathDisappearDelay: 0.5
+  deathParticlePrefab: {fileID: 5847712775209798565, guid: ffee5e3e7d7f4ae428a400be3416616f, type: 3}
+  deathSequenceDuration: 2
   isImmortal: 0
 --- !u!114 &-1262347586620216322
 MonoBehaviour:

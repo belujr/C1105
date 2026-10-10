@@ -623,6 +623,7 @@ GameObject:
   - component: {fileID: 1197021747068842669}
   - component: {fileID: 3783363815824410102}
   - component: {fileID: 7676587401125791012}
+  - component: {fileID: -8665550775658198054}
   m_Layer: 6
   m_Name: IMPEnemy
   m_TagString: Untagged
@@ -771,6 +772,20 @@ MonoBehaviour:
     m_Bits: 1024
   landingDuration: 1
   enemyBrain: {fileID: 6234813883957051072}
+--- !u!114 &-8665550775658198054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1808740274306136521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126fd39090fd091498bdc641be086ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
+  soulEnergyValue: 30
+  wispTravelDelay: 0.6
 --- !u!1 &2123780091999869097
 GameObject:
   m_ObjectHideFlags: 0
