@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5339234887989958399
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 10
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UWa-Template-Clear 1
+  m_Shader: {fileID: 4800000, guid: 8097978abb0800149a7a110f04640a53, type: 3}
+  m_Parent: {fileID: 2100000, guid: bb6266f65ae02e7419e9bc6a1671c0c8, type: 2}
+  m_ModifiedSerializedProperties: 2
+  m_ValidKeywords:
+  - _ENABLECAUSTICS
+  - _ENABLEPLANERREFLECTION
+  - _ENABLEREFRACTION
+  m_InvalidKeywords: []
+  m_LightmapFlags: 2
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: _Water_Depth
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Caustics_Distortion_Map:
+        m_Texture: {fileID: 2800000, guid: 2d7a5c06dca4896489b5f6a9d48c7d01, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Caustics_Map:
+        m_Texture: {fileID: 2800000, guid: 57096ddb09de959428aa1a0ad0fb48c2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal_Map:
+        m_Texture: {fileID: 2800000, guid: 50c9b96bf58917c4e97fea677a8ff18d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SurfaceDistortion_Map:
+        m_Texture: {fileID: 2800000, guid: 61cf8b91d960bee468b88972b74fb7e5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _1st_Wave_Length: 3.73
+    - _Caustics_Distortion_Scale: 1.1
+    - _Caustics_Fade: 150.49
+    - _Caustics_Pan: -2
+    - _Caustics_Scale: 2.76
+    - _Caustics_Start: -2.07
+    - _Caustics_Strength: 3.36
+    - _ConformToGeometry: 0
+    - _ENABLECAUSTICS: 1
+    - _ENABLENORMAL: 0
+    - _ENABLEPLANERREFLECTION: 1
+    - _ENABLEREFRACTION: 1
+    - _Enable_SurfaceFoam: 0
+    - _InterSec_Width: 1.11
+    - _Normal_DistanceStrength: 3
+    - _Normal_Pan: 0.2
+    - _Normal_Scale: -0.44
+    - _Normal_Strength: 368.09
+    - _Reflection_Distortion: 1
+    - _Reflection_Fresnel: 5
+    - _Reflection_Strength: 1
+    - _Refraction_Distance_Strength: 0.1
+    - _Refraction_Strength: 0.2
+    - _SL_CenterMask: 0.18
+    - _SL_CenterMaskFade: 0.02
+    - _SL_Thickness: 0.16
+    - _SL_Trail_Fade: 2
+    - _ShoreFade: 1
+    - _ShoreFade_Smoothness: 0
+    - _Specular_Hardness: 1
+    - _Specular_Size: 0.493
+    - _Specular_Spread: 0
+    - _SurfFoam_EdgeSmooth: 0.307
+    - _SurfaceDistortion_Strength: 0.03
+    - _WorldSpaceDepth: 1
+    m_Colors:
+    - _Color_Deep: {r: 0, g: 0.21383637, b: 0.15976278, a: 0.45882353}
+    - _Color_Shallow: {r: 0.03069495, g: 0.10062885, b: 0.084375665, a: 0}
+    - _ShadowColor: {r: 0, g: 0, b: 0, a: 0.36078432}
+    - _Specular_Color: {r: 67.793526, g: 67.793526, b: 67.793526, a: 1}
+    - _SurfFoam_Pan: {r: 0.01, g: 0.01, b: 0, a: 0}
+    - _Underwater_Color: {r: 0, g: 0, b: 0, a: 0.53333336}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
