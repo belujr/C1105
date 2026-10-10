@@ -4,9 +4,8 @@ using UnityEngine;
 public class StatueInfo : ScriptableObject
 {
     [Header("Statue Lore Details")]
-    public string statueName;
-    public Sprite statueSprite;
+    public string statueName; //[cite: 24]
     
     [TextArea(3, 8)]
-    public string statueDescription;
+    public string statueDescription; //[cite: 24]
 }
