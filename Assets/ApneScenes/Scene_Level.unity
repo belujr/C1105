@@ -3206,6 +3206,42 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -131.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.43
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 286.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.6739009
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.67366576
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.2145509
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.21447603
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -89.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 1343298888650990130, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 35.32
+      objectReference: {fileID: 0}
     - target: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -171.1
@@ -3252,7 +3288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -26134,7 +26170,7 @@ MonoBehaviour:
   textureUpdateThreshold: 10
   fadeMinHeightScale: 0.4
   maxBufferCount: 2
-  flowerMaterial: {fileID: 2100000, guid: 0b54f8f75c535b649b47e924980e8e04, type: 2}
+  flowerMaterial: {fileID: 2100000, guid: 080c421b54cc188448d574a2c56dc8ed, type: 2}
   flowerSettings:
   - mesh: {fileID: -125435165217083709, guid: 3eed5eed75e0ad843bad4fa89093a157, type: 3}
     yOffset: 0.27
