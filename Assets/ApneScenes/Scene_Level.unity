@@ -16,10 +16,10 @@ RenderSettings:
   serializedVersion: 10
   m_Fog: 1
   m_FogColor: {r: 1, g: 1, b: 1, a: 1}
-  m_FogMode: 3
+  m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 0
-  m_LinearFogEnd: 300
+  m_LinearFogStart: 17
+  m_LinearFogEnd: 142
   m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -3250,26 +3250,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Level1
       objectReference: {fileID: 0}
-    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_DrawInstanced
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_SplatMapDistance
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_DetailObjectDensity
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_HeightmapPixelError
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_DetailObjectDistance
-      value: 40
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3598,6 +3578,7 @@ GameObject:
   - component: {fileID: 1269067835}
   - component: {fileID: 1269067836}
   - component: {fileID: 1269067837}
+  - component: {fileID: 1269067838}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3645,7 +3626,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 160
   field of view: 40
   orthographic: 0
   orthographic size: 5
@@ -3767,6 +3748,21 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   onlyWhenBlocked: 0
+--- !u!114 &1269067838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1269067831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dca36eca997f3aa4e843b34f15aa02de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FireDistanceCulling
+  activeDistance: 45
+  hysteresis: 5
+  checkInterval: 0.25
 --- !u!1 &1306235420
 GameObject:
   m_ObjectHideFlags: 0

@@ -18654,11 +18654,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47943f8aac5c8dc448707b7759d6fc3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HubStatueUI
-  statueSidebarPanel: {fileID: 231070486}
-  nameText: {fileID: 1100120340}
-  statueImage: {fileID: 0}
-  descriptionText: {fileID: 1543409259}
-  currentStatue: {fileID: 0}
 --- !u!1 &232008690
 GameObject:
   m_ObjectHideFlags: 0
@@ -56080,7 +56075,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSeeThrough
   player: {fileID: 6680446510897841060, guid: d66b2e0779304a04bb426b69f6616b1a, type: 3}
-  treeMaterial: {fileID: 0}
+  holeSize: 0.55
+  smoothness: 1.9
+  propHoleSize: 0.4
+  propSmoothness: 0.25
+  fadeSpeed: 6
+  blockerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  onlyWhenBlocked: 0
 --- !u!1 &487065216
 GameObject:
   m_ObjectHideFlags: 0
