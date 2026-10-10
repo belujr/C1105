@@ -1,20 +1,16 @@
 using UnityEngine;
-using System.Collections;
 
 public class EnemySoulDrop : MonoBehaviour
 {
     [Header("Soul Energy Config")]
-    [Tooltip("Exact soul energy rewarded when this specific enemy is defeated.")]
+    [Tooltip("Souls awarded when this enemy dies. Split across the soul wisps.")]
     public int soulEnergyValue = 25;
-
-    [Header("Timing")]
-    [Tooltip("Duration in seconds for the soul wisp VFX to travel and trigger the player absorb glow before souls are credited.")]
-    public float wispTravelDelay = 0.6f;
 
     private bool hasDroppedSouls = false;
 
     private void OnEnable()
     {
+        // pooled enemies come back to life through OnEnable, so each life can drop souls once
         hasDroppedSouls = false;
     }
 
@@ -23,24 +19,11 @@ public class EnemySoulDrop : MonoBehaviour
         if (hasDroppedSouls) return;
         hasDroppedSouls = true;
 
-        // 1. Trigger death VFX and soul wisps via HitFeedbackManager
-        if (HitFeedbackManager.Instance != null)
-        {
-            HitFeedbackManager.NotifyKill(transform.position, transform.forward);
-        }
+        // stop EnemyHitFX from announcing a second kill when this body despawns
+        if (TryGetComponent<EnemyHitFX>(out var hitFx)) hitFx.MarkKillHandled();
 
-        // 2. Wait for wisp flight & player glow feedback, THEN credit currency
-        StartCoroutine(DelayedSoulCreditRoutine());
+        HitFeedbackManager.NotifyKill(transform.position, transform.forward, soulEnergyValue);
     }
 
-    private IEnumerator DelayedSoulCreditRoutine()
-    {
-        yield return new WaitForSeconds(wispTravelDelay);
-
-        // 3. Add to centralized SoulManager economy
-        if (SoulManager.Instance != null)
-        {
-            SoulManager.Instance.AddSouls(soulEnergyValue);
-        }
-    }
+    public void ResetDrop() => hasDroppedSouls = false;
 }

@@ -202,6 +202,7 @@ public class HitFeedbackManager : MonoBehaviour
     private readonly Stack<SoulWisp> wispPool = new Stack<SoulWisp>();
     private MaterialPropertyBlock block;
     private Transform wispRoot;
+    private readonly Queue<int> pendingSoulShares = new Queue<int>();
     private Material runtimeSoulTrail;
     private Material runtimeSoulOrb;
     private Transform cachedAbsorbTarget;
@@ -288,8 +289,9 @@ public class HitFeedbackManager : MonoBehaviour
     }
 
     /// <summary>Called when an enemy dies.</summary>
-    public void PlayKill(Vector3 center, Vector3 awayDirection)
+    public void PlayKill(Vector3 center, Vector3 awayDirection, int soulValue = 0)
     {
+
         awayDirection.y = 0f;
         if (awayDirection.sqrMagnitude < 0.0001f) awayDirection = Vector3.forward;
         awayDirection.Normalize();
@@ -297,12 +299,33 @@ public class HitFeedbackManager : MonoBehaviour
         if (enableDistortion && killDistortionEnabled)
             SpawnDistortion(center, 1f, killDistortionSize, killDistortionDuration, killDistortionStrength, killDistortionCameraOffset);
         if (enableDebris) EmitDebris(center, awayDirection, debrisOnKill);
-        if (enableSouls) SpawnWisps(center, awayDirection, Random.Range(soulsPerKillMin, Mathf.Max(soulsPerKillMin, soulsPerKillMax) + 1));
+
+        int launched = 0;
+        if (enableSouls)
+            launched = SpawnWisps(center, awayDirection, Random.Range(soulsPerKillMin, Mathf.Max(soulsPerKillMin, soulsPerKillMax) + 1));
+
+        if (soulValue > 0)
+        {
+            if (launched <= 0)
+            {
+                // no wisps could spawn, so don't lose the souls
+                if (SoulManager.Instance != null) SoulManager.Instance.AddSouls(soulValue);
+            }
+            else
+            {
+                // split the total across the wisps, remainder spread so the sum is exact
+                int baseShare = soulValue / launched;
+                int extra = soulValue % launched;
+                for (int i = 0; i < launched; i++)
+                    pendingSoulShares.Enqueue(baseShare + (i < extra ? 1 : 0));
+            }
+        }
     }
 
-    public static void NotifyKill(Vector3 center, Vector3 awayDirection)
+    public static void NotifyKill(Vector3 center, Vector3 awayDirection, int soulValue = 0)
     {
-        if (Instance != null) Instance.PlayKill(center, awayDirection);
+        if (Instance != null) Instance.PlayKill(center, awayDirection, soulValue);
+        else if (soulValue > 0 && SoulManager.Instance != null) SoulManager.Instance.AddSouls(soulValue);
     }
 
     // ------------------------------------------------------------------ materials
@@ -553,9 +576,9 @@ public class HitFeedbackManager : MonoBehaviour
     }
 
     // ------------------------------------------------------------------ souls
-    private void SpawnWisps(Vector3 origin, Vector3 awayDir, int count)
+    private int SpawnWisps(Vector3 origin, Vector3 awayDir, int count)
     {
-        if (count <= 0) return;
+        if (count <= 0) return 0;
 
         Transform target = lastPlayer;
         if (target == null)
@@ -567,12 +590,13 @@ public class HitFeedbackManager : MonoBehaviour
 #endif
             if (pc != null) target = pc.transform;
         }
-        if (target == null) return;
+        if (target == null) return 0;
 
+        int launched = 0;
         for (int i = 0; i < count; i++)
         {
             SoulWisp wisp = GetWisp();
-            if (wisp == null) return;
+            if (wisp == null) return launched;
 
             Vector3 dir = (awayDir * 0.6f + Vector3.up * 0.9f + Random.insideUnitSphere * 0.8f).normalized;
             Vector3 vel = dir * Random.Range(wispBurstSpeed.x, wispBurstSpeed.y);
@@ -580,7 +604,9 @@ public class HitFeedbackManager : MonoBehaviour
             float jitter = Random.value * wispHomingJitter;
 
             wisp.Launch(origin + Random.insideUnitSphere * 0.2f, vel, target, wispTargetHeight, burst, jitter);
+            launched++;
         }
+        return launched;
     }
 
     private SoulWisp GetWisp()
@@ -734,6 +760,11 @@ public class HitFeedbackManager : MonoBehaviour
                 }
             }
         }
+
+        // credit one share of the kill's souls as each wisp lands
+        if (pendingSoulShares.Count > 0 && SoulManager.Instance != null)
+            SoulManager.Instance.AddSouls(pendingSoulShares.Dequeue());
+
         if (WispArrived != null) WispArrived(1);
     }
 

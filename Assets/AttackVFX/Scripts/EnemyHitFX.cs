@@ -81,6 +81,11 @@ public class EnemyHitFX : MonoBehaviour
         if (mgr != null) mgr.PlayKill(GetCenter(), lastHitDirection);
     }
 
+    public void MarkKillHandled()
+    {
+        killHandled = true;
+    }
+
     private void TryKillBurst()
     {
         if (killHandled) return;
