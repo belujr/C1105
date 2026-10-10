@@ -665,6 +665,148 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5783890189360926668}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2808241214680372937
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5101646767724423103}
+  - component: {fileID: 5047758702326390368}
+  m_Layer: 0
+  m_Name: Line Renderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5101646767724423103
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2808241214680372937}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.2792562, y: 1.1322018, z: 0.28638026}
+  m_LocalScale: {x: 0.5054901, y: 0.5054901, z: 0.5054901}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1266519241364971677}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!120 &5047758702326390368
+LineRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2808241214680372937}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 8edb8688af0f2af468bd9e9ef5effd24, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0.012851715
+        value: 0.04597664
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
+  m_ApplyActiveColorSpace: 1
 --- !u!1 &2825966971517089430
 GameObject:
   m_ObjectHideFlags: 0
@@ -1670,7 +1812,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7557540490364101082, guid: 5758e51c85569fe4fa5943c6d47b6e60, type: 3}
+  - {fileID: 2100000, guid: b876441bbcd8e2547b73febc66bb9519, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1991,6 +2133,37 @@ Transform:
   - {fileID: 4239872912283017875}
   m_Father: {fileID: 7235584248698942310}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6704642633221382837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 471774940645344383}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &471774940645344383
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6704642633221382837}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.045, y: 0.9286258, z: 0.057}
+  m_LocalScale: {x: 0.5054901, y: 0.5054901, z: 0.5054901}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1266519241364971677}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6754321833183188504
 GameObject:
   m_ObjectHideFlags: 0
@@ -2133,11 +2306,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1266519241364971677}
   - component: {fileID: 9221664658401912432}
-  - component: {fileID: 8424838543763413324}
   - component: {fileID: 7185991076286389422}
   - component: {fileID: 2845370007556556877}
+  - component: {fileID: 1212929064186875640}
   m_Layer: 6
-  m_Name: MinionEnemy
+  m_Name: BulletHellMinion
   m_TagString: Untagged
   m_Icon: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -2160,6 +2333,8 @@ Transform:
   - {fileID: 1257426960375538533}
   - {fileID: 7039662628080883195}
   - {fileID: 8090324200096889538}
+  - {fileID: 5101646767724423103}
+  - {fileID: 471774940645344383}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &9221664658401912432
@@ -2187,85 +2362,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.87, z: 0}
---- !u!114 &8424838543763413324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7572696427137771666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 008ef6f98ff26a847a51dace865041ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MinionEnemyBrain
-  enemyData: {fileID: 11400000, guid: ddcfdf170c977b544aec5bedbf38d24a, type: 2}
-  animProfile: {fileID: 11400000, guid: 5b76db9885b7046438d01d2761e96629, type: 2}
-  directDeathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
-  directHitClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
-  maxHealth: 60
-  outerRingDistance: 8
-  assignedZone: {fileID: 0}
-  patrolSpeed: 2
-  waypointWaitTime: 2
-  bumpTurnRadius: 1
-  bumpTurnDistance: 4
-  obstacleAvoidanceDistance: 5
-  avoidanceWeight: 20
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 0
-  separationRadius: 2.2
-  separationWeight: 4.5
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  visionRange: 10
-  visionFOVThreshold: 0.5
-  exclamationMarkVisual: {fileID: 1919932645659962826}
-  alertFreezeDuration: 0.6
-  turnSpeed: 300
-  acceleration: 12
-  deceleration: 16
-  idleEnterSpeed: 0.15
-  idleExitSpeed: 0.4
-  minLocomotionDwell: 0.25
-  ringBand: 8
-  noRingTokenExtraDistance: 2
-  orbitSpeedRange: {x: 1.2, y: 2.2}
-  orbitSegmentTime: {x: 3, y: 6}
-  angularSpacing: 60
-  orbitPauseChance: 0.229
-  orbitPauseDuration: {x: 0.8, y: 1.6}
-  recoverBackoffDistance: 2
-  recoverBreathDuration: {x: 1.2, y: 2.4}
-  reEngageCooldown: {x: 2.5, y: 5}
-  engageApproachTimeout: 6
-  attackFacingArc: 70
-  attackTurnSpeed: 220
-  hitReengageDelay: 0.5
-  eyeAnchor: {fileID: 8090324200096889538}
-  verticalFOV: 80
-  closeAwarenessRadius: 2.5
-  reactionDelayRange: {x: 0.15, y: 0.45}
-  perceptionRate: 14
-  hearingRadius: 12
-  footstepFullLoudnessSpeed: 6
-  attackHearingRadius: 18
-  wallHearingMultiplier: 0.5
-  instantAlertOnSight: 0
-  sightGainPerSecond: 1.2
-  soundGainPerSecond: 1
-  awarenessDecayPerSecond: 0.25
-  suspiciousThreshold: 0.4
-  loseSightDelay: 2.5
-  searchDuration: 8
-  searchRadius: 4
-  alertAlliesOnHit: 1
-  alertRadius: 10
-  socialPauseChance: 0.35
-  socialPauseDuration: {x: 2, y: 5}
-  lookAroundAngle: 55
 --- !u!95 &7185991076286389422
 Animator:
   serializedVersion: 7
@@ -2300,6 +2396,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5655663c2e28cc845aea328b62ac78bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatSystem.Animation.EnemyAnimationEngine
+--- !u!114 &1212929064186875640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc08add24cab9094681945ae789e4185, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  enemyData: {fileID: 11400000, guid: 70b21f9b1c1e4f349ad0c4d4aae8afe8, type: 2}
+  animProfile: {fileID: 11400000, guid: 976346c6b82c98e40a034bd17cbd3516, type: 2}
+  directDeathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
+  directHitClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
+  maxHealth: 60
+  outerRingDistance: 8
+  assignedZone: {fileID: 5573273089726275198, guid: ef5707421b8dbd244b60c64127073edc, type: 3}
+  patrolSpeed: 2
+  waypointWaitTime: 2
+  bumpTurnRadius: 1
+  bumpTurnDistance: 4
+  obstacleAvoidanceDistance: 3
+  avoidanceWeight: 5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  separationRadius: 2.2
+  separationWeight: 4.5
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  visionRange: 10
+  visionFOVThreshold: 0.5
+  exclamationMarkVisual: {fileID: 1919932645659962826}
+  alertFreezeDuration: 0.6
+  turnSpeed: 300
+  acceleration: 12
+  deceleration: 16
+  idleEnterSpeed: 0.15
+  idleExitSpeed: 0.4
+  minLocomotionDwell: 0.25
+  ringBand: 20
+  noRingTokenExtraDistance: 2
+  orbitSpeedRange: {x: 1.2, y: 2.2}
+  orbitSegmentTime: {x: 3, y: 6}
+  angularSpacing: 35
+  orbitPauseChance: 0.5
+  orbitPauseDuration: {x: 0.8, y: 1.6}
+  recoverBackoffDistance: 2
+  recoverBreathDuration: {x: 1.2, y: 2.4}
+  reEngageCooldown: {x: 2.5, y: 5}
+  engageApproachTimeout: 6
+  attackFacingArc: 70
+  attackTurnSpeed: 220
+  hitReengageDelay: 0.5
+  eyeAnchor: {fileID: 8090324200096889538}
+  verticalFOV: 80
+  closeAwarenessRadius: 2.5
+  reactionDelayRange: {x: 0.15, y: 0.45}
+  perceptionRate: 14
+  hearingRadius: 12
+  footstepFullLoudnessSpeed: 6
+  attackHearingRadius: 18
+  wallHearingMultiplier: 0.5
+  instantAlertOnSight: 0
+  sightGainPerSecond: 1.2
+  soundGainPerSecond: 1
+  awarenessDecayPerSecond: 0.25
+  suspiciousThreshold: 0.4
+  loseSightDelay: 2.5
+  searchDuration: 8
+  searchRadius: 4
+  alertAlliesOnHit: 1
+  alertRadius: 10
+  socialPauseChance: 0.35
+  socialPauseDuration: {x: 2, y: 5}
+  lookAroundAngle: 55
+  minSafeDistance: 6
+  preferredDistance: 11
+  maxDistance: 14
+  moveSpeedMultiplier: 1.3
+  bulletPatterns:
+  - {fileID: 3698991296270736241, guid: 8421626cb632d834f8b781f8e9a75514, type: 3}
+  firePoint: {fileID: 471774940645344383}
+  telegraphTime: 0.5
+  postAttackBreather: 1.2
+  attackClip: {fileID: 7400000, guid: c1857e4094b87fe40a724b81e470c20d, type: 3}
+  bulletFireDelay: 0.7
 --- !u!1 &7690767802400152074
 GameObject:
   m_ObjectHideFlags: 0
@@ -3039,7 +3225,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1675728367257404038, guid: 23e7e5550a0c7904da2aaed5b8133668, type: 3}
+  - {fileID: -8336177895568776667, guid: 7b82bf36a0ba5784c85c4b07c8aaa777, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

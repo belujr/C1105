@@ -15,7 +15,7 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.5587397, g: 0.6667094, b: 0.8113208, a: 1}
+  m_FogColor: {r: 1, g: 1, b: 1, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.01
   m_LinearFogStart: 0
@@ -357,7 +357,6 @@ MonoBehaviour:
   lineWidth: 0.3
   yOffset: 0.5
   dashLengthMultiplier: 0.5
-  chamberSprite: {fileID: 0}
   lineResolution: 20
 --- !u!43 &77117233
 Mesh:
@@ -2021,7 +2020,6 @@ MonoBehaviour:
   lineWidth: 0.3
   yOffset: 0.5
   dashLengthMultiplier: 0.5
-  chamberSprite: {fileID: 0}
   lineResolution: 20
 --- !u!1 &280783929
 GameObject:
@@ -3104,11 +3102,6 @@ MonoBehaviour:
   currentNode: {fileID: 0}
   startingNodes:
   - {fileID: 1146838054}
-  crosshairMesh: {fileID: 669170300}
-  chamberPopupCanvas: {fileID: 812555181}
-  chamberPopupImage: {fileID: 280783931}
-  crosshairYOffset: 0.1
-  popupYOffset: 2
   glowColor: {r: 4, g: 4, b: 4, a: 1}
   normalColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
   animationDuration: 2
@@ -3256,6 +3249,26 @@ PrefabInstance:
     - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_Name
       value: Level1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_DrawInstanced
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_SplatMapDistance
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_DetailObjectDensity
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_HeightmapPixelError
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008215708436095163, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: m_DetailObjectDistance
+      value: 40
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3570,7 +3583,6 @@ MonoBehaviour:
   lineWidth: 0.3
   yOffset: 0.5
   dashLengthMultiplier: 0.5
-  chamberSprite: {fileID: 0}
   lineResolution: 20
 --- !u!1 &1269067831
 GameObject:
@@ -3746,7 +3758,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSeeThrough
   player: {fileID: 408869210076216818, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
-  treeMaterial: {fileID: 0}
+  holeSize: 0.55
+  smoothness: 1.9
+  propHoleSize: 0.4
+  propSmoothness: 0.25
+  fadeSpeed: 6
+  blockerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  onlyWhenBlocked: 0
 --- !u!1 &1306235420
 GameObject:
   m_ObjectHideFlags: 0
@@ -9694,7 +9714,6 @@ MonoBehaviour:
   lineWidth: 0.3
   yOffset: 0.5
   dashLengthMultiplier: 0.5
-  chamberSprite: {fileID: 0}
   lineResolution: 20
 --- !u!114 &1791755720
 MonoBehaviour:
@@ -22263,7 +22282,6 @@ MonoBehaviour:
   lineWidth: 0.3
   yOffset: 0.5
   dashLengthMultiplier: 0.5
-  chamberSprite: {fileID: 0}
   lineResolution: 20
 --- !u!1 &2034187349
 GameObject:

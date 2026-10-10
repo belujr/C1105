@@ -66,7 +66,5 @@ public class GlobalSeeThrough : MonoBehaviour
         Shader.SetGlobalFloat("_SeeThroughSmoothness", smoothness);
         Shader.SetGlobalFloat("_SeeThroughPropHoleSize", propHoleSize * fade);
         Shader.SetGlobalFloat("_SeeThroughPropSmoothness", propSmoothness);
-
-        Debug.Log("PlayerDepth: " + Vector2.Dot(playerXZ - camXZ, fwdXZ));
     }
 }
