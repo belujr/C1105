@@ -2309,6 +2309,7 @@ GameObject:
   - component: {fileID: 7185991076286389422}
   - component: {fileID: 2845370007556556877}
   - component: {fileID: 1212929064186875640}
+  - component: {fileID: 6602324674702280247}
   m_Layer: 6
   m_Name: BulletHellMinion
   m_TagString: Untagged
@@ -2486,6 +2487,20 @@ MonoBehaviour:
   postAttackBreather: 1.2
   attackClip: {fileID: 7400000, guid: c1857e4094b87fe40a724b81e470c20d, type: 3}
   bulletFireDelay: 0.7
+--- !u!114 &6602324674702280247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126fd39090fd091498bdc641be086ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
+  soulEnergyValue: 30
+  wispTravelDelay: 0.6
 --- !u!1 &7690767802400152074
 GameObject:
   m_ObjectHideFlags: 0

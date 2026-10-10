@@ -557,6 +557,12 @@ public class HealerController : MonoBehaviour, IDamageable
         if (isDead) return;
         isDead = true;
         StopHealing();
+
+        if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
+        {
+            soulDrop.TriggerSoulDrop();
+        }
+
         isReacting = false;
         isSpawning = false;
         pendingSpawnAfterHit = false;

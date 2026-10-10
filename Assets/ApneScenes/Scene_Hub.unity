@@ -56080,7 +56080,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSeeThrough
   player: {fileID: 6680446510897841060, guid: d66b2e0779304a04bb426b69f6616b1a, type: 3}
-  treeMaterial: {fileID: 0}
+  holeSize: 0.15
+  smoothness: 0.12
+  propHoleSize: 0.15
+  propSmoothness: 0.08
+  fadeSpeed: 6
+  blockerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  onlyWhenBlocked: 0
 --- !u!1 &487065216
 GameObject:
   m_ObjectHideFlags: 0
@@ -140711,7 +140719,15 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   - runName: 2
-    steps: []
+    steps:
+    - stepLabel: TRENCH RUN 2
+      dialogueSequence: {fileID: 11400000, guid: 68ebbcd1f754414478b7675771b9526a, type: 2}
+      triggerNPC: 0
+      autoTriggerOnRunStart: 0
+      dependency: {fileID: 0}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls: []
   vesselConjureVFX: {fileID: 0}
   spawnPoint: {fileID: 446062489}
   playerPrefab: {fileID: 459098319445998704, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
@@ -204345,7 +204361,8 @@ MonoBehaviour:
   hitEffectPrefab: {fileID: 0}
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
-  deathDisappearDelay: 0.5
+  deathParticlePrefab: {fileID: 0}
+  deathSequenceDuration: 2
   isImmortal: 0
 --- !u!33 &4688170970061072160
 MeshFilter:

@@ -947,7 +947,11 @@ private CharacterController charController;
     {
         if (isDead) return;
         isDead = true;
-
+        
+        if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
+        {
+            soulDrop.TriggerSoulDrop();
+        }
         OnDeath?.Invoke();
 
         IsDodging = false;
