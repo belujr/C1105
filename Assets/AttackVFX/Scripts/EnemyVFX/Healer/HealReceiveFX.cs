@@ -33,6 +33,8 @@ public class HealReceiveFX : MonoBehaviour
     public float groundOffset = 0.05f;
     [Tooltip("Clears grass and flowers under the aura (needs the HealAuraGrassMask shader). Grass comes back when the heal ends.")]
     public bool clearGrassUnderAura = true;
+    [Tooltip("Size of the cleared grass area compared to the rune (1 = same size, 1.3 = a bit bigger).")]
+    public float grassClearScale = 1.3f;
 
     [Header("Particles")]
     public float plusPerSecond = 14f;
@@ -175,6 +177,8 @@ public class HealReceiveFX : MonoBehaviour
         Vector3 feet = transform.position;
         if (active || rune.IsVisible) feet = HealVFXAssets.GroundPoint(transform, groundMask, groundOffset);
 
+        rune.clearGrass = clearGrassUnderAura;
+        rune.clearScale = grassClearScale;
         rune.Tick(dt, active && showGroundAura, feet, worldRadius, color, spinDegreesPerSecond, fadeIn, fadeOut);
 
         // plus sparks: emitter lies flat on the floor (cone points up)

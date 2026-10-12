@@ -39,6 +39,8 @@ public class HealerHealVFX : MonoBehaviour
     public float twists = 0.5f;
     [Tooltip("How fast particles circle and the whole stream sways.")]
     public float swaySpeed = 1.2f;
+    [Tooltip("How softly particles follow a moving staff or ally. Lower = looser and lazier, higher = tighter.")]
+    public float followSharpness = 6f;
     public float threadPerSecond = 14f;
     public float orbsPerSecond = 9f;
     public float plusPerSecond = 5f;
@@ -57,6 +59,8 @@ public class HealerHealVFX : MonoBehaviour
     public float groundOffset = 0.05f;
     [Tooltip("Clears grass and flowers under the rune (needs the HealAuraGrassMask shader).")]
     public bool clearGrassUnderRune = true;
+    [Tooltip("Size of the cleared grass area compared to the rune (1 = same size, 1.3 = a bit bigger).")]
+    public float grassClearScale = 1.3f;
 
     private class Stream
     {
@@ -80,6 +84,7 @@ public class HealerHealVFX : MonoBehaviour
     private bool casting;
     private float lastCastTime = -10f;
     private Vector3 targetWorld;
+    private HealReceiveFX followFX;
 
     // ------------------------------------------------------------------ API
     /// <summary>Call every frame while healing. 'targetPoint' is where the energy lands (the ally's chest).</summary>
@@ -93,6 +98,17 @@ public class HealerHealVFX : MonoBehaviour
             casting = true;
             chargePS.Emit(14);   // small pop when the cast starts
         }
+    }
+
+    /// <summary>
+    /// Call every frame while healing. The stream follows this ally live (even while particles are still flying
+    /// after the cast stopped), and the ally's aura only starts when the first particles arrive.
+    /// </summary>
+    public void Cast(HealReceiveFX target)
+    {
+        if (target == null) return;
+        Cast(target.AimPoint);
+        followFX = target;
     }
 
     public void StopCasting()
@@ -236,7 +252,14 @@ public class HealerHealVFX : MonoBehaviour
         if (!built) return;
         float dt = Time.deltaTime;
 
-        if (casting && Time.time - lastCastTime > 0.15f) casting = false;
+        if (casting && Time.time - lastCastTime > 0.3f) casting = false;
+
+        // keep aiming at the live ally, so particles already in flight still end up on it
+        if (followFX != null)
+        {
+            if (followFX.isActiveAndEnabled) targetWorld = followFX.AimPoint;
+            else followFX = null;
+        }
 
         Vector3 tip = TipPosition();
         anchor.position = tip;
@@ -246,6 +269,7 @@ public class HealerHealVFX : MonoBehaviour
         if (foot != null && (casting || foot.IsVisible))
         {
             foot.clearGrass = clearGrassUnderRune;
+            foot.clearScale = grassClearScale;
             foot.Tick(dt, casting && showFootRune, HealVFXAssets.GroundPoint(transform, groundMask, groundOffset),
                       footRuneRadius, mainColor, 40f, 0.25f, 0.4f);
         }
@@ -260,12 +284,16 @@ public class HealerHealVFX : MonoBehaviour
         right.Normalize();
         Vector3 up2 = Vector3.Cross(dir, right).normalized;
 
+        bool arrived = false;
         for (int i = 0; i < streams.Count; i++)
         {
             Stream s = streams[i];
             if (casting) EmitStream(s, tip, dt);
-            if (s.ps.particleCount > 0) Reposition(s, tip, targetWorld, right, up2, len);
+            if (s.ps.particleCount > 0 && Reposition(s, tip, targetWorld, right, up2, len, dt)) arrived = true;
         }
+
+        // the aura on the ally only shows while stream particles are actually reaching it
+        if (arrived && followFX != null) followFX.Ping();
     }
 
     private void EmitStream(Stream s, Vector3 origin, float dt)
@@ -288,12 +316,13 @@ public class HealerHealVFX : MonoBehaviour
     }
 
     // Particles are placed by hand every frame: they follow the moving staff and the moving ally exactly.
-    private void Reposition(Stream s, Vector3 a, Vector3 b, Vector3 right, Vector3 up2, float len)
+    private bool Reposition(Stream s, Vector3 a, Vector3 b, Vector3 right, Vector3 up2, float len, float dt)
     {
         int n = s.ps.GetParticles(buf);
         float time = Time.time;
         float arc = arcHeight * Mathf.Min(1f, len / 6f);
         float w = streamWidth / 0.35f;   // 0.35 = the width the amounts below were designed for
+        bool arrived = false;
 
         for (int i = 0; i < n; i++)
         {
@@ -301,6 +330,7 @@ public class HealerHealVFX : MonoBehaviour
             float t = Mathf.Clamp01(1f - p.remainingLifetime / Mathf.Max(0.0001f, p.startLifetime));
             // gentle ease: a little slower at the staff and when arriving, never stops
             float te = Mathf.Lerp(t, t * t * (3f - 2f * t), 0.35f);
+            if (te > 0.85f) arrived = true;
 
             float r01 = (p.randomSeed % 1000u) / 1000f;
             float pinch = Mathf.Pow(Mathf.Sin(Mathf.PI * te), 0.7f);   // 0 at both ends: the stream starts and ends in a point
@@ -317,11 +347,17 @@ public class HealerHealVFX : MonoBehaviour
             pos += Vector3.up * (arc * Mathf.Sin(Mathf.PI * te) + bob);
             pos += right * (Mathf.Cos(angle) * radius + sway) + up2 * (Mathf.Sin(angle) * radius);
 
-            p.position = pos;
+            // each particle eases toward where it should be (stiffer near the staff, looser toward the ally),
+            // so when something moves the stream bends and follows smoothly instead of snapping
+            float sharp = followSharpness * Mathf.Lerp(2.5f, 1f, Mathf.Clamp01(te * 2f));
+            // near the end the particle locks onto the ally, so it never dies in mid air
+            sharp = Mathf.Lerp(sharp, 18f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((te - 0.7f) / 0.3f)));
+            p.position = Vector3.Lerp(p.position, pos, 1f - Mathf.Exp(-sharp * dt));
             p.velocity = Vector3.zero;
             if (s.kind == 2) p.rotation = r01 * 360f + t * 140f;   // "+" signs slowly turn
             buf[i] = p;
         }
         s.ps.SetParticles(buf, n);
+        return arrived;
     }
 }

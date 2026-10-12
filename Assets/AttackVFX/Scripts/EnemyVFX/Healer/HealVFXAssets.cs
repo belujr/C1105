@@ -318,7 +318,7 @@ public class HealGroundRune
     private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
 
     public bool clearGrass = true;
-    public float clearScale = 1.1f;
+    public float clearScale = 1.3f;
 
     public Renderer Renderer { get { return mr; } }
     public Renderer MaskRenderer { get { return maskMr; } }

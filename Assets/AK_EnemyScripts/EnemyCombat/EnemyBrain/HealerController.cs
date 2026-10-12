@@ -481,8 +481,7 @@ public class HealerController : MonoBehaviour, IDamageable
             allyFX = allyTransform.GetComponent<HealReceiveFX>();
             if (allyFX == null) allyFX = allyTransform.gameObject.AddComponent<HealReceiveFX>();
         }
-        allyFX.Ping();
-        healVFX.Cast(allyFX.AimPoint);
+        healVFX.Cast(allyFX);   // the aura on the ally starts by itself when the first stream particles arrive
 
         // Play dedicated healing casting animation using the heal animation speed multiplier
         AnimationClip activeHealClip = healAnimationClip != null ? healAnimationClip : (animProfile != null ? (animProfile.GetAnimationClip("HealAction") ?? animProfile.idleClip) : null);

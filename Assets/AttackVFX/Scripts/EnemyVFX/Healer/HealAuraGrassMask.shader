@@ -6,7 +6,7 @@ Shader "InfiniteGrass/Modifiers/HealAuraGrassMask"
     Properties
     {
         _Opacity ("Opacity", Range(0, 1)) = 1
-        _SolidRadius ("Fully cleared radius (0-1 of the disc)", Range(0, 1)) = 0.55
+        _SolidRadius ("Fully cleared radius (0-1 of the disc)", Range(0, 1)) = 0.85
     }
     SubShader
     {
