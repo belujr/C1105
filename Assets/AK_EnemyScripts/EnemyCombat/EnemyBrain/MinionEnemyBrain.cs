@@ -10,15 +10,15 @@ using CombatSystem.Animation;
 [RequireComponent(typeof(EnemyAnimationEngine))]
 public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 {
-    public enum MinionState { Unaware, Suspicious, Chase, Orbit, Engage, Stun, Dead, Recover, Search }
-    public MinionState CurrentState { get; protected set; } // [R2]
+    public enum MinionState { Unaware, Suspicious, Chase, Orbit, Engage, Stun, Dead, Recover, Search, Trip }
+    public MinionState CurrentState { get; protected set; } 
 
-    protected enum AnimKey { None, Idle, Walk, StrafeLeft, StrafeRight, Backpedal, Attack, Hit, Death } // [R2]
+    protected enum AnimKey { None, Idle, Walk, StrafeLeft, StrafeRight, Backpedal, Attack, Hit, Death, Trip, GetUp } 
 
-    protected MinionEnemyDataSO MinionData => enemyData as MinionEnemyDataSO; // [R2]
-    protected EnemyAnimationEngine minionAnim; // [R2]
-    protected float MoveSpd => (MinionData != null ? MinionData.MoveSpeed : 3.5f) * Mathf.Lerp(1f, 1.15f, aggression); // [R2]
-    protected float StopDist => MinionData != null ? MinionData.AttackStopDistance : 2f; // [R2]
+    protected MinionEnemyDataSO MinionData => enemyData as MinionEnemyDataSO; 
+    protected EnemyAnimationEngine minionAnim; 
+    protected float MoveSpd => (MinionData != null ? MinionData.MoveSpeed : 3.5f) * Mathf.Lerp(1f, 1.15f, aggression); 
+    protected float StopDist => MinionData != null ? MinionData.AttackStopDistance : 2f; 
 
     // ------------------------------------------------------------------ Inspector (existing names kept)
     [Header("Animation Profiles & Direct Inspector Clips")]
@@ -26,9 +26,16 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     public AnimationClip directDeathClip;
     public AnimationClip directHitClip;
 
+    [Header("Slide Trip Mechanics")]
+    public AnimationClip tripClip;
+    public AnimationClip getUpClip;
+    public float tripDuration = 1.5f;
+    public float tripAnimSpeed = 1f;
+    public float getUpAnimSpeed = 1f;
+
     [Header("Health & Combat Settings")]
     public float maxHealth = 60f;
-    protected float currentHealth; // [R2]
+    protected float currentHealth; 
 
     [Header("Targeting")]
     [Tooltip("Layers this enemy may target. The target's root GameObject must be on one of these layers (e.g. Player). Nothing = keep whatever target BaseEnemyBrain assigns (original behaviour).")]
@@ -112,38 +119,38 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     public Vector2 followUpDelay = new Vector2(0.4f, 0.9f);
 
     // ------------------------------------------------------------------ Runtime
-    protected float randomizedSeparationWeight; // [R2]
-    protected bool holdsEngageToken, holdsOuterRingToken; // [R2]
-    protected float nextTokenRequestTime, engageReadyTime, waitingSince, engageApproachStart, stateEnterTime; // [R2]
-    protected float ringOffset, orbitSpeed, orbitSegmentTimer, orbitPauseTimer; // [R2]
-    protected int orbitSign = 1; // [R2]
-    protected float recoverTimer, breathTimer; // [R2]
-    protected bool recoverBreathing; // [R2]
-    protected float nextTargetScanTime; // [R2]
+    protected float randomizedSeparationWeight; 
+    protected bool holdsEngageToken, holdsOuterRingToken; 
+    protected float nextTokenRequestTime, engageReadyTime, waitingSince, engageApproachStart, stateEnterTime; 
+    protected float ringOffset, orbitSpeed, orbitSegmentTimer, orbitPauseTimer; 
+    protected int orbitSign = 1; 
+    protected float recoverTimer, breathTimer; 
+    protected bool recoverBreathing; 
+    protected float nextTargetScanTime; 
 
-    protected Vector3 velocity, desiredVelocity, desiredFacing, knockVelocity, cachedSeparation; // [R2]
-    protected float facingTurnSpeed, knockDecel, nextSeparationTime; // [R2]
-    protected int avoidSide = 1; // [R2]
+    protected Vector3 velocity, desiredVelocity, desiredFacing, knockVelocity, cachedSeparation; 
+    protected float facingTurnSpeed, knockDecel, nextSeparationTime; 
+    protected int avoidSide = 1; 
 
-    protected AnimKey currentAnim = AnimKey.None; // [R2]
-    protected AnimationClip lastLocoClip; // [R2]
-    protected float animChangeTime; // [R2]
-    protected bool animLocked; // [R2]
-    protected bool warnedMissingAttackClip; // [R2]
+    protected AnimKey currentAnim = AnimKey.None; 
+    protected AnimationClip lastLocoClip; 
+    protected float animChangeTime; 
+    protected bool animLocked; 
+    protected bool warnedMissingAttackClip; 
 
-    protected Coroutine activeRoutine; // [R2]
-    protected Vector3 pendingHitDirection; // [R2]
-    protected int pendingAttackId; // [R2]
+    protected Coroutine activeRoutine; 
+    protected Vector3 pendingHitDirection; 
+    protected int pendingAttackId; 
 
-    protected Vector3 stuckSample; // [R2]
-    protected float stuckSampleTime; // [R2]
+    protected Vector3 stuckSample; 
+    protected float stuckSampleTime; 
 
-    protected static readonly List<MinionEnemyBrain> registry = new List<MinionEnemyBrain>(32); // [R2]
-    protected static readonly Collider[] separationBuffer = new Collider[16]; // [R2]
-    protected static readonly Collider[] targetBuffer = new Collider[32]; // [R2]
-    protected static float globalLastAttackTime = 0f; // [R2]
-    protected const float MIN_ATTACK_STAGGER_DELAY = 0.6f; // [R2]
-    protected const float GROUND_STICK = -4f; // [R2]
+    protected static readonly List<MinionEnemyBrain> registry = new List<MinionEnemyBrain>(32); 
+    protected static readonly Collider[] separationBuffer = new Collider[16]; 
+    protected static readonly Collider[] targetBuffer = new Collider[32]; 
+    protected static float globalLastAttackTime = 0f; 
+    protected const float MIN_ATTACK_STAGGER_DELAY = 0.6f; 
+    protected const float GROUND_STICK = -4f; 
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -152,13 +159,13 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         registry.Clear();
     }
 
-    protected static Vector3 Flat(Vector3 v) { v.y = 0f; return v; } // [R2]
-    protected float GravityY => gravity != 0f ? -Mathf.Abs(gravity) : Physics.gravity.y; // [R2]
+    protected static Vector3 Flat(Vector3 v) { v.y = 0f; return v; } 
+    protected float GravityY => gravity != 0f ? -Mathf.Abs(gravity) : Physics.gravity.y; 
 
     // Aggression scaling (aggression 0 = original numbers)
-    protected float CooldownScale => Mathf.Lerp(1f, 0.4f, aggression); // [R2]
-    protected float RingDistance => outerRingDistance * Mathf.Lerp(1f, 0.75f, aggression); // [R2]
-    protected float ReEngageDelay() => Random.Range(reEngageCooldown.x, reEngageCooldown.y) * CooldownScale; // [R2]
+    protected float CooldownScale => Mathf.Lerp(1f, 0.4f, aggression); 
+    protected float RingDistance => outerRingDistance * Mathf.Lerp(1f, 0.75f, aggression); 
+    protected float ReEngageDelay() => Random.Range(reEngageCooldown.x, reEngageCooldown.y) * CooldownScale; 
 
     // ------------------------------------------------------------------ Lifecycle
     protected override void Awake()
@@ -245,7 +252,6 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     // ------------------------------------------------------------------ Targeting
     protected bool InTargetLayers(GameObject go) => (targetLayers.value & (1 << go.layer)) != 0;
 
-    // Keeps 'target' on one of targetLayers. Does nothing while targetLayers is Nothing.
     protected virtual void EnforceTargetLayers()
     {
         if (targetLayers.value == 0) return;
@@ -270,15 +276,15 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Tokens
-    protected virtual TokenType EngageToken => engageTokenType; // ranged minions override this
-    protected virtual void ReleaseAttackToken() // [R2]
+    protected virtual TokenType EngageToken => engageTokenType; 
+    protected virtual void ReleaseAttackToken() 
     {
         if (hasToken && selectedAttack != null && GlobalTokenManager.Instance != null)
             GlobalTokenManager.Instance.ReleaseToken(transform, selectedAttack.RequiredTokenType);
         hasToken = false;
     }
 
-    protected virtual void CleanupTokens() // [R2]
+    protected virtual void CleanupTokens() 
     {
         if (GlobalTokenManager.Instance != null)
         {
@@ -290,12 +296,12 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         holdsOuterRingToken = false;
     }
 
-    protected virtual bool WantsEngage => // [R2]
+    protected virtual bool WantsEngage => 
         isActiveAndEnabled && target != null && !holdsEngageToken &&
         (CurrentState == MinionState.Orbit || CurrentState == MinionState.Chase) &&
         Time.time >= engageReadyTime;
 
-    protected virtual bool IsNextInLine() // [R2]
+    protected virtual bool IsNextInLine() 
     {
         int myId = GetInstanceID();
         for (int i = 0; i < registry.Count; i++)
@@ -307,7 +313,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         return true;
     }
 
-    protected virtual void TryAcquireTokens() // [R2]
+    protected virtual void TryAcquireTokens() 
     {
         if (GlobalTokenManager.Instance == null || Time.time < nextTokenRequestTime) return;
         nextTokenRequestTime = Time.time + 0.2f;
@@ -331,7 +337,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
             holdsOuterRingToken = GlobalTokenManager.Instance.RequestToken(transform, outerRingTokenType);
     }
 
-    protected virtual void GiveUpEngage() // [R2]
+    protected virtual void GiveUpEngage() 
     {
         CleanupTokens();
         engageReadyTime = Time.time + Random.Range(1f, 2f) * CooldownScale;
@@ -340,7 +346,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ State machine
-    protected virtual void TransitionToState(MinionState newState) // [R2]
+    protected virtual void TransitionToState(MinionState newState) 
     {
         if (CurrentState == MinionState.Dead) return;
         MinionState old = CurrentState;
@@ -353,7 +359,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 
         if (old == MinionState.Engage) ReleaseAttackToken();
 
-        if (newState == MinionState.Unaware || newState == MinionState.Search || newState == MinionState.Suspicious)
+        if (newState == MinionState.Unaware || newState == MinionState.Search || newState == MinionState.Suspicious || newState == MinionState.Trip)
             CleanupTokens();
 
         if (activeRoutine != null)
@@ -393,17 +399,68 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
             case MinionState.Stun:
                 activeRoutine = StartCoroutine(HitReactionRoutine());
                 break;
+            case MinionState.Trip:
+                activeRoutine = StartCoroutine(TripSequenceRoutine());
+                break;
             case MinionState.Dead:
                 Die();
                 break;
         }
     }
 
+    public void TriggerSlideTrip()
+    {
+        if (CurrentState == MinionState.Dead || CurrentState == MinionState.Trip) return;
+        TransitionToState(MinionState.Trip);
+    }
+
+    protected virtual IEnumerator TripSequenceRoutine()
+    {
+        CleanupTokens();
+        animLocked = true;
+        velocity = Vector3.zero;
+        knockVelocity = Vector3.zero;
+        desiredVelocity = Vector3.zero;
+        desiredFacing = Vector3.zero;
+
+        if (characterController != null) characterController.enabled = false;
+
+        currentAnim = AnimKey.Trip;
+        lastLocoClip = null;
+        if (tripClip != null && minionAnim != null)
+            minionAnim.PlayAnimation(tripClip, 0.1f, tripAnimSpeed);
+
+        yield return new WaitForSeconds(tripDuration);
+
+        currentAnim = AnimKey.GetUp;
+        float getUpTime = 1f;
+        if (getUpClip != null && minionAnim != null)
+        {
+            minionAnim.PlayAnimation(getUpClip, 0.1f, getUpAnimSpeed);
+            getUpTime = getUpClip.length / Mathf.Max(0.01f, getUpAnimSpeed);
+        }
+
+        yield return new WaitForSeconds(getUpTime);
+
+        if (characterController != null) characterController.enabled = true;
+        engageReadyTime = Time.time + hitReengageDelay;
+        waitingSince = engageReadyTime;
+        TransitionToState(MinionState.Chase);
+    }
+
     protected override void Update()
     {
         if (CurrentState == MinionState.Dead) return;
+        
         float dt = Time.deltaTime;
         if (dt <= 0f) return;
+
+        if (CurrentState == MinionState.Trip)
+        {
+            desiredVelocity = Vector3.zero;
+            desiredFacing = Vector3.zero;
+            return; 
+        }
 
         ApplyMovement(dt);
         UpdateLocomotionAnimation();
@@ -432,11 +489,12 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
             case MinionState.Orbit: HandleOrbit(dt); break;
             case MinionState.Recover: HandleRecover(dt); break;
             case MinionState.Search: HandleSearch(dt); break;
+            case MinionState.Trip: break; 
         }
     }
 
     // ------------------------------------------------------------------ Movement core
-    protected virtual void ApplyMovement(float dt) // [R2]
+    protected virtual void ApplyMovement(float dt) 
     {
         if (characterController == null || !characterController.enabled) return;
 
@@ -466,7 +524,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         transform.rotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
-    protected void SteerTo(Vector3 goal, float speed, bool faceTarget) // [R2]
+    protected void SteerTo(Vector3 goal, float speed, bool faceTarget) 
     {
         Vector3 to = Flat(goal - transform.position);
         float dist = to.magnitude;
@@ -477,7 +535,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         if (faceTarget) desiredFacing = Flat(PerceivedTargetPosition - transform.position);
     }
 
-    protected Vector3 AvoidObstacles(Vector3 dir) // [R2]
+    protected Vector3 AvoidObstacles(Vector3 dir) 
     {
         if (obstacleMask.value == 0 || characterController == null) return dir;
 
@@ -495,7 +553,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         return dir;
     }
 
-    protected Vector3 GetSeparation() // [R2]
+    protected Vector3 GetSeparation() 
     {
         if (Time.time >= nextSeparationTime)
         {
@@ -518,7 +576,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         return cachedSeparation;
     }
 
-    protected bool TrackStuck(bool wantsToMove) // [R2]
+    protected bool TrackStuck(bool wantsToMove) 
     {
         if (!wantsToMove) { stuckSample = transform.position; stuckSampleTime = Time.time; return false; }
         if (Time.time - stuckSampleTime < 1.2f) return false;
@@ -529,7 +587,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Animation (single pipeline, state-change only)
-    protected virtual void UpdateLocomotionAnimation() // [R2]
+    protected virtual void UpdateLocomotionAnimation() 
     {
         if (animLocked || animProfile == null || minionAnim == null) return;
 
@@ -586,7 +644,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Chase
-    protected virtual void HandleChase(float dt) // [R2]
+    protected virtual void HandleChase(float dt) 
     {
         Vector3 toTarget = Flat(target.position - transform.position);
         float dist = toTarget.magnitude;
@@ -609,7 +667,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Orbit (strafing circle + breathers)
-    protected virtual void HandleOrbit(float dt) // [R2]
+    protected virtual void HandleOrbit(float dt) 
     {
         TryAcquireTokens();
         if (holdsEngageToken) { TransitionToState(MinionState.Chase); return; }
@@ -658,7 +716,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         desiredFacing = Flat(PerceivedTargetPosition - transform.position);
     }
 
-    protected Vector3 AngularSpacingPush(Vector3 ringTangent) // [R2]
+    protected Vector3 AngularSpacingPush(Vector3 ringTangent) 
     {
         Vector3 myOff = Flat(transform.position - target.position);
         if (myOff.sqrMagnitude < 0.01f) return Vector3.zero;
@@ -682,7 +740,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Recover (back off -> idle breath -> orbit)
-    protected virtual void HandleRecover(float dt) // [R2]
+    protected virtual void HandleRecover(float dt) 
     {
         Vector3 toTarget = Flat(target.position - transform.position);
         float dist = toTarget.magnitude;
@@ -708,15 +766,14 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     }
 
     // ------------------------------------------------------------------ Engage (committed attack)
-    protected void HoldAndFace() // [R2]
+    protected void HoldAndFace() 
     {
         desiredVelocity = Vector3.zero;
         desiredFacing = Flat(PerceivedTargetPosition - transform.position);
         facingTurnSpeed = attackTurnSpeed;
     }
 
-    // When one enemy commits to an attack, the next waiting ally lines up its own attack right behind it.
-    protected void PressureAllies() // [R2]
+    protected void PressureAllies() 
     {
         if (!followUpAttacks) return;
 
@@ -740,7 +797,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
     }
 
-    protected virtual IEnumerator EngageRoutine() // [R2]
+    protected virtual IEnumerator EngageRoutine() 
     {
         if (MinionData == null || MinionData.AvailableAttacks == null || MinionData.AvailableAttacks.Count == 0)
         {
@@ -816,7 +873,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         TransitionToState(MinionState.Recover);
     }
 
-    protected virtual void PlayAttackAnimation() // [R2]
+    protected virtual void PlayAttackAnimation() 
     {
         AnimationClip clip = null;
         if (animProfile != null && selectedAttack != null && !string.IsNullOrEmpty(selectedAttack.AnimationClipName))
@@ -834,7 +891,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
     }
 
-    protected virtual void DealDamageToPlayer() // [R2]
+    protected virtual void DealDamageToPlayer() 
     {
         if (target != null && target.TryGetComponent<IDamageable>(out var playerDamageable))
         {
@@ -850,7 +907,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     // ------------------------------------------------------------------ Damage / hit reaction / death
     public void TakeDamage(float damage, Vector3 hitPoint, Vector3 hitDirection, float force, AudioClip hitSound, int attackID, bool isAOE)
     {
-        if (CurrentState == MinionState.Dead) return;
+        if (CurrentState == MinionState.Dead || CurrentState == MinionState.Trip) return;
 
         currentHealth -= damage;
         CleanupTokens();
@@ -875,7 +932,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         TransitionToState(MinionState.Stun);
     }
 
-    protected virtual IEnumerator HitReactionRoutine() // [R2]
+    protected virtual IEnumerator HitReactionRoutine() 
     {
         animLocked = true;
         float duration = PlayHitReaction();
@@ -892,7 +949,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         TransitionToState(MinionState.Chase);
     }
 
-    protected float PlayHitReaction() // [R2]
+    protected float PlayHitReaction() 
     {
         if (minionAnim == null) return 0.35f;
 
@@ -936,7 +993,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         return Mathf.Clamp(clip.length / Mathf.Max(0.01f, speed), 0.25f, 0.7f);
     }
 
-    protected virtual void Die() // [R2]
+    protected virtual void Die() 
     {
         CleanupTokens();
         if (GlobalTokenManager.Instance != null) GlobalTokenManager.Instance.ReleaseAllTokensForEnemy(transform);
@@ -963,7 +1020,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         StartCoroutine(DeathDisappearRoutine());
     }
 
-    protected IEnumerator DeathDisappearRoutine() // [R2]
+    protected IEnumerator DeathDisappearRoutine() 
     {
         yield return new WaitForSeconds(2.5f);
         if (EnemyObjectPool.Instance != null) EnemyObjectPool.Instance.ReturnToPool(gameObject);
@@ -1008,19 +1065,19 @@ public partial class MinionEnemyBrain
     public float alertRadius = 10f;
 
     // ------------------------------------------------------------------ Runtime
-    protected const int HIST_LEN = 24; // [R2]
-    protected readonly Vector3[] posHistory = new Vector3[HIST_LEN]; // [R2]
-    protected int histCount, histHead; // [R2]
+    protected const int HIST_LEN = 24; 
+    protected readonly Vector3[] posHistory = new Vector3[HIST_LEN]; 
+    protected int histCount, histHead; 
 
-    protected float awareness, timeSinceSeen, reactionDelay, perceptionTimer, stimulusHoldUntil, investigateAt, heardAt; // [R2]
-    protected bool seesTarget, hasMemory, prevValid, triedPlayerCtrl; // [R2]
-    protected Vector3 lastKnownPos, lastKnownVel, prevTargetPos, lastTargetVelocity; // [R2]
-    protected PlayerController playerCtrl; // [R2]
+    protected float awareness, timeSinceSeen, reactionDelay, perceptionTimer, stimulusHoldUntil, investigateAt, heardAt; 
+    protected bool seesTarget, hasMemory, prevValid, triedPlayerCtrl; 
+    protected Vector3 lastKnownPos, lastKnownVel, prevTargetPos, lastTargetVelocity; 
+    protected PlayerController playerCtrl; 
 
-    protected Vector3 EyePosition => eyeAnchor != null ? eyeAnchor.position : transform.position + Vector3.up * 1.5f; // [R2]
-    protected Vector3 ChaseGoal => (seesTarget || timeSinceSeen < 0.5f) ? target.position : lastKnownPos; // [R2]
+    protected Vector3 EyePosition => eyeAnchor != null ? eyeAnchor.position : transform.position + Vector3.up * 1.5f; 
+    protected Vector3 ChaseGoal => (seesTarget || timeSinceSeen < 0.5f) ? target.position : lastKnownPos; 
 
-    protected virtual void ResetPerception() // [R2]
+    protected virtual void ResetPerception() 
     {
         awareness = 0f;
         seesTarget = false;
@@ -1040,7 +1097,7 @@ public partial class MinionEnemyBrain
         triedPlayerCtrl = false;
     }
 
-    protected Vector3 PerceivedTargetPosition // [R2]
+    protected Vector3 PerceivedTargetPosition 
     {
         get
         {
@@ -1051,7 +1108,7 @@ public partial class MinionEnemyBrain
         }
     }
 
-    protected virtual void TickPerception(float dt) // [R2]
+    protected virtual void TickPerception(float dt) 
     {
         if (CurrentState == MinionState.Unaware && awareness > 0f && Time.time > stimulusHoldUntil)
             awareness = Mathf.Max(0f, awareness - awarenessDecayPerSecond * dt);
@@ -1128,12 +1185,12 @@ public partial class MinionEnemyBrain
                 break;
 
             case MinionState.Search:
-                if (seesTarget) BeginAlert(); // spotted again: pop the "!" and alert allies
+                if (seesTarget) BeginAlert(); 
                 break;
         }
     }
 
-    protected bool EvaluateSight(bool combat, out float quality) // [R2]
+    protected bool EvaluateSight(bool combat, out float quality) 
     {
         quality = 0f;
         Vector3 eye = EyePosition;
@@ -1168,15 +1225,14 @@ public partial class MinionEnemyBrain
         return false;
     }
 
-    // True if an obstacle sits between the two points. The target's own colliders never count as obstacles.
-    protected bool LineBlocked(Vector3 from, Vector3 to) // [R2]
+    protected bool LineBlocked(Vector3 from, Vector3 to) 
     {
         if (obstacleMask.value == 0) return false;
         if (!Physics.Linecast(from, to, out RaycastHit hit, obstacleMask, QueryTriggerInteraction.Ignore)) return false;
         return target == null || !hit.collider.transform.IsChildOf(target);
     }
 
-    protected bool EvaluateHearing(float targetSpeed, out float quality) // [R2]
+    protected bool EvaluateHearing(float targetSpeed, out float quality) 
     {
         quality = 0f;
         float radius = hearingRadius * Mathf.Clamp01(targetSpeed / Mathf.Max(0.1f, footstepFullLoudnessSpeed));
@@ -1196,7 +1252,7 @@ public partial class MinionEnemyBrain
         return true;
     }
 
-    protected bool IsPlayerAttacking() // [R2]
+    protected bool IsPlayerAttacking() 
     {
         if (playerCtrl == null)
         {
@@ -1205,14 +1261,13 @@ public partial class MinionEnemyBrain
             playerCtrl = target.GetComponentInParent<PlayerController>();
             if (playerCtrl == null) return false;
         }
-        // INTEGRATED TASK A FIX: Includes heavy and AOE attacks
         return playerCtrl.CurrentState == playerCtrl.AttackState ||
                playerCtrl.CurrentState == playerCtrl.PowerPunchState ||
                playerCtrl.CurrentState == playerCtrl.AOEAttackState; 
     }
 
     // ------------------------------------------------------------------ Alert / group alert
-    protected virtual void BeginAlert() // [R2]
+    protected virtual void BeginAlert() 
     {
         awareness = 1f;
         if (!hasMemory && target != null) { lastKnownPos = target.position; hasMemory = true; }
@@ -1220,7 +1275,7 @@ public partial class MinionEnemyBrain
         TransitionToState(MinionState.Suspicious);
     }
 
-    protected virtual void NotifyDamaged() // [R2]
+    protected virtual void NotifyDamaged() 
     {
         awareness = 1f;
         timeSinceSeen = 0f;
@@ -1228,7 +1283,7 @@ public partial class MinionEnemyBrain
         AlertAllies(lastKnownPos);
     }
 
-    protected void AlertAllies(Vector3 pos) // [R2]
+    protected void AlertAllies(Vector3 pos) 
     {
         if (!alertAlliesOnHit) return;
         float r2 = alertRadius * alertRadius;
@@ -1241,11 +1296,10 @@ public partial class MinionEnemyBrain
         }
     }
 
-    protected virtual void ReceiveAlert(Vector3 pos) // [R2]
+    protected virtual void ReceiveAlert(Vector3 pos) 
     {
         if (groupAggro && (CurrentState == MinionState.Unaware || CurrentState == MinionState.Search))
         {
-            // An ally spotted the player: join the fight right away. Does not re-alert others, so no feedback loop.
             awareness = 1f;
             lastKnownPos = pos;
             hasMemory = true;
@@ -1261,7 +1315,7 @@ public partial class MinionEnemyBrain
         if (investigateAt < 0f) investigateAt = Time.time + reactionDelay;
     }
 
-    protected void AlertHold() // [R2]
+    protected void AlertHold() 
     {
         desiredVelocity = Vector3.zero;
         Vector3 look = hasMemory ? lastKnownPos : (target != null ? target.position : transform.position + transform.forward);
@@ -1269,12 +1323,12 @@ public partial class MinionEnemyBrain
         facingTurnSpeed = turnSpeed * 0.8f;
     }
 
-    protected void SetMark(float s) // [R2]
+    protected void SetMark(float s) 
     {
         exclamationMarkVisual.transform.localScale = new Vector3(s, s, s);
     }
 
-    protected void FaceMarkToCamera() // [R2]
+    protected void FaceMarkToCamera() 
     {
         if (exclamationMarkVisual == null || !exclamationMarkVisual.activeSelf) return;
         Camera cam = Camera.main;
@@ -1284,7 +1338,7 @@ public partial class MinionEnemyBrain
             exclamationMarkVisual.transform.rotation = Quaternion.LookRotation(away, Vector3.up);
     }
 
-    protected IEnumerator AlertSequenceRoutine() // [R2]
+    protected IEnumerator AlertSequenceRoutine() 
     {
         if (exclamationMarkVisual != null)
         {
@@ -1324,7 +1378,7 @@ public partial class MinionEnemyBrain
 
 #if UNITY_EDITOR
     // ------------------------------------------------------------------ Debug overlay
-    protected virtual void OnDrawGizmosSelected() // [R2]
+    protected virtual void OnDrawGizmosSelected() 
     {
         Vector3 p = transform.position + Vector3.up * 0.1f;
         float half = Mathf.Acos(Mathf.Clamp(visionFOVThreshold, -1f, 1f)) * Mathf.Rad2Deg;
@@ -1373,19 +1427,19 @@ public partial class MinionEnemyBrain
     public Vector2 socialPauseDuration = new Vector2(2f, 5f);
     public float lookAroundAngle = 55f;
 
-    protected Vector3 currentPatrolTarget; // [R2]
-    protected bool patrolWaiting; // [R2]
-    protected float patrolWaitTimer, lookBaseYaw, lookPhase, patrolSpeedFactor; // [R2]
-    protected float socialPauseUntil, nextSocialTime, peerYieldUntil; // [R2]
-    protected Transform socialPartner; // [R2]
+    protected Vector3 currentPatrolTarget; 
+    protected bool patrolWaiting; 
+    protected float patrolWaitTimer, lookBaseYaw, lookPhase, patrolSpeedFactor; 
+    protected float socialPauseUntil, nextSocialTime, peerYieldUntil; 
+    protected Transform socialPartner; 
 
     // Search state
-    protected int searchPhase; // [R2]
-    protected Vector3 searchPoint; // [R2]
-    protected float searchEndTime, scanTimer, scanBaseYaw, scanT; // [R2]
-    protected int searchPointsVisited; // [R2]
+    protected int searchPhase; 
+    protected Vector3 searchPoint; 
+    protected float searchEndTime, scanTimer, scanBaseYaw, scanT; 
+    protected int searchPointsVisited; 
 
-    protected virtual void ResetPatrol() // [R2]
+    protected virtual void ResetPatrol() 
     {
         patrolWaiting = false;
         patrolSpeedFactor = Random.Range(0.85f, 1.15f);
@@ -1396,7 +1450,7 @@ public partial class MinionEnemyBrain
         PickPatrolPoint();
     }
 
-    protected void PickPatrolPoint() // [R2]
+    protected void PickPatrolPoint() 
     {
         if (assignedZone != null)
             currentPatrolTarget = assignedZone.GetValidPatrolPoint(gameObject.GetInstanceID(), transform.position);
@@ -1405,7 +1459,7 @@ public partial class MinionEnemyBrain
     }
 
     // ------------------------------------------------------------------ Patrol
-    protected virtual void HandleUnaware(float dt) // [R2]
+    protected virtual void HandleUnaware(float dt) 
     {
         if (assignedZone == null) return;
 
@@ -1474,7 +1528,7 @@ public partial class MinionEnemyBrain
         if (TrackStuck(speed > 0.3f)) PickPatrolPoint();
     }
 
-    protected Vector3 PatrolPeerSteer(Vector3 dir) // [R2]
+    protected Vector3 PatrolPeerSteer(Vector3 dir) 
     {
         Vector3 right = Vector3.Cross(Vector3.up, dir);
         Vector3 shift = Vector3.zero;
@@ -1499,7 +1553,7 @@ public partial class MinionEnemyBrain
         return steered.sqrMagnitude > 0.0001f ? steered.normalized : dir;
     }
 
-    protected void TrySocialPause() // [R2]
+    protected void TrySocialPause() 
     {
         if (Time.time < nextSocialTime) return;
         nextSocialTime = Time.time + 1f;
@@ -1524,7 +1578,7 @@ public partial class MinionEnemyBrain
         }
     }
 
-    protected void BeginSocialPause(Transform partner, float duration) // [R2]
+    protected void BeginSocialPause(Transform partner, float duration) 
     {
         socialPartner = partner;
         socialPauseUntil = Time.time + duration;
@@ -1533,7 +1587,7 @@ public partial class MinionEnemyBrain
     }
 
     // ------------------------------------------------------------------ Search
-    protected virtual void EnterSearch() // [R2]
+    protected virtual void EnterSearch() 
     {
         searchEndTime = Time.time + searchDuration;
         searchPointsVisited = 0;
@@ -1541,7 +1595,7 @@ public partial class MinionEnemyBrain
         searchPoint = hasMemory ? lastKnownPos : (target != null ? target.position : transform.position);
     }
 
-    protected virtual void HandleSearch(float dt) // [R2]
+    protected virtual void HandleSearch(float dt) 
     {
         if (Time.time >= searchEndTime) { ReturnToPatrol(); return; }
 
@@ -1570,7 +1624,7 @@ public partial class MinionEnemyBrain
         }
     }
 
-    protected void NextSearchPoint() // [R2]
+    protected void NextSearchPoint() 
     {
         searchPointsVisited++;
         Vector3 bias = Flat(lastKnownVel);
@@ -1582,7 +1636,7 @@ public partial class MinionEnemyBrain
         searchPhase = 0;
     }
 
-    protected virtual void ReturnToPatrol() // [R2]
+    protected virtual void ReturnToPatrol() 
     {
         CleanupTokens();
         awareness = 0f;

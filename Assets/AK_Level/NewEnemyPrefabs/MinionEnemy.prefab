@@ -1279,6 +1279,11 @@ MonoBehaviour:
   animProfile: {fileID: 11400000, guid: 5b76db9885b7046438d01d2761e96629, type: 2}
   directDeathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   directHitClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
+  tripClip: {fileID: -203655887218126122, guid: 7e84300727ee4d049a8d92703821649e, type: 3}
+  getUpClip: {fileID: -203655887218126122, guid: 55e726e2da9ff3e4685b8c6e17a6a508, type: 3}
+  tripDuration: 1.5
+  tripAnimSpeed: 2
+  getUpAnimSpeed: 1
   maxHealth: 60
   targetLayers:
     serializedVersion: 2
