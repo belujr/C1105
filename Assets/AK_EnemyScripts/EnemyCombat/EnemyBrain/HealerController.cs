@@ -22,6 +22,9 @@ public class HealerController : MonoBehaviour, IDamageable
     public GameObject batPrefab;
     private LineRenderer healBeam;
     private Collider bodyCollider;
+    private HealerHealVFX healVFX;
+    private HealReceiveFX allyFX;
+    private Transform allyFXOwner;
 
     [Header("Core References & Animation Profiles")]
     public EnemyAnimProfile animProfile;
@@ -108,6 +111,7 @@ public class HealerController : MonoBehaviour, IDamageable
         isSpawning = false;
         pendingSpawnAfterHit = false;
         if (healBeam != null) healBeam.enabled = false;
+        if (healVFX != null) healVFX.StopCasting();
     }
 
     private void Awake()
@@ -117,6 +121,10 @@ public class HealerController : MonoBehaviour, IDamageable
         healBeam.useWorldSpace = true; // Prevents LineRenderer stretching glitches
         bodyCollider = GetComponent<Collider>();
         animationEngine = GetComponent<EnemyAnimationEngine>();
+
+        healVFX = GetComponent<HealerHealVFX>();
+        if (healVFX == null) healVFX = gameObject.AddComponent<HealerHealVFX>();
+        healVFX.staff = staffTransform;
 
         if (animProfile != null) animProfile.InitializeDictionary();
         if (playerTransform == null) playerTransform = FindObjectOfType<PlayerController>()?.transform;
@@ -466,10 +474,15 @@ public class HealerController : MonoBehaviour, IDamageable
             staffTransform.LookAt(allyTransform.position + Vector3.up);
         }
 
-        // Enable Beam VFX
-        healBeam.enabled = true;
-        healBeam.SetPosition(0, staffTransform != null ? staffTransform.position : transform.position);
-        healBeam.SetPosition(1, allyTransform.position + Vector3.up);
+        // Heal VFX: energy stream from the staff + aura on the ally (replaces the old line renderer beam)
+        if (allyFX == null || allyFXOwner != allyTransform)
+        {
+            allyFXOwner = allyTransform;
+            allyFX = allyTransform.GetComponent<HealReceiveFX>();
+            if (allyFX == null) allyFX = allyTransform.gameObject.AddComponent<HealReceiveFX>();
+        }
+        allyFX.Ping();
+        healVFX.Cast(allyFX.AimPoint);
 
         // Play dedicated healing casting animation using the heal animation speed multiplier
         AnimationClip activeHealClip = healAnimationClip != null ? healAnimationClip : (animProfile != null ? (animProfile.GetAnimationClip("HealAction") ?? animProfile.idleClip) : null);
@@ -482,6 +495,7 @@ public class HealerController : MonoBehaviour, IDamageable
     private void StopHealing()
     {
         healBeam.enabled = false;
+        if (healVFX != null) healVFX.StopCasting();
 
         if (staffTransform != null)
         {
