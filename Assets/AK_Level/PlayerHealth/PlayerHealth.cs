@@ -9,6 +9,14 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     public bool IsDead { get { return isDead; } }
 
+    /// <summary>Horizontal direction of the last hit (the direction the attack was travelling). The death effect lets the body fall that way.</summary>
+    public Vector3 LastHitDirection { get; private set; }
+
+    /// <summary>True while the player is dead. Enemies can check this to stop attacking or chasing.</summary>
+    public static bool PlayerIsDead { get; private set; }
+
+    private readonly List<Collider> collidersDisabledByDeath = new List<Collider>();
+
     [Header("Health Settings")]
     public int maxHealth = 100;
     private int currentHealth;
@@ -39,6 +47,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     private Dictionary<Renderer, Color[]> originalColors = new Dictionary<Renderer, Color[]>();
     private Coroutine activeFlashRoutine;
+    private Coroutine activeKnockback;
 
     private void Awake()
     {
@@ -81,8 +90,12 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         isDead = false;
         isCaughtInEnemyCombo = false;
         lastPosition = cachedTransform.position;
+        PlayerIsDead = false;
         if (playerController != null) playerController.Revive();
         if (playerCollider != null) playerCollider.enabled = true;
+        for (int i = 0; i < collidersDisabledByDeath.Count; i++)
+            if (collidersDisabledByDeath[i] != null) collidersDisabledByDeath[i].enabled = true;
+        collidersDisabledByDeath.Clear();
         SetRenderersVisible(true);
         ResetColors();
     }
@@ -103,12 +116,17 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         }
 
         int finalDamage = Mathf.RoundToInt(damage);
+        Vector3 flatHit = new Vector3(hitDirection.x, 0f, hitDirection.z);
+        LastHitDirection = flatHit.sqrMagnitude > 0.0001f ? flatHit.normalized : -cachedTransform.forward;
         currentHealth -= finalDamage;
         Debug.Log($"Player took {finalDamage} damage! Remaining Health: {currentHealth}/{maxHealth}");
 
-        if (force > 0f)
+        // the killing blow does not push the player: the death effects start exactly where he stood
+        bool lethal = currentHealth <= 0;
+
+        if (force > 0f && !lethal)
         {
-            StartCoroutine(ApplyPlayerKnockback(hitDirection, force));
+            activeKnockback = StartCoroutine(ApplyPlayerKnockback(hitDirection, force));
         }
 
         if (audioSource != null && hitSound != null)
@@ -117,7 +135,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         }
 
         // Trigger the modular HitState using the hash passed from the enemy
-        if (playerController != null && !isDead)
+        if (playerController != null && !isDead && !lethal)
         {
             float reactionTime = stunDuration > 0f ? stunDuration : 0.4f;
             playerController.TakeHit(attackID, reactionTime);
@@ -219,14 +237,32 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (isDead) return;
         isDead = true;
 
-        // The CharacterController must stay enabled: the controller still applies gravity after death,
-        // and Move() on a disabled controller spams errors. Enemy hits are already ignored (TakeDamage returns when dead).
-        if (playerCollider != null && !(playerCollider is CharacterController)) playerCollider.enabled = false;
+        PlayerIsDead = true;
 
-        // Take control away (the game keeps running; nothing is paused and the player is not hidden)
+        // a knockback that is still running from an earlier hit must stop too
+        if (activeKnockback != null)
+        {
+            StopCoroutine(activeKnockback);
+            activeKnockback = null;
+        }
+
+        // Take control away (this also switches the CharacterController off)
         if (playerController != null) playerController.OnPlayerDied();
 
+        // Every other collider on the player goes off too, so nothing can hit the body. They come back on respawn.
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+        {
+            if (c.enabled)
+            {
+                c.enabled = false;
+                collidersDisabledByDeath.Add(c);
+            }
+        }
+
         if (animator != null && !string.IsNullOrEmpty(deathAnimatorTrigger)) animator.SetTrigger(deathAnimatorTrigger);
+
+        // the death sequence (souls, floor rune, screen fade, dissolve); put PlayerDeathFX on the player prefab to edit its values
+        if (GetComponent<PlayerDeathFX>() == null) gameObject.AddComponent<PlayerDeathFX>();
 
         Debug.Log("Player died.");
         if (Died != null) Died(this);

@@ -117,7 +117,7 @@ public class PlayerController : MonoBehaviour
 
             if (Animator != null)
             {
-                Animator.SetBool("IsGrounded", CharacterController.isGrounded);
+                Animator.SetBool("IsGrounded", IsDead || CharacterController.isGrounded);
                 Animator.SetFloat("Speed", 0f);
             }
 
@@ -410,6 +410,7 @@ public class PlayerController : MonoBehaviour
     private void ApplyGravity()
     {
         if (stats == null) return;
+        if (!CharacterController.enabled) return;   // dead: the controller is switched off
 
         if (CharacterController.isGrounded && VerticalVelocity.y < 0)
         {
@@ -452,12 +453,30 @@ public class PlayerController : MonoBehaviour
             Animator.SetBool("IsInCombat", false);
         }
         if (enemyGrappleReticle != null) enemyGrappleReticle.SetActive(false);
+
+        // Make the body untouchable: with the CharacterController off, no enemy attack, explosion or hitbox
+        // can find the player any more. A player who dies in the air is dropped onto the floor first.
+        bool wasGrounded = CharacterController.isGrounded;
+        CharacterController.enabled = false;
+        VerticalVelocity = Vector3.zero;
+        if (!wasGrounded)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out hit, 30f, groundAndObstacleLayers, QueryTriggerInteraction.Ignore))
+            {
+                Vector3 p = transform.position;
+                p.y = hit.point.y;
+                transform.position = p;
+            }
+        }
     }
 
     /// Called by PlayerHealth when it is re-enabled (respawn / restart).
     public void Revive()
     {
         IsDead = false;
+        VerticalVelocity = Vector3.zero;
+        if (CharacterController != null) CharacterController.enabled = true;
     }
 
     public void TakeHit(int animHash, float duration)

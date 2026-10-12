@@ -5784,6 +5784,42 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowIntensity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowHotColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowHotColor.g
+      value: 0.38366157
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowHotColor.r
+      value: 4.0052357
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowEdgeColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowEdgeColor.g
+      value: 0.13201366
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: glowEdgeColor.r
+      value: 2.937173
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: hitDistortionSize
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 302618477748865726, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
+      propertyPath: hitDistortionStrength
+      value: 0.15
+      objectReference: {fileID: 0}
     - target: {fileID: 3766545304033962740, guid: d1d71840f29258144b7475c8921bd6cc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.95201

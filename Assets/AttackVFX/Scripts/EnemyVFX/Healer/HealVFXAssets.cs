@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 /// </summary>
 public static class HealVFXAssets
 {
-    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex;
+    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex, sigilTex, vignetteTex, beamTex, spotTex, noiseTex, blobTex, splatTex;
     private static Mesh flatQuad;
     private static readonly RaycastHit[] rayBuf = new RaycastHit[8];
 
@@ -22,6 +22,20 @@ public static class HealVFXAssets
     public static Texture2D Ribbon { get { if (ribbonTex == null) ribbonTex = MakeRibbon(); return ribbonTex; } }
     public static Texture2D Ring { get { if (ringTex == null) ringTex = MakeRing(); return ringTex; } }
     public static Texture2D Rune { get { if (runeTex == null) runeTex = MakeRune(); return runeTex; } }
+    /// <summary>The death floor pattern: a crown of spikes, a dashed ring, three spiral arms and an eye in the middle.</summary>
+    public static Texture2D Sigil { get { if (sigilTex == null) sigilTex = MakeSigil(); return sigilTex; } }
+    /// <summary>Tileable fractal noise (Wrap Mode = Repeat). Used by the blood pool shader.</summary>
+    public static Texture2D Noise { get { if (noiseTex == null) noiseTex = MakeNoise(); return noiseTex; } }
+    /// <summary>Red blood splatter on a transparent background, for the camera lens (big splats near the edges, thrown drops around them).</summary>
+    public static Texture2D BloodSplat { get { if (splatTex == null) splatTex = MakeBloodSplat(); return splatTex; } }
+    /// <summary>A solid round blob with a soft edge, for alpha-blended particles (blood droplets).</summary>
+    public static Texture2D Blob { get { if (blobTex == null) blobTex = MakeBlob(); return blobTex; } }
+    /// <summary>White with alpha: clear in a small circle in the middle, fully opaque further out. A pool of light in the dark.</summary>
+    public static Texture2D Spotlight { get { if (spotTex == null) spotTex = MakeSpotlight(); return spotTex; } }
+    /// <summary>A tall soft beam of light: bright core, fades toward the top. For the death pillar.</summary>
+    public static Texture2D Beam { get { if (beamTex == null) beamTex = MakeBeam(); return beamTex; } }
+    /// <summary>White with alpha: clear in the middle, opaque at the edges (tint it with the material color).</summary>
+    public static Texture2D Vignette { get { if (vignetteTex == null) vignetteTex = MakeVignette(); return vignetteTex; } }
 
     private static float Smooth(float e0, float e1, float x)
     {
@@ -135,6 +149,219 @@ public static class HealVFXAssets
         });
     }
 
+    private static Texture2D MakeSigil()
+    {
+        const float TwoPi = Mathf.PI * 2f;
+        return Make("DeathSigil", 256, 256, true, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;
+            float y = (v - 0.5f) * 2f;
+            float r = Mathf.Sqrt(x * x + y * y);
+            float ang = Mathf.Atan2(y, x);
+
+            // crown of 14 sharp spikes around the edge
+            float k = Mathf.Repeat(ang / TwoPi * 14f, 1f);
+            float tri = 1f - Mathf.Abs(k - 0.5f) * 2f;               // 0 at the tooth edges, 1 at the tip
+            float tipR = 0.87f + 0.12f * tri;
+            float crown = Smooth(0.85f, 0.87f, r) * (1f - Smooth(tipR - 0.012f, tipR, r));
+
+            float ring = Band(r, 0.80f, 0.010f, 0.012f);
+            float dashed = Band(Mathf.Repeat(ang / TwoPi * 20f, 1f), 0.5f, 0.28f, 0.06f) * Band(r, 0.69f, 0.010f, 0.012f) * 0.9f;
+
+            // three spiral arms (they match the souls spiralling up)
+            float sp = Mathf.Repeat(ang / TwoPi * 3f - r * 1.7f, 1f);
+            float arms = Band(sp, 0.5f, 0.045f, 0.05f) * Smooth(0.14f, 0.22f, r) * (1f - Smooth(0.60f, 0.66f, r));
+
+            // an eye in the middle
+            float eye = Band(r, 0.10f, 0.010f, 0.012f) + (1f - Smooth(0.045f, 0.065f, r)) * 0.9f;
+
+            float fill = 0.10f * Smooth(0.2f, 0.8f, r) * (1f - Smooth(0.8f, 0.86f, r));
+
+            float a = Mathf.Max(Mathf.Max(crown, ring), Mathf.Max(Mathf.Max(dashed, arms), eye)) + fill;
+            return a * (1f - Smooth(0.985f, 1f, r));
+        });
+    }
+
+    private static Texture2D MakeBeam()
+    {
+        return Make("DeathBeam", 64, 128, false, (u, v) =>
+        {
+            float x = Mathf.Abs(u - 0.5f) * 2f;                       // 0 in the middle, 1 at the sides
+            float body = Mathf.Pow(Mathf.Clamp01(1f - x), 1.6f);
+            float core = Mathf.Pow(Mathf.Clamp01(1f - x), 7f) * 0.8f;
+            float rise = Smooth(0f, 0.04f, v);                          // soft start at the floor
+            float fall = 1f - Smooth(0.25f, 1f, v);                     // fades toward the top
+            return (body * 0.6f + core) * rise * Mathf.Pow(fall, 1.2f);
+        });
+    }
+
+    private static int Mod(int a, int n) { return ((a % n) + n) % n; }
+
+    private static float Hash2(int x, int y)
+    {
+        unchecked
+        {
+            uint h = (uint)(x * 374761393 + y * 668265263);
+            h = (h ^ (h >> 13)) * 1274126177u;
+            h ^= h >> 16;
+            return (h & 0xFFFFFFu) / (float)0x1000000;
+        }
+    }
+
+    // value noise on a lattice that repeats every 'period' cells, so the texture tiles
+    private static float ValueNoise(float x, float y, int period)
+    {
+        int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+        float tx = x - xi, ty = y - yi;
+        tx = tx * tx * (3f - 2f * tx);
+        ty = ty * ty * (3f - 2f * ty);
+        int x0 = Mod(xi, period), x1 = Mod(xi + 1, period), y0 = Mod(yi, period), y1 = Mod(yi + 1, period);
+        float a = Hash2(x0, y0), b = Hash2(x1, y0), c = Hash2(x0, y1), d = Hash2(x1, y1);
+        return Mathf.Lerp(Mathf.Lerp(a, b, tx), Mathf.Lerp(c, d, tx), ty);
+    }
+
+    private static Texture2D MakeNoise()
+    {
+        Texture2D t = Make("DeathNoise", 256, 256, true, (u, v) =>
+        {
+            float sum = 0f, amp = 0.5f, norm = 0f;
+            for (int o = 0; o < 4; o++)
+            {
+                int period = 4 << o;
+                sum += amp * ValueNoise(u * period, v * period, period);
+                norm += amp;
+                amp *= 0.5f;
+            }
+            return sum / norm;
+        });
+        t.wrapMode = TextureWrapMode.Repeat;
+        return t;
+    }
+
+    // stamps one irregular blob into an alpha buffer (c in -1..1 screen space)
+    private static void StampSplat(float[] a, int n, Vector2 c, float radius, float seed, bool ragged)
+    {
+        float ext = radius * (ragged ? 1.8f : 1.25f);
+        int x0 = Mathf.Clamp(Mathf.FloorToInt(((c.x - ext) * 0.5f + 0.5f) * n), 0, n - 1);
+        int x1 = Mathf.Clamp(Mathf.CeilToInt(((c.x + ext) * 0.5f + 0.5f) * n), 0, n - 1);
+        int y0 = Mathf.Clamp(Mathf.FloorToInt(((c.y - ext) * 0.5f + 0.5f) * n), 0, n - 1);
+        int y1 = Mathf.Clamp(Mathf.CeilToInt(((c.y + ext) * 0.5f + 0.5f) * n), 0, n - 1);
+
+        for (int y = y0; y <= y1; y++)
+        {
+            for (int x = x0; x <= x1; x++)
+            {
+                float px = ((x + 0.5f) / n - 0.5f) * 2f;
+                float py = ((y + 0.5f) / n - 0.5f) * 2f;
+                float d = Mathf.Sqrt((px - c.x) * (px - c.x) + (py - c.y) * (py - c.y)) / radius;
+                if (ragged) d += (ValueNoise(px * 9f + seed, py * 9f + seed * 0.7f, 64) - 0.5f) * 1.1f;   // ragged edge with spikes
+                float v = 1f - Smooth(0.75f, 1f, d);
+                int i = y * n + x;
+                if (v > a[i]) a[i] = v;
+            }
+        }
+    }
+
+    private static Texture2D MakeBloodSplat()
+    {
+        int n = 512;
+        float[] a = new float[n * n];
+
+        for (int i = 0; i < 9; i++)
+        {
+            float ang = Hash2(i, 31) * Mathf.PI * 2f;
+            float rr = 0.50f + 0.45f * Hash2(i, 47);
+            Vector2 c = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * rr;
+            float cr = 0.09f + 0.13f * Hash2(i, 59);
+            StampSplat(a, n, c, cr, i * 13 + 1, true);
+
+            for (int k = 0; k < 14; k++)   // drops thrown around the splat
+            {
+                float da = Hash2(i * 100 + k, 71) * Mathf.PI * 2f;
+                float dd = cr * (1.4f + 2.6f * Hash2(i * 100 + k, 83));
+                Vector2 dc = c + new Vector2(Mathf.Cos(da), Mathf.Sin(da)) * dd;
+                StampSplat(a, n, dc, cr * (0.06f + 0.16f * Hash2(i * 100 + k, 97)), 0f, false);
+            }
+        }
+
+        Texture2D t = new Texture2D(n, n, TextureFormat.RGBA32, false, true);
+        t.name = "DeathBloodSplat";
+        t.wrapMode = TextureWrapMode.Clamp;
+        t.filterMode = FilterMode.Bilinear;
+        t.hideFlags = HideFlags.HideAndDontSave;
+        Color[] px2 = new Color[n * n];
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float shade = 0.7f + 0.3f * ValueNoise(x * 0.03f, y * 0.03f, 64);
+                px2[y * n + x] = new Color(0.68f * shade, 0.02f, 0.04f * shade, a[y * n + x]);
+            }
+        }
+        t.SetPixels(px2);
+        t.Apply(false, true);
+        return t;
+    }
+
+    private static Texture2D MakeBlob()
+    {
+        return Make("DeathBlob", 64, 64, false, (u, v) =>
+        {
+            float r = Mathf.Sqrt((u - 0.5f) * (u - 0.5f) + (v - 0.5f) * (v - 0.5f)) * 2f;
+            return 1f - Smooth(0.7f, 1f, r);
+        });
+    }
+
+    private static Texture2D MakeSpotlight()
+    {
+        int n = 256;
+        Texture2D t = new Texture2D(n, n, TextureFormat.RGBA32, false, true);
+        t.name = "DeathSpotlight";
+        t.wrapMode = TextureWrapMode.Clamp;
+        t.filterMode = FilterMode.Bilinear;
+        t.hideFlags = HideFlags.HideAndDontSave;
+        Color[] px = new Color[n * n];
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float fx = ((x + 0.5f) / n - 0.5f) * 2f;
+                float fy = ((y + 0.5f) / n - 0.5f) * 2f;
+                float r = Mathf.Sqrt(fx * fx + fy * fy);
+                px[y * n + x] = new Color(1f, 1f, 1f, Smooth(0.08f, 0.36f, r));
+            }
+        }
+        t.SetPixels(px);
+        t.Apply(false, true);
+        return t;
+    }
+
+    private static Texture2D MakeVignette()
+    {
+        int n = 128;
+        Texture2D t = new Texture2D(n, n, TextureFormat.RGBA32, false, true);
+        t.name = "DeathVignette";
+        t.wrapMode = TextureWrapMode.Clamp;
+        t.filterMode = FilterMode.Bilinear;
+        t.hideFlags = HideFlags.HideAndDontSave;
+        Color[] px = new Color[n * n];
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float fx = ((x + 0.5f) / n - 0.5f) * 2f;
+                float fy = ((y + 0.5f) / n - 0.5f) * 2f;
+                float r = Mathf.Sqrt(fx * fx + fy * fy);
+                float a = Smooth(0.3f, 1.5f, r);   // very gradual: no visible edge
+                a = Mathf.Pow(a, 1.4f);
+                px[y * n + x] = new Color(1f, 1f, 1f, a);
+            }
+        }
+        t.SetPixels(px);
+        t.Apply(false, true);
+        return t;
+    }
+
     public static Mesh FlatQuad
     {
         get
@@ -189,6 +416,37 @@ public static class HealVFXAssets
             m.mainTexture = tex;
             if (m.HasProperty("_TintColor")) m.SetColor("_TintColor", new Color(brightness * 0.5f, brightness * 0.5f, brightness * 0.5f, 0.5f));
             else if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+        }
+        return m;
+    }
+
+    /// <summary>Alpha-blended (not additive), unlit, no depth write. For things that must look solid, like blood droplets.</summary>
+    public static Material CreateAlphaMaterial(Texture2D tex)
+    {
+        Shader s = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        if (s == null) s = Shader.Find("Sprites/Default");
+
+        Material m = new Material(s);
+        m.name = "DeathAlpha_" + tex.name;
+        if (s.name.StartsWith("Universal"))
+        {
+            m.SetFloat("_Surface", 1f);   // transparent
+            m.SetFloat("_Blend", 0f);     // alpha blend
+            m.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            if (m.HasProperty("_SrcBlendAlpha")) m.SetFloat("_SrcBlendAlpha", (float)BlendMode.One);
+            if (m.HasProperty("_DstBlendAlpha")) m.SetFloat("_DstBlendAlpha", (float)BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            m.renderQueue = (int)RenderQueue.Transparent;
+            m.SetTexture("_BaseMap", tex);
+            m.SetColor("_BaseColor", Color.white);
+        }
+        else
+        {
+            m.mainTexture = tex;
         }
         return m;
     }
@@ -319,6 +577,8 @@ public class HealGroundRune
 
     public bool clearGrass = true;
     public float clearScale = 1.3f;
+    [Tooltip("Size when it starts to fade in (1 = full size). Smaller = it grows more.")]
+    public float startScale = 0.75f;
 
     public Renderer Renderer { get { return mr; } }
     public Renderer MaskRenderer { get { return maskMr; } }
@@ -376,7 +636,7 @@ public class HealGroundRune
         tf.rotation = Quaternion.Euler(0f, angle, 0f);
 
         float ease = level * level * (3f - 2f * level);
-        float world = radius * Mathf.Lerp(0.75f, 1f, ease) * (1f + 0.05f * Mathf.Sin(Time.time * 5f));
+        float world = radius * Mathf.Lerp(startScale, 1f, ease) * (1f + 0.05f * Mathf.Sin(Time.time * 5f));
         tf.localScale = Vector3.one * (world / Mathf.Max(0.0001f, owner.lossyScale.x));
 
         Color c = color;
@@ -411,5 +671,66 @@ public class HealGroundRune
     {
         if (mat != null) Object.Destroy(mat);
         if (maskMat != null) Object.Destroy(maskMat);
+    }
+}
+
+/// <summary>An invisible disc that clears grass and flowers (draws into the grass mask textures). Grows and fades from code.</summary>
+public class HealGrassClear
+{
+    private readonly Transform owner;
+    private readonly Transform tf;
+    private readonly MeshRenderer mr;
+    private readonly Material mat;
+    private readonly MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+    private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
+
+    public Renderer Renderer { get { return mr; } }
+
+    // the name must contain "GrassClear": PlayerDissolveController and EnemyHitFX skip meshes with that name
+    public HealGrassClear(Transform owner, string name)
+    {
+        this.owner = owner;
+        Shader sh = Shader.Find("InfiniteGrass/Modifiers/HealAuraGrassMask");
+        if (sh == null) return;
+
+        GameObject go = new GameObject(name + "_GrassClear");
+        tf = go.transform;
+        tf.SetParent(owner, false);
+        go.AddComponent<MeshFilter>().sharedMesh = HealVFXAssets.FlatQuad;
+        mr = go.AddComponent<MeshRenderer>();
+        mat = new Material(sh);
+        mr.sharedMaterial = mat;
+        mr.shadowCastingMode = ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+        mr.lightProbeUsage = LightProbeUsage.Off;
+        mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+        mr.enabled = false;
+    }
+
+    /// <param name="radius">World radius of the cleared disc.</param>
+    public void Tick(Vector3 pos, float radius, float opacity)
+    {
+        if (mr == null) return;
+        if (opacity <= 0.001f || radius <= 0.01f)
+        {
+            if (mr.enabled) mr.enabled = false;
+            return;
+        }
+        mr.enabled = true;
+        tf.position = pos;
+        tf.rotation = Quaternion.identity;
+        tf.localScale = Vector3.one * (radius / Mathf.Max(0.0001f, owner.lossyScale.x));
+        mpb.SetFloat(OpacityId, opacity);
+        mr.SetPropertyBlock(mpb);
+    }
+
+    public void Hide()
+    {
+        if (mr != null && mr.enabled) mr.enabled = false;
+    }
+
+    public void Dispose()
+    {
+        if (mat != null) Object.Destroy(mat);
     }
 }
