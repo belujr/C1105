@@ -278,7 +278,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4e5e3dfc0b423ae4ebf47db27a1c50dd, type: 2}
   - {fileID: 11400000, guid: 5bcf84c4ab7b63441952ef6c89fbdd39, type: 2}
   - {fileID: 11400000, guid: 07a1138d5bcd451459b126f2a2d061f8, type: 2}
-  enemyAttackSpeedMultiplier: 1.5
+  enemyAttackSpeedMultiplier: 1.2
   anticipationDuration: 0.15
   anticipationTimeScale: 0.22
   anticipationFlashColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -326,6 +326,11 @@ MonoBehaviour:
   - 1.5
   retreatDistance: 10
   retreatSpeed: 10
+  tokenRequestRange: 8
+  tokenPursuitSpeed: 9.5
+  tokenPursuitTimeout: 5
+  postComboCooldown: 0.65
+  tokenRetryInterval: 0.12
   groundLayers:
     serializedVersion: 2
     m_Bits: 1025
