@@ -358,57 +358,6 @@ MonoBehaviour:
   yOffset: 0.5
   dashLengthMultiplier: 0.5
   lineResolution: 20
---- !u!1 &72056978
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 72056979}
-  - component: {fileID: 72056980}
-  m_Layer: 0
-  m_Name: WHmanager2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &72056979
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 72056978}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 998591121}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &72056980
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 72056978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
-  wallObject: {fileID: 0}
-  fireRenderers: []
-  appearFrom: 0
-  appearTime: 1
-  disappearStyle: 1
-  disappearTime: 0.8
-  staggerPerPiece: 0
 --- !u!43 &77117233
 Mesh:
   m_ObjectHideFlags: 0
@@ -3874,17 +3823,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 698661589}
   m_Mesh: {fileID: 3260452099131564635, guid: 3316db785805740478ca2b0bc46fd433, type: 3}
---- !u!114 &725884509 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7545363544462844520, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-  m_PrefabInstance: {fileID: 1037283347}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
 --- !u!114 &811563013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4957,62 +4895,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 992413699}
   m_Mesh: {fileID: -2541047220529518893, guid: 3316db785805740478ca2b0bc46fd433, type: 3}
---- !u!4 &998591121 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-  m_PrefabInstance: {fileID: 1037283347}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1005855106
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1005855107}
-  - component: {fileID: 1005855108}
-  m_Layer: 0
-  m_Name: WHManager3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1005855107
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1005855106}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 998591121}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1005855108
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1005855106}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
-  wallObject: {fileID: 0}
-  fireRenderers: []
-  appearFrom: 0
-  appearTime: 1
-  disappearStyle: 1
-  disappearTime: 0.8
-  staggerPerPiece: 0
 --- !u!1 &1008099827
 GameObject:
   m_ObjectHideFlags: 0
@@ -5179,192 +5061,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5043086637492112858, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Name
-      value: WHManager1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.size
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 725884509}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_Target
-      value: 
-      objectReference: {fileID: 1165599681}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_Target
-      value: 
-      objectReference: {fileID: 2040284783}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_Target
-      value: 
-      objectReference: {fileID: 1297059726}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 725884509}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_Target
-      value: 
-      objectReference: {fileID: 1165599681}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_Target
-      value: 
-      objectReference: {fileID: 2040284783}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_Target
-      value: 
-      objectReference: {fileID: 1297059726}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: BuildWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: BuildWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: BuildWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_MethodName
-      value: BuildWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: Disappear
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: Disappear
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_MethodName
-      value: Disappear
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_MethodName
-      value: Disappear
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_TargetAssemblyTypeName
-      value: BeaconWallBarrier, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6776435249698440647, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[4].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      insertIndex: 88
-      addedObject: {fileID: 72056979}
-    - targetCorrespondingSourceObject: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      insertIndex: 89
-      addedObject: {fileID: 1005855107}
-    - targetCorrespondingSourceObject: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      insertIndex: 90
-      addedObject: {fileID: 2110581516}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
 --- !u!1 &1047810061
@@ -6013,17 +5714,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1164965162}
   m_Mesh: {fileID: 3403441337031951899, guid: 3316db785805740478ca2b0bc46fd433, type: 3}
---- !u!114 &1165599681 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2241908608049866591, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-  m_PrefabInstance: {fileID: 1037283347}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
 --- !u!1 &1172756104
 GameObject:
   m_ObjectHideFlags: 0
@@ -6454,17 +6144,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1296070311}
   m_Mesh: {fileID: -8978459784514148943, guid: 3316db785805740478ca2b0bc46fd433, type: 3}
---- !u!114 &1297059726 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3168192842041952685, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-  m_PrefabInstance: {fileID: 1037283347}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
 --- !u!1 &1297181417
 GameObject:
   m_ObjectHideFlags: 0
@@ -26079,17 +25758,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2040284783 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7976116348583017994, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-  m_PrefabInstance: {fileID: 1037283347}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
 --- !u!114 &2054567149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26150,57 +25818,6 @@ MonoBehaviour:
     generateLeaves: 0
     generateLightmapUVs: 0
   growth: {fileID: 1345120789}
---- !u!1 &2110581515
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2110581516}
-  - component: {fileID: 2110581517}
-  m_Layer: 0
-  m_Name: WHManager4
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2110581516
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110581515}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 998591121}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2110581517
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110581515}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b035b50fed0fb40962ad31ab68d773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BeaconWallBarrier
-  wallObject: {fileID: 0}
-  fireRenderers: []
-  appearFrom: 0
-  appearTime: 1
-  disappearStyle: 1
-  disappearTime: 0.8
-  staggerPerPiece: 0
 --- !u!1 &2117810620
 GameObject:
   m_ObjectHideFlags: 0

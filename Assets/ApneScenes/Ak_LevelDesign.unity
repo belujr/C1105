@@ -494,8 +494,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1854278023547113813, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1603671951}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1562800440}
   m_SourcePrefab: {fileID: 100100000, guid: b452eab56528362448f00d61ae5d3624, type: 3}
 --- !u!1001 &234161960
 PrefabInstance:
@@ -727,7 +733,7 @@ GameObject:
   - component: {fileID: 340302112}
   - component: {fileID: 340302111}
   - component: {fileID: 340302110}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Ground  (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1844,7 +1850,10 @@ PrefabInstance:
     - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7572696427137771666, guid: 83cb22393b0345a4e95ff8445f41981d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2003254680}
   m_SourcePrefab: {fileID: 100100000, guid: 83cb22393b0345a4e95ff8445f41981d, type: 3}
 --- !u!1 &746245010
 GameObject:
@@ -1990,6 +1999,49 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &751645541 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1808740274306136521, guid: ad95db996f7e41a458ebd05a573356c0, type: 3}
+  m_PrefabInstance: {fileID: 870849294}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &751645549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751645541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1550416c9a580b341a8c0f46cb13afd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealReceiveFX
+  color: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accent: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.2
+  showGroundAura: 1
+  auraRadius: 0
+  autoRadiusScale: 1.7
+  spinDegreesPerSecond: 25
+  fadeIn: 0.25
+  fadeOut: 0.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderAura: 1
+  grassClearScale: 1.3
+  plusPerSecond: 14
+  pulseRings: 1
+  ringInterval: 0.9
+  chestGlow: 1
+  chestGlowStrength: 0.45
+  bodyRipple: 1
+  rippleInterval: 0.8
+  rippleIntensity: 1
+  rippleDuration: 0.6
+  rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
+  rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
 --- !u!218 &754415864 stripped
 Terrain:
   m_CorrespondingSourceObject: {fileID: 5259709452576108344, guid: 047216071e3925342b507428541b9b59, type: 3}
@@ -2099,7 +2151,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1808740274306136521, guid: ad95db996f7e41a458ebd05a573356c0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 751645549}
   m_SourcePrefab: {fileID: 100100000, guid: ad95db996f7e41a458ebd05a573356c0, type: 3}
 --- !u!1 &953508765
 GameObject:
@@ -2194,6 +2249,49 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1459837076}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1049203083 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
+  m_PrefabInstance: {fileID: 2128076257}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1049203094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1049203083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1550416c9a580b341a8c0f46cb13afd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealReceiveFX
+  color: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accent: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.2
+  showGroundAura: 1
+  auraRadius: 0
+  autoRadiusScale: 1.7
+  spinDegreesPerSecond: 25
+  fadeIn: 0.25
+  fadeOut: 0.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderAura: 1
+  grassClearScale: 1.3
+  plusPerSecond: 14
+  pulseRings: 1
+  ringInterval: 0.9
+  chestGlow: 1
+  chestGlowStrength: 0.45
+  bodyRipple: 1
+  rippleInterval: 0.8
+  rippleIntensity: 1
+  rippleDuration: 0.6
+  rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
+  rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
 --- !u!1 &1085631250
 GameObject:
   m_ObjectHideFlags: 0
@@ -2884,6 +2982,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1343755728}
   m_CullTransparentMesh: 1
+--- !u!4 &1352134723 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1854278023547113813, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+  m_PrefabInstance: {fileID: 213267647}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1397204909
 GameObject:
   m_ObjectHideFlags: 0
@@ -3324,12 +3427,60 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1191904385516748377, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
+      propertyPath: maxHealth
+      value: 1000
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7567965575449163767, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
+--- !u!1 &1562800428 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+  m_PrefabInstance: {fileID: 213267647}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1562800440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562800428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b4dc39bcee8c8542b04a2351859dbfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealerHealVFX
+  staff: {fileID: 0}
+  castPoint: {fileID: 1603671951}
+  tipLocalOffset: {x: 0, y: 0, z: 0}
+  fallbackOffset: {x: 0, y: 1.4, z: 0.5}
+  mainColor: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accentColor: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.5
+  travelTime: 1.2
+  arcHeight: 0.8
+  streamWidth: 0.35
+  twists: 0.5
+  swaySpeed: 1.2
+  followSharpness: 6
+  threadPerSecond: 14
+  orbsPerSecond: 9
+  plusPerSecond: 5
+  sparklesPerSecond: 24
+  staffOrbSize: 0.6
+  chargeRadius: 0.6
+  showFootRune: 1
+  footRuneRadius: 1.1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderRune: 1
+  grassClearScale: 1.3
 --- !u!1 &1596455490
 GameObject:
   m_ObjectHideFlags: 0
@@ -3392,6 +3543,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1459837076}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1603671950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1603671951}
+  m_Layer: 0
+  m_Name: cast Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1603671951
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603671950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.204, y: -0.228, z: 0.373}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1352134723}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1605028554 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7572696427137771666, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
+  m_PrefabInstance: {fileID: 1901694596}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1605028561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1605028554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1550416c9a580b341a8c0f46cb13afd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealReceiveFX
+  color: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accent: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.2
+  showGroundAura: 1
+  auraRadius: 0
+  autoRadiusScale: 1.7
+  spinDegreesPerSecond: 25
+  fadeIn: 0.25
+  fadeOut: 0.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderAura: 1
+  grassClearScale: 1.3
+  plusPerSecond: 14
+  pulseRings: 1
+  ringInterval: 0.9
+  chestGlow: 1
+  chestGlowStrength: 0.45
+  bodyRipple: 1
+  rippleInterval: 0.8
+  rippleIntensity: 1
+  rippleDuration: 0.6
+  rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
+  rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
 --- !u!1 &1620996821
 GameObject:
   m_ObjectHideFlags: 0
@@ -3729,7 +3954,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7572696427137771666, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1605028561}
   m_SourcePrefab: {fileID: 100100000, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
 --- !u!64 &1914729524
 MeshCollider:
@@ -3753,6 +3981,49 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: 6becd0f4f0d0ce844b6ae9c5427c0d87, type: 3}
+--- !u!1 &2003254673 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7572696427137771666, guid: 83cb22393b0345a4e95ff8445f41981d, type: 3}
+  m_PrefabInstance: {fileID: 712217189}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2003254680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003254673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1550416c9a580b341a8c0f46cb13afd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealReceiveFX
+  color: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accent: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.2
+  showGroundAura: 1
+  auraRadius: 0
+  autoRadiusScale: 1.7
+  spinDegreesPerSecond: 25
+  fadeIn: 0.25
+  fadeOut: 0.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderAura: 1
+  grassClearScale: 1.3
+  plusPerSecond: 14
+  pulseRings: 1
+  ringInterval: 0.9
+  chestGlow: 1
+  chestGlowStrength: 0.45
+  bodyRipple: 1
+  rippleInterval: 0.8
+  rippleIntensity: 1
+  rippleDuration: 0.6
+  rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
+  rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
 --- !u!1 &2052441145
 GameObject:
   m_ObjectHideFlags: 0
@@ -3910,7 +4181,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1049203094}
   m_SourcePrefab: {fileID: 100100000, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
 --- !u!1 &2139596187
 GameObject:
