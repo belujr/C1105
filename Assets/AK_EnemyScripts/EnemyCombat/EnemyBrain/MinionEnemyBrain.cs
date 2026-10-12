@@ -17,7 +17,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 
     protected MinionEnemyDataSO MinionData => enemyData as MinionEnemyDataSO; // [R2]
     protected EnemyAnimationEngine minionAnim; // [R2]
-    protected float MoveSpd => MinionData != null ? MinionData.MoveSpeed : 3.5f; // [R2]
+    protected float MoveSpd => (MinionData != null ? MinionData.MoveSpeed : 3.5f) * Mathf.Lerp(1f, 1.15f, aggression); // [R2]
     protected float StopDist => MinionData != null ? MinionData.AttackStopDistance : 2f; // [R2]
 
     // ------------------------------------------------------------------ Inspector (existing names kept)
@@ -29,6 +29,18 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     [Header("Health & Combat Settings")]
     public float maxHealth = 60f;
     protected float currentHealth; // [R2]
+
+    [Header("Targeting")]
+    [Tooltip("Layers this enemy may target. The target's root GameObject must be on one of these layers (e.g. Player). Nothing = keep whatever target BaseEnemyBrain assigns (original behaviour).")]
+    public LayerMask targetLayers;
+    [Tooltip("How far to search for a target on the layers above when the current target is missing or on the wrong layer.")]
+    public float targetSearchRadius = 50f;
+
+    [Header("Tokens")]
+    [Tooltip("Token requested before attacking. Ranged minions use their own Ranged Token Type instead.")]
+    public TokenType engageTokenType = TokenType.Engage;
+    [Tooltip("Token requested to wait on the outer ring. Ranged minions don't use this.")]
+    public TokenType outerRingTokenType = TokenType.OuterRing;
 
     [Header("Dual-Ring Swarm Manager")]
     public float outerRingDistance = 8.0f;
@@ -89,6 +101,16 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     public float attackTurnSpeed = 220f;
     public float hitReengageDelay = 0.5f;
 
+    [Header("Aggression & Coordination")]
+    [Tooltip("0 = original pacing, 1 = relentless: shorter cooldowns and pauses, tighter orbit ring, up to 15% faster.")]
+    [Range(0f, 1f)] public float aggression = 0.5f;
+    [Tooltip("When one enemy spots you or is hit, unaware or searching allies inside Alert Radius join the fight at once. Needs Alert Allies On Hit ticked.")]
+    public bool groupAggro = true;
+    [Tooltip("When one enemy starts an attack, the next waiting ally lines up its own attack right behind it.")]
+    public bool followUpAttacks = true;
+    public float coordinationRadius = 14f;
+    public Vector2 followUpDelay = new Vector2(0.4f, 0.9f);
+
     // ------------------------------------------------------------------ Runtime
     protected float randomizedSeparationWeight; // [R2]
     protected bool holdsEngageToken, holdsOuterRingToken; // [R2]
@@ -97,6 +119,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     protected int orbitSign = 1; // [R2]
     protected float recoverTimer, breathTimer; // [R2]
     protected bool recoverBreathing; // [R2]
+    protected float nextTargetScanTime; // [R2]
 
     protected Vector3 velocity, desiredVelocity, desiredFacing, knockVelocity, cachedSeparation; // [R2]
     protected float facingTurnSpeed, knockDecel, nextSeparationTime; // [R2]
@@ -117,6 +140,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 
     protected static readonly List<MinionEnemyBrain> registry = new List<MinionEnemyBrain>(32); // [R2]
     protected static readonly Collider[] separationBuffer = new Collider[16]; // [R2]
+    protected static readonly Collider[] targetBuffer = new Collider[32]; // [R2]
     protected static float globalLastAttackTime = 0f; // [R2]
     protected const float MIN_ATTACK_STAGGER_DELAY = 0.6f; // [R2]
     protected const float GROUND_STICK = -4f; // [R2]
@@ -131,6 +155,11 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     protected static Vector3 Flat(Vector3 v) { v.y = 0f; return v; } // [R2]
     protected float GravityY => gravity != 0f ? -Mathf.Abs(gravity) : Physics.gravity.y; // [R2]
 
+    // Aggression scaling (aggression 0 = original numbers)
+    protected float CooldownScale => Mathf.Lerp(1f, 0.4f, aggression); // [R2]
+    protected float RingDistance => outerRingDistance * Mathf.Lerp(1f, 0.75f, aggression); // [R2]
+    protected float ReEngageDelay() => Random.Range(reEngageCooldown.x, reEngageCooldown.y) * CooldownScale; // [R2]
+
     // ------------------------------------------------------------------ Lifecycle
     protected override void Awake()
     {
@@ -139,6 +168,14 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         base.animationEngine = minionAnim;
 
         if (animProfile != null) animProfile.InitializeDictionary();
+
+        if (exclamationMarkVisual == null)
+            Debug.LogWarning("[MinionEnemyBrain] No Exclamation Mark Visual assigned - the alert pop-up is disabled.", this);
+        else if (!exclamationMarkVisual.scene.IsValid())
+        {
+            Debug.LogWarning("[MinionEnemyBrain] Exclamation Mark Visual points at a prefab asset, not a child of this enemy. Drag the child object in instead.", this);
+            exclamationMarkVisual = null;
+        }
 
         if (exclamationMarkVisual != null)
         {
@@ -181,6 +218,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         waitingSince = Time.time + Random.Range(0f, 0.4f);
         nextTokenRequestTime = 0f;
         nextSeparationTime = 0f;
+        nextTargetScanTime = 0f;
         stuckSample = transform.position;
         stuckSampleTime = Time.time;
 
@@ -204,7 +242,35 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         registry.Remove(this);
     }
 
+    // ------------------------------------------------------------------ Targeting
+    protected bool InTargetLayers(GameObject go) => (targetLayers.value & (1 << go.layer)) != 0;
+
+    // Keeps 'target' on one of targetLayers. Does nothing while targetLayers is Nothing.
+    protected virtual void EnforceTargetLayers()
+    {
+        if (targetLayers.value == 0) return;
+        if (target != null && target.gameObject.activeInHierarchy && InTargetLayers(target.gameObject)) return;
+        if (Time.time < nextTargetScanTime) return;
+        nextTargetScanTime = Time.time + 0.25f;
+
+        Transform best = null;
+        float bestSqr = float.MaxValue;
+        int hits = Physics.OverlapSphereNonAlloc(transform.position, targetSearchRadius, targetBuffer, targetLayers, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < hits; i++)
+        {
+            Collider c = targetBuffer[i];
+            if (c == null || c.transform.IsChildOf(transform)) continue;
+            float sqr = Flat(c.transform.position - transform.position).sqrMagnitude;
+            if (sqr < bestSqr) { bestSqr = sqr; best = c.transform; }
+        }
+
+        if (best == target) return;
+        target = best;
+        ResetPerception();
+    }
+
     // ------------------------------------------------------------------ Tokens
+    protected virtual TokenType EngageToken => engageTokenType; // ranged minions override this
     protected virtual void ReleaseAttackToken() // [R2]
     {
         if (hasToken && selectedAttack != null && GlobalTokenManager.Instance != null)
@@ -216,8 +282,8 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
     {
         if (GlobalTokenManager.Instance != null)
         {
-            if (holdsEngageToken) GlobalTokenManager.Instance.ReleaseToken(transform, TokenType.Engage);
-            if (holdsOuterRingToken) GlobalTokenManager.Instance.ReleaseToken(transform, TokenType.OuterRing);
+            if (holdsEngageToken) GlobalTokenManager.Instance.ReleaseToken(transform, EngageToken);
+            if (holdsOuterRingToken) GlobalTokenManager.Instance.ReleaseToken(transform, outerRingTokenType);
         }
         ReleaseAttackToken();
         holdsEngageToken = false;
@@ -248,13 +314,13 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 
         if (!holdsEngageToken && Time.time >= engageReadyTime && IsNextInLine())
         {
-            if (GlobalTokenManager.Instance.RequestToken(transform, TokenType.Engage))
+            if (GlobalTokenManager.Instance.RequestToken(transform, EngageToken))
             {
                 holdsEngageToken = true;
                 engageApproachStart = Time.time;
                 if (holdsOuterRingToken)
                 {
-                    GlobalTokenManager.Instance.ReleaseToken(transform, TokenType.OuterRing);
+                    GlobalTokenManager.Instance.ReleaseToken(transform, outerRingTokenType);
                     holdsOuterRingToken = false;
                 }
                 return;
@@ -262,13 +328,13 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
 
         if (!holdsEngageToken && !holdsOuterRingToken)
-            holdsOuterRingToken = GlobalTokenManager.Instance.RequestToken(transform, TokenType.OuterRing);
+            holdsOuterRingToken = GlobalTokenManager.Instance.RequestToken(transform, outerRingTokenType);
     }
 
     protected virtual void GiveUpEngage() // [R2]
     {
         CleanupTokens();
-        engageReadyTime = Time.time + Random.Range(1f, 2f);
+        engageReadyTime = Time.time + Random.Range(1f, 2f) * CooldownScale;
         waitingSince = engageReadyTime;
         TransitionToState(MinionState.Orbit);
     }
@@ -341,10 +407,13 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
 
         ApplyMovement(dt);
         UpdateLocomotionAnimation();
+        FaceMarkToCamera();
 
         desiredVelocity = Vector3.zero;
         desiredFacing = Vector3.zero;
         facingTurnSpeed = turnSpeed;
+
+        EnforceTargetLayers();
 
         bool targetOk = target != null && target.gameObject.activeInHierarchy;
         if (!targetOk)
@@ -531,7 +600,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
         else
         {
-            float ring = outerRingDistance + ringOffset + (holdsOuterRingToken ? 0f : noRingTokenExtraDistance);
+            float ring = RingDistance + ringOffset + (holdsOuterRingToken ? 0f : noRingTokenExtraDistance);
             if (dist <= ring + ringBand) { TransitionToState(MinionState.Orbit); return; }
             SteerTo(ChaseGoal, MoveSpd, false);
         }
@@ -551,7 +620,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         Vector3 dirTo = toTarget / dist;
         Vector3 ringTangent = Vector3.Cross(Vector3.up, -dirTo);
 
-        float ring = outerRingDistance + ringOffset + (holdsOuterRingToken ? 0f : noRingTokenExtraDistance);
+        float ring = RingDistance + ringOffset + (holdsOuterRingToken ? 0f : noRingTokenExtraDistance);
         if (dist > ring + ringBand + 3f) { TransitionToState(MinionState.Chase); return; }
 
         float err = dist - ring;
@@ -564,7 +633,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         orbitSegmentTimer -= dt;
         if (orbitPauseTimer <= 0f && orbitSegmentTimer <= 0f)
         {
-            if (Random.value < orbitPauseChance)
+            if (Random.value < orbitPauseChance * (1f - 0.7f * aggression))
             {
                 orbitPauseTimer = Random.Range(orbitPauseDuration.x, orbitPauseDuration.y);
                 orbitSegmentTimer = orbitPauseTimer + Random.Range(orbitSegmentTime.x, orbitSegmentTime.y);
@@ -628,7 +697,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
             if (dist >= StopDist + recoverBackoffDistance || recoverTimer > 1.3f)
             {
                 recoverBreathing = true;
-                breathTimer = Random.Range(recoverBreathDuration.x, recoverBreathDuration.y);
+                breathTimer = Random.Range(recoverBreathDuration.x, recoverBreathDuration.y) * CooldownScale;
             }
         }
         else
@@ -646,6 +715,31 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         facingTurnSpeed = attackTurnSpeed;
     }
 
+    // When one enemy commits to an attack, the next waiting ally lines up its own attack right behind it.
+    protected void PressureAllies() // [R2]
+    {
+        if (!followUpAttacks) return;
+
+        float r2 = coordinationRadius * coordinationRadius;
+        MinionEnemyBrain next = null;
+        for (int i = 0; i < registry.Count; i++)
+        {
+            MinionEnemyBrain o = registry[i];
+            if (o == null || o == this || !o.isActiveAndEnabled || o.holdsEngageToken) continue;
+            if (o.CurrentState != MinionState.Orbit && o.CurrentState != MinionState.Chase) continue;
+            if ((o.transform.position - transform.position).sqrMagnitude > r2) continue;
+            if (next == null || o.engageReadyTime < next.engageReadyTime) next = o;
+        }
+        if (next == null) return;
+
+        float ready = Time.time + Random.Range(followUpDelay.x, followUpDelay.y);
+        if (next.engageReadyTime > ready)
+        {
+            next.engageReadyTime = ready;
+            next.waitingSince = ready;
+        }
+    }
+
     protected virtual IEnumerator EngageRoutine() // [R2]
     {
         if (MinionData == null || MinionData.AvailableAttacks == null || MinionData.AvailableAttacks.Count == 0)
@@ -654,7 +748,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
             yield break;
         }
 
-        while (Time.time < globalLastAttackTime + MIN_ATTACK_STAGGER_DELAY)
+        while (Time.time < globalLastAttackTime + MIN_ATTACK_STAGGER_DELAY * CooldownScale)
         {
             if (target == null) { ReturnToPatrol(); yield break; }
             HoldAndFace();
@@ -670,6 +764,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
 
         globalLastAttackTime = Time.time;
+        PressureAllies();
         PlayAttackAnimation();
 
         float t = 0f;
@@ -716,7 +811,7 @@ public partial class MinionEnemyBrain : BaseEnemyBrain, IDamageable, IHealable
         }
 
         CleanupTokens();
-        engageReadyTime = Time.time + Random.Range(reEngageCooldown.x, reEngageCooldown.y);
+        engageReadyTime = Time.time + ReEngageDelay();
         waitingSince = engageReadyTime;
         TransitionToState(MinionState.Recover);
     }
@@ -898,7 +993,8 @@ public partial class MinionEnemyBrain
     [Range(0.1f, 1f)] public float wallHearingMultiplier = 0.5f;
 
     [Header("Awareness Meter")]
-    public bool instantAlertOnSight = false;
+    [Tooltip("On = the alert pop-up fires the moment the enemy sees you. Off = awareness fills gradually while you are in view.")]
+    public bool alertOnSight = true;
     public float sightGainPerSecond = 1.2f;
     public float soundGainPerSecond = 1.0f;
     public float awarenessDecayPerSecond = 0.25f;
@@ -1007,7 +1103,7 @@ public partial class MinionEnemyBrain
                 if (seesTarget)
                 {
                     stimulusHoldUntil = Time.time + 0.4f;
-                    awareness = instantAlertOnSight ? 1f : Mathf.Min(1f, awareness + sightGainPerSecond * sightQuality * tickDt);
+                    awareness = alertOnSight ? 1f : Mathf.Min(1f, awareness + sightGainPerSecond * sightQuality * tickDt);
                 }
                 if (heard)
                 {
@@ -1032,11 +1128,7 @@ public partial class MinionEnemyBrain
                 break;
 
             case MinionState.Search:
-                if (seesTarget)
-                {
-                    awareness = 1f;
-                    TransitionToState(MinionState.Chase);
-                }
+                if (seesTarget) BeginAlert(); // spotted again: pop the "!" and alert allies
                 break;
         }
     }
@@ -1071,9 +1163,17 @@ public partial class MinionEnemyBrain
             quality = (0.4f + 0.6f * (1f - dist / visionRange)) * (0.5f + 0.5f * Mathf.InverseLerp(visionFOVThreshold, 1f, dot));
         }
 
-        if (!Physics.Linecast(eye, tp + Vector3.up * 1.6f, obstacleMask, QueryTriggerInteraction.Ignore)) return true;
-        if (!Physics.Linecast(eye, tp + Vector3.up * 1.0f, obstacleMask, QueryTriggerInteraction.Ignore)) return true;
+        if (!LineBlocked(eye, tp + Vector3.up * 1.6f)) return true;
+        if (!LineBlocked(eye, tp + Vector3.up * 1.0f)) return true;
         return false;
+    }
+
+    // True if an obstacle sits between the two points. The target's own colliders never count as obstacles.
+    protected bool LineBlocked(Vector3 from, Vector3 to) // [R2]
+    {
+        if (obstacleMask.value == 0) return false;
+        if (!Physics.Linecast(from, to, out RaycastHit hit, obstacleMask, QueryTriggerInteraction.Ignore)) return false;
+        return target == null || !hit.collider.transform.IsChildOf(target);
     }
 
     protected bool EvaluateHearing(float targetSpeed, out float quality) // [R2]
@@ -1086,7 +1186,7 @@ public partial class MinionEnemyBrain
         float dist = Vector3.Distance(transform.position, target.position);
         if (dist > radius) return false;
 
-        if (Physics.Linecast(EyePosition, target.position + Vector3.up, obstacleMask, QueryTriggerInteraction.Ignore))
+        if (LineBlocked(EyePosition, target.position + Vector3.up))
         {
             radius *= wallHearingMultiplier;
             if (dist > radius) return false;
@@ -1143,6 +1243,16 @@ public partial class MinionEnemyBrain
 
     protected virtual void ReceiveAlert(Vector3 pos) // [R2]
     {
+        if (groupAggro && (CurrentState == MinionState.Unaware || CurrentState == MinionState.Search))
+        {
+            // An ally spotted the player: join the fight right away. Does not re-alert others, so no feedback loop.
+            awareness = 1f;
+            lastKnownPos = pos;
+            hasMemory = true;
+            TransitionToState(MinionState.Suspicious);
+            return;
+        }
+
         if (CurrentState != MinionState.Unaware) return;
         awareness = Mathf.Max(awareness, 0.6f);
         stimulusHoldUntil = Time.time + 1f;
@@ -1154,13 +1264,24 @@ public partial class MinionEnemyBrain
     protected void AlertHold() // [R2]
     {
         desiredVelocity = Vector3.zero;
-        desiredFacing = Flat((hasMemory ? lastKnownPos : target.position) - transform.position);
+        Vector3 look = hasMemory ? lastKnownPos : (target != null ? target.position : transform.position + transform.forward);
+        desiredFacing = Flat(look - transform.position);
         facingTurnSpeed = turnSpeed * 0.8f;
     }
 
     protected void SetMark(float s) // [R2]
     {
         exclamationMarkVisual.transform.localScale = new Vector3(s, s, s);
+    }
+
+    protected void FaceMarkToCamera() // [R2]
+    {
+        if (exclamationMarkVisual == null || !exclamationMarkVisual.activeSelf) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
+        Vector3 away = exclamationMarkVisual.transform.position - cam.transform.position;
+        if (away.sqrMagnitude > 0.0001f)
+            exclamationMarkVisual.transform.rotation = Quaternion.LookRotation(away, Vector3.up);
     }
 
     protected IEnumerator AlertSequenceRoutine() // [R2]

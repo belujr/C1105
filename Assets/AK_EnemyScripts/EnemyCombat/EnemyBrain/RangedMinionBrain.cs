@@ -23,12 +23,18 @@ public class RangedMinionBrain : MinionEnemyBrain
     [Tooltip("Delay in seconds after animation starts before bullets spawn (adjust to match the release frame).")]
     public float bulletFireDelay = 0.2f;
 
-    private float lastFireTime;
+    [Header("Token")]
+    [Tooltip("Token this minion requests before it shoots.")]
+    public TokenType rangedTokenType = TokenType.Ranged;
+
     private Vector3 candidatePosition;
     private bool hasCandidatePosition;
     private float repositionTimer;
 
     protected float RangedSpeed => MoveSpd * moveSpeedMultiplier;
+
+    // The base class requests/releases this token for the engage slot.
+    protected override TokenType EngageToken => rangedTokenType;
 
     protected override void PlayAttackAnimation()
     {
@@ -116,13 +122,13 @@ public class RangedMinionBrain : MinionEnemyBrain
     private void TryAcquireRangedToken()
     {
         if (GlobalTokenManager.Instance == null || Time.time < nextTokenRequestTime) return;
-        if (Time.time < lastFireTime + reEngageCooldown.x) return;
+        if (Time.time < engageReadyTime) return;
 
         nextTokenRequestTime = Time.time + 0.25f;
 
         if (!holdsEngageToken && IsNextInLine())
         {
-            if (GlobalTokenManager.Instance.RequestToken(transform, TokenType.Ranged))
+            if (GlobalTokenManager.Instance.RequestToken(transform, rangedTokenType))
             {
                 holdsEngageToken = true;
                 TransitionToState(MinionState.Engage);
@@ -139,6 +145,7 @@ public class RangedMinionBrain : MinionEnemyBrain
         }
 
         BulletPattern selectedPattern = bulletPatterns[Random.Range(0, bulletPatterns.Length)];
+        PressureAllies();
 
         // Telegraph phase: aim tracks perceived delayed player position
         float t = 0f;
@@ -177,8 +184,6 @@ public class RangedMinionBrain : MinionEnemyBrain
             BulletManager.Instance.FirePattern(selectedPattern, spawnPoint, aimDir);
         }
 
-        lastFireTime = Time.time;
-
         // Breather phase
         float breatherTimer = 0f;
         while (breatherTimer < postAttackBreather)
@@ -189,7 +194,7 @@ public class RangedMinionBrain : MinionEnemyBrain
         }
 
         CleanupTokens();
-        engageReadyTime = Time.time + Random.Range(reEngageCooldown.x, reEngageCooldown.y);
+        engageReadyTime = Time.time + ReEngageDelay();
         waitingSince = engageReadyTime;
         TransitionToState(MinionState.Recover);
     }
@@ -209,7 +214,7 @@ public class RangedMinionBrain : MinionEnemyBrain
             float angle = i * 45f * Mathf.Deg2Rad;
             Vector3 probe = center + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * preferredDistance;
 
-            if (Physics.Linecast(probe + Vector3.up * 1.5f, center + Vector3.up * 1.0f, obstacleMask, QueryTriggerInteraction.Ignore))
+            if (LineBlocked(probe + Vector3.up * 1.5f, center + Vector3.up * 1.0f))
                 continue;
 
             float score = 10f - Vector3.Distance(transform.position, probe) * 0.2f;
@@ -222,14 +227,5 @@ public class RangedMinionBrain : MinionEnemyBrain
         }
 
         if (hasCandidatePosition) candidatePosition = bestPos;
-    }
-
-    protected override void CleanupTokens()
-    {
-        if (GlobalTokenManager.Instance != null && holdsEngageToken)
-        {
-            GlobalTokenManager.Instance.ReleaseToken(transform, TokenType.Ranged);
-        }
-        base.CleanupTokens();
     }
 }

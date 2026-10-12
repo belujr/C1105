@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1648554314304784989
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5558193690788396579}
+  - component: {fileID: 326986264891429736}
+  m_Layer: 0
+  m_Name: EnemyPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5558193690788396579
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1648554314304784989}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 75.10235, y: 0, z: 22.58353}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &326986264891429736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1648554314304784989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad6c25c046edc054f9659e84f5c111d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyObjectPool
+  poolsToPreWarm:
+  - enemyPrefab: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
+    initialPoolSize: 10
+  - enemyPrefab: {fileID: 7572696427137771666, guid: 83cb22393b0345a4e95ff8445f41981d, type: 3}
+    initialPoolSize: 10
+  - enemyPrefab: {fileID: 6932264869601413925, guid: d01cbe1407fbb914d9d054caafb34714, type: 3}
+    initialPoolSize: 10
+  - enemyPrefab: {fileID: 633932407048562862, guid: 1aaba5524f6f0064c9b0a9e6220c3450, type: 3}
+    initialPoolSize: 10
+  - enemyPrefab: {fileID: 7135049396228161857, guid: 443703bc1a396b44ca1578f5cfb49316, type: 3}
+    initialPoolSize: 10

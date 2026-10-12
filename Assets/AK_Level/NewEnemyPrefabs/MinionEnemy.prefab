@@ -1280,6 +1280,12 @@ MonoBehaviour:
   directDeathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
   directHitClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
   maxHealth: 60
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  targetSearchRadius: 50
+  engageTokenType: 5
+  outerRingTokenType: 6
   outerRingDistance: 8
   assignedZone: {fileID: 0}
   patrolSpeed: 2
@@ -1320,6 +1326,11 @@ MonoBehaviour:
   attackFacingArc: 70
   attackTurnSpeed: 220
   hitReengageDelay: 0.5
+  aggression: 0.849
+  groupAggro: 1
+  followUpAttacks: 1
+  coordinationRadius: 14
+  followUpDelay: {x: 0.4, y: 0.9}
   eyeAnchor: {fileID: 8090324200096889538}
   verticalFOV: 80
   closeAwarenessRadius: 2.5
@@ -1329,7 +1340,7 @@ MonoBehaviour:
   footstepFullLoudnessSpeed: 6
   attackHearingRadius: 18
   wallHearingMultiplier: 0.5
-  instantAlertOnSight: 0
+  alertOnSight: 1
   sightGainPerSecond: 1.2
   soundGainPerSecond: 1
   awarenessDecayPerSecond: 0.25
@@ -1389,7 +1400,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 40
-  wispTravelDelay: 0.6
 --- !u!1 &7659546530472026075
 GameObject:
   m_ObjectHideFlags: 0

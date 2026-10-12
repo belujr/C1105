@@ -6514,6 +6514,18 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
+  vfxHeightOffset: 0
+  aoeVfxHeightOffset: 0.1
+  vfxTowardCameraOffset: 0
+  debugVFX: 0
+  enemyHitFeedback: 1
+  heavyHitDamage: 30
+  vfxAnchor: 3
+  vfxFollowsTarget: 1
+  swingMaxDuration: 0.8
+  previewHitPoint: {fileID: 0}
+  previewAttack: {fileID: 0}
+  hitStopTimeScale: 0.02
 --- !u!120 &3605382412897039376
 LineRenderer:
   serializedVersion: 3

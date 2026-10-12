@@ -164,7 +164,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.8301, y: 1.266, z: 14.788}
-  m_LocalScale: {x: 1.3685606, y: 1.3685606, z: 1.3685606}
+  m_LocalScale: {x: 1.6012734, y: 1.6012734, z: 1.6012734}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1731241471764117445}
@@ -328,7 +328,7 @@ MonoBehaviour:
   retreatSpeed: 10
   groundLayers:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 1025
   maxStepUp: 0.5
   maxStepDown: 1.5
   groundFollowSpeed: 25
@@ -409,7 +409,7 @@ MonoBehaviour:
   maxFallSpeed: 40
   groundMask:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 1
   landingDuration: 1
   enemyBrain: {fileID: 2797239759207238605}
 --- !u!114 &8927129479503520099
@@ -425,7 +425,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 5
-  wispTravelDelay: 0.6
 --- !u!1 &2163117183044104549
 GameObject:
   m_ObjectHideFlags: 0
