@@ -448,6 +448,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1999344939690575442, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4366027343963001335, guid: b452eab56528362448f00d61ae5d3624, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.245647
@@ -493,7 +497,8 @@ PrefabInstance:
       value: HealerEnemy
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1999344939690575442, guid: b452eab56528362448f00d61ae5d3624, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1854278023547113813, guid: b452eab56528362448f00d61ae5d3624, type: 3}
       insertIndex: -1
@@ -3429,7 +3434,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1191904385516748377, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
       propertyPath: maxHealth
-      value: 1000
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7567965575449163767, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
@@ -3466,7 +3471,8 @@ MonoBehaviour:
   streamWidth: 0.35
   twists: 0.5
   swaySpeed: 1.2
-  followSharpness: 6
+  ropeLagEnds: 0.08
+  ropeLagMiddle: 0.2
   threadPerSecond: 14
   orbsPerSecond: 9
   plusPerSecond: 5

@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour, IDamageable
 {
+    /// <summary>Raised once when the player dies. The death VFX (and later a game-over screen) subscribe to this.</summary>
+    public static event System.Action<PlayerHealth> Died;
+
+    public bool IsDead { get { return isDead; } }
+
     [Header("Health Settings")]
     public int maxHealth = 100;
     private int currentHealth;
@@ -15,8 +20,9 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     public Color damageFlashColor = Color.red;
     public float flashDuration = 0.1f;
 
-    [Header("Death & Pause Settings")]
-    public float deathDisappearDelay = 0.5f;
+    [Header("Death")]
+    [Tooltip("Optional. Name of an Animator trigger to play when the player dies. Leave empty for none.")]
+    public string deathAnimatorTrigger = "";
 
     [SerializeField]
     private bool isImmortal = false;
@@ -75,6 +81,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         isDead = false;
         isCaughtInEnemyCombo = false;
         lastPosition = cachedTransform.position;
+        if (playerController != null) playerController.Revive();
         if (playerCollider != null) playerCollider.enabled = true;
         SetRenderersVisible(true);
         ResetColors();
@@ -212,16 +219,17 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (isDead) return;
         isDead = true;
 
-        if (playerCollider != null) playerCollider.enabled = false;
-        StartCoroutine(PlayerDeathRoutine());
-    }
+        // The CharacterController must stay enabled: the controller still applies gravity after death,
+        // and Move() on a disabled controller spams errors. Enemy hits are already ignored (TakeDamage returns when dead).
+        if (playerCollider != null && !(playerCollider is CharacterController)) playerCollider.enabled = false;
 
-    private IEnumerator PlayerDeathRoutine()
-    {
-        yield return new WaitForSecondsRealtime(deathDisappearDelay);
-        SetRenderersVisible(false);
-        Time.timeScale = 0f;
-        Debug.Log("Player died. Game paused.");
+        // Take control away (the game keeps running; nothing is paused and the player is not hidden)
+        if (playerController != null) playerController.OnPlayerDied();
+
+        if (animator != null && !string.IsNullOrEmpty(deathAnimatorTrigger)) animator.SetTrigger(deathAnimatorTrigger);
+
+        Debug.Log("Player died.");
+        if (Died != null) Died(this);
     }
 
     private void SetRenderersVisible(bool isVisible)
