@@ -278,7 +278,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4e5e3dfc0b423ae4ebf47db27a1c50dd, type: 2}
   - {fileID: 11400000, guid: 5bcf84c4ab7b63441952ef6c89fbdd39, type: 2}
   - {fileID: 11400000, guid: 07a1138d5bcd451459b126f2a2d061f8, type: 2}
-  enemyAttackSpeedMultiplier: 1.2
+  enemyAttackSpeedMultiplier: 1.5
   anticipationDuration: 0.15
   anticipationTimeScale: 0.22
   anticipationFlashColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -316,9 +316,9 @@ MonoBehaviour:
   dodgeFacingSpeedMultiplier: 0.3
   separationRadius: 13.43
   separationWeight: 6.48
-  attackRange: 2
+  attackRange: 2.48
   playerDodgeRange: 4.01
-  attackCorridorWidth: 0.63
+  attackCorridorWidth: 0.3
   lungeSpeed: 2
   comboLungeDistances:
   - 1.8

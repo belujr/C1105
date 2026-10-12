@@ -3145,22 +3145,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 884381931446778937, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: bulletPatterns.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 884381931446778937, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: 'bulletPatterns.Array.data[1]'
-      value: 
-      objectReference: {fileID: 3698991296270736241, guid: 8421626cb632d834f8b781f8e9a75514, type: 3}
-    - target: {fileID: 2089990894201505463, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: bulletPatterns.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2089990894201505463, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: 'bulletPatterns.Array.data[0]'
-      value: 
-      objectReference: {fileID: 3698991296270736241, guid: f200bf222d5509a4d949702d052893da, type: 3}
     - target: {fileID: 3022820418141523124, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -171.1
@@ -3209,22 +3193,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3741361887522466922, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: bulletPatterns.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3741361887522466922, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: 'bulletPatterns.Array.data[0]'
-      value: 
-      objectReference: {fileID: 3698991296270736241, guid: f200bf222d5509a4d949702d052893da, type: 3}
-    - target: {fileID: 6487790246820329129, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: bulletPatterns.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6487790246820329129, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: 'bulletPatterns.Array.data[1]'
-      value: 
-      objectReference: {fileID: 3698991296270736241, guid: 8421626cb632d834f8b781f8e9a75514, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3696,10 +3664,10 @@ MonoBehaviour:
   target: {fileID: 3743039198604297078, guid: ba19c30a7107fc249ab824bee297865d, type: 3}
   offset: {x: -10, y: 12, z: -10}
   followSpeed: 8
-  poiPullWeight: 0.3
-  poiZoomMultiplier: 1.8
+  poiPullWeight: 0.69
+  poiZoomMultiplier: 3.5
   combatPoiPullWeight: 0.15
-  combatZoomMultiplier: 1.6
+  combatZoomMultiplier: 2.5
   poiTransitionSpeed: 2
 --- !u!114 &1269067837
 MonoBehaviour:
