@@ -28,19 +28,22 @@ public class HealerHealVFX : MonoBehaviour
     [Tooltip("HDR brightness multiplier. With Bloom on, higher = bigger glow.")]
     public float brightness = 2.5f;
 
-    [Header("Energy stream")]
-    [Tooltip("Seconds a particle needs to drift from the staff to the ally. Higher = slower.")]
-    public float travelTime = 1.2f;
-    [Tooltip("How high the stream arcs above the straight line (world units).")]
-    public float arcHeight = 0.8f;
+    [Header("Energy stream (rides on a soft rope that bends smoothly when the ally moves)")]
+    [Tooltip("Seconds a particle needs to flow from the staff to the ally. Higher = slower.")]
+    public float travelTime = 1.1f;
+    [Tooltip("How high the rope arcs above the straight line (world units).")]
+    public float arcHeight = 0.7f;
     [Tooltip("How wide the stream is. Everything scales with this.")]
     public float streamWidth = 0.35f;
     [Tooltip("How many times particles circle the center line on the way. Low = calm.")]
     public float twists = 0.5f;
-    [Tooltip("How fast particles circle and the whole stream sways.")]
+    [Tooltip("How fast particles circle and the stream sways.")]
     public float swaySpeed = 1.2f;
-    [Tooltip("How softly particles follow a moving staff or ally. Lower = looser and lazier, higher = tighter.")]
-    public float followSharpness = 6f;
+    [Header("Rope (how it follows a moving ally)")]
+    [Tooltip("Seconds the rope takes to follow near its ends. Lower = tighter.")]
+    public float ropeLagEnds = 0.08f;
+    [Tooltip("Extra seconds of lag in the middle of the rope. Higher = a looser, more bendy rope.")]
+    public float ropeLagMiddle = 0.2f;
     public float threadPerSecond = 14f;
     public float orbsPerSecond = 9f;
     public float plusPerSecond = 5f;
@@ -66,12 +69,17 @@ public class HealerHealVFX : MonoBehaviour
     {
         public ParticleSystem ps;
         public int kind;            // 0 = light thread, 1 = orbs, 2 = plus signs, 3 = sparkles
-        public float amp;
-        public float twist;
         public Vector2 size;
         public float accentMix;
+        public float amp;
+        public float twist;
         public float accum;
     }
+
+    private const int RopePoints = 8;
+    private readonly Vector3[] rope = new Vector3[RopePoints];
+    private readonly Vector3[] ropeVel = new Vector3[RopePoints];
+    private bool ropeLive;
 
     private static readonly ParticleSystem.Particle[] buf = new ParticleSystem.Particle[512];
 
@@ -119,6 +127,7 @@ public class HealerHealVFX : MonoBehaviour
     private void OnDisable()
     {
         casting = false;
+        ropeLive = false;
         if (foot != null) foot.Reset();
     }
 
@@ -175,11 +184,11 @@ public class HealerHealVFX : MonoBehaviour
         HealVFXAssets.FadeInOut(chargePS, 0.15f, 0.6f, 1f);
         HealVFXAssets.SizeCurve(chargePS, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.3f)));
 
-        // the stream: a thin thread of light, soft orbs, "+" signs and sparkles, all drifting along one gentle arc
-        streams.Add(MakeStream("HealThread", 0, 128, dotMat, ribbonMat, new Vector2(0.09f, 0.13f), 0.12f, 0.4f, 0.5f));
-        streams.Add(MakeStream("HealOrbs", 1, 64, dotMat, null, new Vector2(0.22f, 0.34f), 0.22f, 0.5f, 0.6f));
-        streams.Add(MakeStream("HealPlus", 2, 48, plusMat, null, new Vector2(0.22f, 0.32f), 0.25f, 0.6f, 0.7f));
-        streams.Add(MakeStream("HealSparkles", 3, 160, dotMat, null, new Vector2(0.04f, 0.08f), 0.5f, 1.5f, 0.8f));
+        // the stream: a thin thread of light, soft orbs, "+" signs and sparkles
+        streams.Add(MakeStream("HealThread", 0, 128, dotMat, ribbonMat, new Vector2(0.09f, 0.13f), 0.5f, 0.12f, 0.4f));
+        streams.Add(MakeStream("HealOrbs", 1, 64, dotMat, null, new Vector2(0.22f, 0.34f), 0.6f, 0.22f, 0.5f));
+        streams.Add(MakeStream("HealPlus", 2, 48, plusMat, null, new Vector2(0.22f, 0.32f), 0.7f, 0.25f, 0.6f));
+        streams.Add(MakeStream("HealSparkles", 3, 160, dotMat, null, new Vector2(0.04f, 0.08f), 0.8f, 0.5f, 1.5f));
 
         if (showFootRune)
         {
@@ -191,14 +200,14 @@ public class HealerHealVFX : MonoBehaviour
     }
 
     private Stream MakeStream(string name, int kind, int max, Material mat, Material trailMat,
-                              Vector2 size, float amp, float twist, float accentMix)
+                              Vector2 size, float accentMix, float amp, float twist)
     {
         Stream s = new Stream();
         s.kind = kind;
         s.size = size;
+        s.accentMix = accentMix;
         s.amp = amp;
         s.twist = twist;
-        s.accentMix = accentMix;
         s.ps = HealVFXAssets.MakeSystem(transform, name, mat, max, true);
 
         // alpha in/out + the particles get small right before they land
@@ -212,8 +221,8 @@ public class HealerHealVFX : MonoBehaviour
             tr.enabled = true;
             tr.mode = ParticleSystemTrailMode.PerParticle;
             tr.ratio = 1f;
-            tr.lifetime = 0.2f;
-            tr.minVertexDistance = 0.06f;
+            tr.lifetime = 0.3f;
+            tr.minVertexDistance = 0.05f;
             tr.worldSpace = true;
             tr.dieWithParticles = true;
             tr.sizeAffectsWidth = true;
@@ -274,26 +283,72 @@ public class HealerHealVFX : MonoBehaviour
                       footRuneRadius, mainColor, 40f, 0.25f, 0.4f);
         }
 
-        Vector3 dir = targetWorld - tip;
-        float len = dir.magnitude;
-        if (len < 0.05f) { dir = transform.forward; len = 0.05f; }
-        else dir /= len;
+        // the rope: end points stick to the staff and the ally, the middle follows with a soft lag
+        bool anyParticles = false;
+        for (int i = 0; i < streams.Count; i++) if (streams[i].ps.particleCount > 0) { anyParticles = true; break; }
 
-        Vector3 right = Vector3.Cross(Vector3.up, dir);
-        if (right.sqrMagnitude < 0.0001f) right = transform.right;
-        right.Normalize();
-        Vector3 up2 = Vector3.Cross(dir, right).normalized;
+        if (!anyParticles && !casting) ropeLive = false;
+        if (anyParticles || casting) UpdateRope(tip, targetWorld, dt);
 
         bool arrived = false;
         for (int i = 0; i < streams.Count; i++)
         {
             Stream s = streams[i];
             if (casting) EmitStream(s, tip, dt);
-            if (s.ps.particleCount > 0 && Reposition(s, tip, targetWorld, right, up2, len, dt)) arrived = true;
+            if (s.ps.particleCount > 0 && Reposition(s, Time.time)) arrived = true;
         }
 
         // the aura on the ally only shows while stream particles are actually reaching it
         if (arrived && followFX != null) followFX.Ping();
+    }
+
+    // ------------------------------------------------------------------ rope
+    private Vector3 RopeRest(Vector3 a, Vector3 b, float u, float arc)
+    {
+        return Vector3.Lerp(a, b, u) + Vector3.up * (arc * Mathf.Sin(Mathf.PI * u));
+    }
+
+    private void UpdateRope(Vector3 a, Vector3 b, float dt)
+    {
+        float arc = arcHeight * Mathf.Min(1f, Vector3.Distance(a, b) / 6f);
+
+        if (!ropeLive)
+        {
+            // a fresh stream starts exactly on its rest shape
+            for (int i = 0; i < RopePoints; i++)
+            {
+                rope[i] = RopeRest(a, b, i / (float)(RopePoints - 1), arc);
+                ropeVel[i] = Vector3.zero;
+            }
+            ropeLive = true;
+            return;
+        }
+
+        rope[0] = a;
+        for (int i = 1; i < RopePoints; i++)
+        {
+            float u = i / (float)(RopePoints - 1);
+            Vector3 rest = RopeRest(a, b, u, arc);
+            float lag = Mathf.Max(0.01f, ropeLagEnds + ropeLagMiddle * Mathf.Sin(Mathf.PI * u));
+            if (dt > 0f) rope[i] = Vector3.SmoothDamp(rope[i], rest, ref ropeVel[i], lag, Mathf.Infinity, dt);
+        }
+    }
+
+    // Catmull-Rom curve through the rope points. u = 0 (staff) .. 1 (ally)
+    private void EvalRope(float u, out Vector3 pos, out Vector3 tangent)
+    {
+        float f = Mathf.Clamp01(u) * (RopePoints - 1);
+        int i = Mathf.Min((int)f, RopePoints - 2);
+        float t = f - i;
+
+        Vector3 p0 = rope[Mathf.Max(i - 1, 0)];
+        Vector3 p1 = rope[i];
+        Vector3 p2 = rope[i + 1];
+        Vector3 p3 = rope[Mathf.Min(i + 2, RopePoints - 1)];
+
+        float t2 = t * t, t3 = t2 * t;
+        pos = 0.5f * ((2f * p1) + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3);
+        tangent = 0.5f * ((-p0 + p2) + (4f * p0 - 10f * p1 + 8f * p2 - 2f * p3) * t + (-3f * p0 + 9f * p1 - 9f * p2 + 3f * p3) * t2);
     }
 
     private void EmitStream(Stream s, Vector3 origin, float dt)
@@ -315,14 +370,13 @@ public class HealerHealVFX : MonoBehaviour
         }
     }
 
-    // Particles are placed by hand every frame: they follow the moving staff and the moving ally exactly.
-    private bool Reposition(Stream s, Vector3 a, Vector3 b, Vector3 right, Vector3 up2, float len, float dt)
+    // Particles flow along the rope curve. The rope bends smoothly, so the stream does too.
+    // Returns true when particles are reaching the ally.
+    private bool Reposition(Stream s, float time)
     {
         int n = s.ps.GetParticles(buf);
-        float time = Time.time;
-        float arc = arcHeight * Mathf.Min(1f, len / 6f);
-        float w = streamWidth / 0.35f;   // 0.35 = the width the amounts below were designed for
         bool arrived = false;
+        float w = streamWidth / 0.35f;   // 0.35 = the width the amounts were designed for
 
         for (int i = 0; i < n; i++)
         {
@@ -333,26 +387,26 @@ public class HealerHealVFX : MonoBehaviour
             if (te > 0.85f) arrived = true;
 
             float r01 = (p.randomSeed % 1000u) / 1000f;
-            float pinch = Mathf.Pow(Mathf.Sin(Mathf.PI * te), 0.7f);   // 0 at both ends: the stream starts and ends in a point
+            float pinch = Mathf.Pow(Mathf.Sin(Mathf.PI * te), 0.7f);   // 0 at both ends: starts and ends in a point
 
-            // every particle circles the center line a little (own radius + phase)
+            Vector3 pos, tan;
+            EvalRope(te, out pos, out tan);
+            if (tan.sqrMagnitude < 0.0001f) tan = transform.forward;
+            tan.Normalize();
+            Vector3 right = Vector3.Cross(Vector3.up, tan);
+            if (right.sqrMagnitude < 0.0001f) right = transform.right;
+            right.Normalize();
+            Vector3 up2 = Vector3.Cross(tan, right);
+
+            // each particle circles the rope a little (own radius + phase); the whole stream sways softly
             float radius = s.amp * w * pinch * (0.4f + 0.6f * r01);
             float angle = r01 * Mathf.PI * 2f + te * s.twist * Mathf.PI * 2f + time * swaySpeed;
+            float sway = Mathf.Sin(te * Mathf.PI * 2f - time * swaySpeed * 1.2f) * 0.2f * w * pinch;
+            float bob = Mathf.Sin(time * 2.5f + r01 * 20f) * 0.04f * pinch;
 
-            // the whole stream sways like a slow ribbon, and particles bob softly
-            float sway = Mathf.Sin(te * Mathf.PI * 2f - time * swaySpeed * 1.2f) * 0.22f * w * pinch;
-            float bob = Mathf.Sin(time * 2.5f + r01 * 20f) * 0.05f * pinch;
+            pos += right * (Mathf.Cos(angle) * radius + sway) + up2 * (Mathf.Sin(angle) * radius) + Vector3.up * bob;
 
-            Vector3 pos = Vector3.Lerp(a, b, te);
-            pos += Vector3.up * (arc * Mathf.Sin(Mathf.PI * te) + bob);
-            pos += right * (Mathf.Cos(angle) * radius + sway) + up2 * (Mathf.Sin(angle) * radius);
-
-            // each particle eases toward where it should be (stiffer near the staff, looser toward the ally),
-            // so when something moves the stream bends and follows smoothly instead of snapping
-            float sharp = followSharpness * Mathf.Lerp(2.5f, 1f, Mathf.Clamp01(te * 2f));
-            // near the end the particle locks onto the ally, so it never dies in mid air
-            sharp = Mathf.Lerp(sharp, 18f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((te - 0.7f) / 0.3f)));
-            p.position = Vector3.Lerp(p.position, pos, 1f - Mathf.Exp(-sharp * dt));
+            p.position = pos;
             p.velocity = Vector3.zero;
             if (s.kind == 2) p.rotation = r01 * 360f + t * 140f;   // "+" signs slowly turn
             buf[i] = p;
