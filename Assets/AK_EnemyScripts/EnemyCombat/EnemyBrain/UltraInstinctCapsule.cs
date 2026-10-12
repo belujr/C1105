@@ -88,6 +88,20 @@ private CharacterController charController;
     public float retreatDistance = 4.5f;
     public float retreatSpeed = 4.0f;
 
+    [Header("Token Pursuit & Pressure")]
+    [Tooltip("Request attack permission within this distance, before entering the hit corridor.")]
+    [Min(0.1f)] public float tokenRequestRange = 8f;
+    [Tooltip("Speed while holding a token and closing on the player. Player sprint defaults to 8.")]
+    [Min(0.1f)] public float tokenPursuitSpeed = 9.5f;
+    [Tooltip("Maximum scaled seconds spent closing before yielding the token to another enemy.")]
+    [Min(0.1f)] public float tokenPursuitTimeout = 5f;
+    [Tooltip("Personal recovery after a combo; other enemies can take the released token.")]
+    [Min(0f)] public float postComboCooldown = 0.65f;
+    [Min(0.02f)] public float tokenRetryInterval = 0.12f;
+
+    private float nextTokenRequestTime;
+    private float tokenPursuitDeadline;
+
     public bool IsDodging { get; private set; } = false;
 
     private Coroutine activeDodgeRoutine;
@@ -169,6 +183,7 @@ private CharacterController charController;
 
     public void TriggerHitbox()
     {
+        if (isDead || !isActiveAndEnabled || !holdsToken || activeEnemyComboRoutine == null) return;
         if (CheckIfAttackHit())
         {
             if (currentActiveEnemyAttack != null)
@@ -197,6 +212,8 @@ private CharacterController charController;
 
     private void OnEnable()
     {
+        nextTokenRequestTime = Time.time + Random.Range(0f, 0.15f);
+        tokenPursuitDeadline = 0f;
         currentHealth = maxHealth;
         IsDodging = false;
         holdsToken = false;
@@ -229,6 +246,12 @@ private CharacterController charController;
 
     private void OnDisable()
     {
+        // Component disabling does not automatically stop its coroutines.
+        StopAllCoroutines();
+        if (GlobalTokenManager.Instance != null)
+            GlobalTokenManager.Instance.ReleaseAllTokensForEnemy(transform);
+        tokenPursuitDeadline = 0f;
+        currentActiveEnemyAttack = null;
         currentHealth = maxHealth;
         IsDodging = false;
         holdsToken = false;
@@ -282,6 +305,7 @@ private CharacterController charController;
 
     private void Update()
     {
+        if (isDead || Time.deltaTime <= 0f) return;
         if (player == null)
         {
             FindPlayerReference();
@@ -445,9 +469,66 @@ private CharacterController charController;
 
    private void HandleMeleeMovement(float distToPlayer, Vector3 currentPos, Vector3 playerPos)
     {
+        if (charController == null || !charController.enabled) return;
         Vector3 dirToPlayer = playerPos - currentPos;
         dirToPlayer.y = 0f;
+        distToPlayer = dirToPlayer.magnitude;
         dirToPlayer.Normalize();
+
+        // Active combos keep their original animation, hit events and lunge timing.
+        if (activeEnemyComboRoutine != null) return;
+
+        // All locomotion states may request permission; the orbit radius no longer
+        // prevents enemies from reaching the smaller attack corridor.
+        if (!holdsToken && currentMeleeState != MeleeBehaviorState.Retreat &&
+            Time.time >= nextTokenRequestTime &&
+            distToPlayer <= Mathf.Max(tokenRequestRange, playerDodgeRange))
+        {
+            nextTokenRequestTime = Time.time + Mathf.Max(0.02f, tokenRetryInterval);
+            if (GlobalTokenManager.Instance != null &&
+                GlobalTokenManager.Instance.RequestToken(cachedTransform, tokenType))
+            {
+                holdsToken = true;
+                tokenPursuitDeadline = Time.time + Mathf.Max(0.1f, tokenPursuitTimeout);
+                currentMeleeState = MeleeBehaviorState.AttackLunge;
+            }
+        }
+
+        if (holdsToken)
+        {
+            if (GlobalTokenManager.Instance == null || Time.time >= tokenPursuitDeadline)
+            {
+                ReleasePursuitToken();
+                nextTokenRequestTime = Time.time + Mathf.Max(0.25f, postComboCooldown);
+                currentMeleeState = MeleeBehaviorState.Approach;
+            }
+            else if (IsPlayerInAttackCorridor())
+            {
+                currentMeleeState = MeleeBehaviorState.AttackLunge;
+                activeEnemyComboRoutine = StartCoroutine(PerformEnemyComboRoutine());
+                return;
+            }
+            else
+            {
+                // Separation cannot cancel forward pursuit. Keep a small lateral
+                // correction so a token holder can work around nearby allies.
+                Vector3 pursuitSeparation = CalculateSeparationForce(currentPos);
+                pursuitSeparation -= dirToPlayer * Vector3.Dot(pursuitSeparation, dirToPlayer);
+                pursuitSeparation = Vector3.ClampMagnitude(pursuitSeparation, 1.5f);
+                float speed = Mathf.Max(randomizedMoveSpeed, tokenPursuitSpeed);
+                float forwardSpeed = distToPlayer > Mathf.Max(0.1f, playerDodgeRange * 0.8f) ? speed : 0f;
+                Vector3 pursuitMove = (dirToPlayer * forwardSpeed + pursuitSeparation) * Time.deltaTime;
+                pursuitMove.y = -9.81f * Time.deltaTime;
+                charController.Move(pursuitMove);
+                if (animProfile != null)
+                    UpdateLocomotionAnimation("TokenPursuit", animProfile.walkClip, animProfile.walkTransitionDuration);
+                return;
+            }
+        }
+
+        // A hit or dodge may have released permission before the combo started.
+        if (currentMeleeState == MeleeBehaviorState.AttackLunge)
+            currentMeleeState = MeleeBehaviorState.Approach;
 
         Vector3 rightDir = Vector3.Cross(Vector3.up, dirToPlayer).normalized;
         Vector3 separation = CalculateSeparationForce(currentPos);
@@ -514,16 +595,6 @@ private CharacterController charController;
                     break;
                 }
 
-                if (IsPlayerInAttackCorridor() && !holdsToken)
-                {
-                    if (GlobalTokenManager.Instance != null && GlobalTokenManager.Instance.RequestToken(cachedTransform, tokenType))
-                    {
-                        holdsToken = true;
-                        currentMeleeState = MeleeBehaviorState.AttackLunge;
-                        break;
-                    }
-                }
-
                 waitTimer -= deltaTime;
 
                 float waitDistError = distToPlayer - stoppingDistance;
@@ -549,10 +620,7 @@ private CharacterController charController;
                 break;
 
             case MeleeBehaviorState.AttackLunge:
-                if (activeEnemyComboRoutine == null)
-                {
-                    activeEnemyComboRoutine = StartCoroutine(PerformEnemyComboRoutine());
-                }
+                currentMeleeState = MeleeBehaviorState.Approach;
                 break;
 
             case MeleeBehaviorState.Retreat:
@@ -576,6 +644,14 @@ private CharacterController charController;
                 }
                 break;
         }
+    }
+
+    private void ReleasePursuitToken()
+    {
+        if (holdsToken && GlobalTokenManager.Instance != null)
+            GlobalTokenManager.Instance.ReleaseToken(cachedTransform, tokenType);
+        holdsToken = false;
+        tokenPursuitDeadline = 0f;
     }
 
     private bool IsPlayerInAttackCorridor()
@@ -737,6 +813,10 @@ private CharacterController charController;
                 holdsToken = false;
             }
 
+            holdsToken = false;
+            tokenPursuitDeadline = 0f;
+            currentActiveEnemyAttack = null;
+            nextTokenRequestTime = Time.time + Mathf.Max(0f, postComboCooldown);
             activeEnemyComboRoutine = null;
             currentMeleeState = MeleeBehaviorState.ArcStrafe;
             arcTimer = Random.Range(1.0f, 2.0f);

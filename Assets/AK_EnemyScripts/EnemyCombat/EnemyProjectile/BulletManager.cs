@@ -29,7 +29,7 @@ public class BulletManager : MonoBehaviour
     }
 
     private BulletNode[] bullets;
-    private Dictionary<int, Queue<BulletNode>> visualPools = new Dictionary<int, Queue<BulletNode>>();
+    private Dictionary<int, Queue<GameObject>> visualPools = new Dictionary<int, Queue<GameObject>>();
     
     private void Awake()
     {
@@ -102,13 +102,12 @@ public class BulletManager : MonoBehaviour
         if (node == null) return; // Cap reached, graceful degradation
 
         // 2. Fetch or Instantiate Visual (Warm-up phase creates, Runtime reuses)
-        if (!visualPools.ContainsKey(pId)) visualPools[pId] = new Queue<BulletNode>();
+        if (!visualPools.ContainsKey(pId)) visualPools[pId] = new Queue<GameObject>();
         
         if (visualPools[pId].Count > 0)
         {
-            BulletNode pooled = visualPools[pId].Dequeue();
-            node.go = pooled.go;
-            node.tr = pooled.tr;
+            node.go = visualPools[pId].Dequeue();
+            node.tr = node.go.transform;
         }
         else
         {
@@ -219,8 +218,13 @@ public class BulletManager : MonoBehaviour
 
     private void RetireBullet(BulletNode b)
     {
+        if (!b.active) return;
+
         b.active = false;
         b.go.SetActive(false);
-        visualPools[b.prefabId].Enqueue(b); 
+        // Pool the visual itself, never the mutable logic slot that owned it.
+        visualPools[b.prefabId].Enqueue(b.go);
+        b.go = null;
+        b.tr = null; 
     }
 }
