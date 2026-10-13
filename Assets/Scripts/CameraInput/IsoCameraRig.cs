@@ -58,9 +58,8 @@ public class IsoCameraRig : MonoBehaviour
         pointsOfInterest.Remove(poi);
     }
 
-    private void LateUpdate()
+    private void EvaluateView(float deltaTime, out Vector3 desired, out Vector3 lookPosition)
     {
-        if (target == null) return;
 
         // Clean up inactive/destroyed POIs
         pointsOfInterest.RemoveAll(p => p == null || !p.gameObject.activeInHierarchy);
@@ -75,8 +74,8 @@ public class IsoCameraRig : MonoBehaviour
         }
 
         // Smoothly ease the pan weight and zoom so it feels cinematic
-        currentPoiWeight = Mathf.Lerp(currentPoiWeight, targetPoiWeight, poiTransitionSpeed * Time.unscaledDeltaTime);
-        currentZoom = Mathf.Lerp(currentZoom, targetZoom, poiTransitionSpeed * Time.unscaledDeltaTime);
+        currentPoiWeight = Mathf.Lerp(currentPoiWeight, targetPoiWeight, poiTransitionSpeed * deltaTime);
+        currentZoom = Mathf.Lerp(currentZoom, targetZoom, poiTransitionSpeed * deltaTime);
 
         Vector3 baseTargetPos = target.position;
 
@@ -95,10 +94,41 @@ public class IsoCameraRig : MonoBehaviour
             baseTargetPos = Vector3.Lerp(target.position, lastKnownPoiCenter, currentPoiWeight);
         }
 
-        Vector3 desired = baseTargetPos + (offset * currentZoom);
-        transform.position = Vector3.Lerp(transform.position, desired, followSpeed * Time.unscaledDeltaTime);
+        desired = baseTargetPos + (offset * currentZoom);
 
-        Vector3 lookPosition = baseTargetPos + Vector3.up * 1.5f;
+        lookPosition = baseTargetPos + Vector3.up * 1.5f;
+
+    }
+
+    // Transition and gameplay share the same POI pan and zoom calculation.
+    public bool TryGetTransitionPose(float deltaTime, out Vector3 position, out Quaternion rotation)
+    {
+        position = transform.position;
+        rotation = transform.rotation;
+        if (target == null)
+        {
+            Debug.LogWarning("IsoCameraRig: Missing field 'target' during camera transition.", this);
+            return false;
+        }
+        ClearTransitionShake();
+        EvaluateView(deltaTime, out position, out Vector3 lookPosition);
+        Vector3 direction = lookPosition - position;
+        if (direction.sqrMagnitude > 0.000001f)
+            rotation = Quaternion.LookRotation(direction, Vector3.up);
+        return true;
+    }
+
+    public void ClearTransitionShake()
+    {
+        shakeTimer = 0f;
+        shakeIntensity = 0f;
+    }
+
+    private void LateUpdate()
+    {
+        if (target == null) return;
+        EvaluateView(Time.unscaledDeltaTime, out Vector3 desired, out Vector3 lookPosition);
+        transform.position = Vector3.Lerp(transform.position, desired, followSpeed * Time.unscaledDeltaTime);
 
         if (shakeTimer > 0)
         {
