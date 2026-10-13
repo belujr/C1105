@@ -60,20 +60,34 @@ public class HubNPC : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        // Make the interact prompt billboard and face the main camera every frame when active
+        if (interactPromptUI != null && interactPromptUI.activeSelf && Camera.main != null)
+        {
+            Transform camTransform = Camera.main.transform;
+            interactPromptUI.transform.LookAt(
+                interactPromptUI.transform.position + camTransform.rotation * Vector3.forward,
+                camTransform.rotation * Vector3.up
+            );
+        }
+    }
+
     private void Interact()
-{
-    // If this NPC is Milo and he has already arrived at Master Ren, trigger his cyclical single-line dialogue
-    if (npcRole == NPCType.Milo && MiloController.Instance != null && MiloController.Instance.isAtRen)
     {
-        MiloController.Instance.HandleMiloInteraction();
+        // If this NPC is Milo and he has already arrived at Master Ren, trigger his cyclical single-line dialogue
+        if (npcRole == NPCType.Milo && MiloController.Instance != null && MiloController.Instance.isAtRen)
+        {
+            MiloController.Instance.HandleMiloInteraction();
+        }
+        else
+        {
+            HubNarrativeManager.Instance.ProcessNPCInteraction(this);
+        }
+        
+        onInteracted?.Invoke();
     }
-    else
-    {
-        HubNarrativeManager.Instance.ProcessNPCInteraction(this);
-    }
-    
-    onInteracted?.Invoke();
-}
+
     public void PlayFallbackDialogue()
     {
         if (defaultAmbientDialogue != null)

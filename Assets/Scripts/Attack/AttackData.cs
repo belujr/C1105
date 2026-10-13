@@ -8,6 +8,10 @@ public class AttackData : ScriptableObject
     [TextArea(3, 5)] public string description = "A quick jab that interrupts weak enemy attacks.";
     public Sprite attackIcon;
 
+    [Header("Soul Economy")]
+    [Tooltip("Soul energy required to unlock this attack in the skill tree shop.")]
+    public int soulCost = 50;
+
     [Header("Stat Levels (1 to 5)")]
     [Range(1, 5)] public int damageLevel = 3;
     [Range(1, 5)] public int knockbackLevel = 2;
@@ -15,7 +19,7 @@ public class AttackData : ScriptableObject
 
     [Header("Identity")]
     [Tooltip("Unique ID used to match hit reactions or enemy custom dodges.")]
-    public int attackID = 0; // <--- ADD THIS
+    public int attackID = 0;
 
     [Header("Animation & Lunge")]
     public string animationTriggerName = "Attack";
@@ -23,10 +27,10 @@ public class AttackData : ScriptableObject
     public float forwardLungeSpeed = 2.0f;
 
     [Tooltip("How fast the character blends into this attack (e.g. 0.05 for snappy attacks).")]
-    public float transitionDuration = 0.05f; // <--- ADD THIS
+    public float transitionDuration = 0.05f;
 
     [Tooltip("For Hold Attacks: At what second should the animation freeze? (e.g., 0.3)")]
-    public float chargePauseTime = 0.3f; // <--- ADD THIS LINE
+    public float chargePauseTime = 0.3f;
 
     [Header("Single Target Stats")]
     public int damage = 10;

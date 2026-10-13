@@ -15,6 +15,7 @@ MonoBehaviour:
   attackName: Compass Kick
   description: Compass Kick
   attackIcon: {fileID: 21300000, guid: 3ddaefe7ea28167428f160679209cda2, type: 3}
+  soulCost: 100
   damageLevel: 3
   knockbackLevel: 2
   rangeLevel: 4
@@ -32,6 +33,7 @@ MonoBehaviour:
   coneAngle: 120
   maxEnemiesHit: 4
   verticalLift: 0
+  cutsGrass: 1
   hitStopDuration: 0.02
   cameraShakeIntensity: 0.2
   cameraShakeDuration: 0.1

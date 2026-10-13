@@ -15,6 +15,7 @@ MonoBehaviour:
   attackName: Punch 2
   description: Punch 2
   attackIcon: {fileID: 21300000, guid: a4032afbe77935e4aa80f69c20fd2189, type: 3}
+  soulCost: 0
   damageLevel: 2
   knockbackLevel: 3
   rangeLevel: 3
@@ -32,6 +33,7 @@ MonoBehaviour:
   coneAngle: 120
   maxEnemiesHit: 4
   verticalLift: 0
+  cutsGrass: 1
   hitStopDuration: 0.05
   cameraShakeIntensity: 0.1
   cameraShakeDuration: 0.08
