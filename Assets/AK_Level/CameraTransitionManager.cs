@@ -6,6 +6,26 @@ public class CameraTransitionManager : MonoBehaviour
 {
     public enum CameraState { Title, Transitioning, Gameplay }
 
+    // One-shot intent set immediately before a death-driven scene load.
+    private static string requestedGameplayScene;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetEntryRequest()
+    {
+        // Also reset between Editor Play sessions when domain reload is disabled.
+        requestedGameplayScene = null;
+    }
+
+    public static void RequestGameplayEntry(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogWarning("CameraTransitionManager: Missing 'sceneName' in RequestGameplayEntry.");
+            return;
+        }
+        requestedGameplayScene = System.IO.Path.GetFileNameWithoutExtension(sceneName);
+    }
+
     [Header("Camera References")]
     [SerializeField, Tooltip("The sole rendering camera.")] private Camera gameplayCamera;
     [SerializeField, Tooltip("Disabled camera storing the opening shot.")] private Camera titleCamera;
@@ -27,11 +47,22 @@ public class CameraTransitionManager : MonoBehaviour
     [SerializeField, Tooltip("Blend from title FOV to the original Main Camera FOV.")]
     private AnimationCurve fovCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Title UI")]
+    [SerializeField, Tooltip("CanvasGroup on TitleMenu, not the whole Canvas.")] private CanvasGroup titleMenu;
+    [SerializeField, Tooltip("Settings placeholder panel, a sibling of TitleMenu.")] private GameObject settingsPanel;
+    [SerializeField, Min(0f), Tooltip("Unscaled menu fade duration before the camera hold/travel.")] private float menuFadeDuration = 0.6f;
+
     [Header("Runtime Status")]
     [SerializeField] private CameraState currentState = CameraState.Title;
     public CameraState CurrentState => currentState;
     private bool ready, handingOff;
     private bool playerBound;
+    private bool skipTitleStartup;
+    private int originalCullingMask;
+    private CameraClearFlags originalClearFlags;
+    private Color originalBackgroundColor;
+    private bool fadingMenu;
+    private float fadeElapsed, fadeStartAlpha;
     private bool waitingWarningLogged;
     private float waitingTime;
     private float gameplayFov, elapsed, startFov;
@@ -47,6 +78,8 @@ public class CameraTransitionManager : MonoBehaviour
         valid &= CheckReference(travelCurve, nameof(travelCurve));
         valid &= CheckReference(rotationCurve, nameof(rotationCurve));
         valid &= CheckReference(fovCurve, nameof(fovCurve));
+        valid &= CheckReference(titleMenu, nameof(titleMenu));
+        valid &= CheckReference(settingsPanel, nameof(settingsPanel));
         if (!valid) { enabled = false; return; }
         if (gameplayCamera == titleCamera || gameplayRig.transform != gameplayCamera.transform ||
             gameplayCamera.orthographic || titleCamera.orthographic)
@@ -56,22 +89,79 @@ public class CameraTransitionManager : MonoBehaviour
             enabled = false;
             return;
         }
+        if (settingsPanel.transform.IsChildOf(titleMenu.transform) ||
+            transform.IsChildOf(titleMenu.transform) || transform.IsChildOf(settingsPanel.transform))
+        {
+            Debug.LogWarning("CameraTransitionManager: 'settingsPanel' must be outside 'titleMenu'; " +
+                "keep the manager outside both UI roots.", this);
+            enabled = false;
+            return;
+        }
         // Ignore Inspector prefab references. Bind only after the real player spawns.
         playerController = null;
         playerInput = null;
         gameplayFov = gameplayCamera.fieldOfView;
+        originalCullingMask = gameplayCamera.cullingMask;
+        originalClearFlags = gameplayCamera.clearFlags;
+        originalBackgroundColor = gameplayCamera.backgroundColor;
+        skipTitleStartup = requestedGameplayScene == gameObject.scene.name;
+        if (skipTitleStartup) requestedGameplayScene = null;
         ready = true;
-        ApplyTitleState();
+        if (skipTitleStartup) PrepareDirectGameplayEntry();
+        else ApplyTitleState();
     }
 
-    private void Start() { if (ready) ApplyTitleState(); }
+    private void Start()
+    {
+        if (ready && !skipTitleStartup) ApplyTitleState();
+    }
+
+    private void PrepareDirectGameplayEntry()
+    {
+        gameplayRig.enabled = false;
+        titleCamera.enabled = false;
+        titleMenu.interactable = false;
+        titleMenu.blocksRaycasts = false;
+        titleMenu.alpha = 0f;
+        titleMenu.gameObject.SetActive(false);
+        settingsPanel.SetActive(false);
+        // Keep Camera.main available to the spawned PlayerController.Awake.
+        // Render black until the live player exists; never display the title pose.
+        gameplayCamera.enabled = true;
+        gameplayCamera.cullingMask = 0;
+        gameplayCamera.clearFlags = CameraClearFlags.SolidColor;
+        gameplayCamera.backgroundColor = Color.black;
+        currentState = CameraState.Transitioning;
+        handingOff = true;
+    }
+
+    private void EnterGameplayDirectly()
+    {
+        if (!gameplayRig.TryGetTransitionPose(0f, out Vector3 position, out Quaternion rotation))
+        {
+            enabled = false;
+            return;
+        }
+        gameplayCamera.transform.SetPositionAndRotation(position, rotation);
+        gameplayCamera.fieldOfView = gameplayFov;
+        gameplayCamera.cullingMask = originalCullingMask;
+        gameplayCamera.clearFlags = originalClearFlags;
+        gameplayCamera.backgroundColor = originalBackgroundColor;
+        skipTitleStartup = false;
+        Debug.Log("CameraTransitionManager: Death return — skipping title and camera transition.", this);
+        StartCoroutine(HandOff());
+    }
 
     private void Update()
     {
-        if (!ready || playerBound || currentState != CameraState.Title) return;
+        if (!ready || playerBound || (currentState != CameraState.Title && !skipTitleStartup)) return;
         // HubNarrativeManager assigns the spawned player to this rig in Start.
         // Our early Update locks that instance before its first input/logic Update.
-        if (TryBindSpawnedPlayer(false)) return;
+        if (TryBindSpawnedPlayer(false))
+        {
+            if (skipTitleStartup) EnterGameplayDirectly();
+            return;
+        }
         waitingTime += Time.unscaledDeltaTime;
         if (waitingTime >= 10f && !waitingWarningLogged)
         {
@@ -132,6 +222,12 @@ public class CameraTransitionManager : MonoBehaviour
         gameplayCamera.fieldOfView = titleCamera.fieldOfView;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        titleMenu.gameObject.SetActive(true);
+        titleMenu.alpha = 1f;
+        titleMenu.interactable = true;
+        titleMenu.blocksRaycasts = true;
+        settingsPanel.SetActive(false);
+        fadingMenu = false;
         currentState = CameraState.Title;
     }
 
@@ -156,20 +252,73 @@ public class CameraTransitionManager : MonoBehaviour
         valid &= CheckReference(controlPoint1, nameof(controlPoint1));
         valid &= CheckReference(controlPoint2, nameof(controlPoint2));
         valid &= TryBindSpawnedPlayer(true);
+        valid &= CheckReference(titleMenu, nameof(titleMenu));
+        valid &= CheckReference(settingsPanel, nameof(settingsPanel));
         if (!valid) return;
         startPosition = gameplayCamera.transform.position;
         startRotation = gameplayCamera.transform.rotation;
         startFov = gameplayCamera.fieldOfView;
         gameplayRig.ClearTransitionShake();
+        settingsPanel.SetActive(false);
+        titleMenu.interactable = false;
+        titleMenu.blocksRaycasts = false;
+        fadeStartAlpha = titleMenu.alpha;
+        fadeElapsed = 0f;
+        fadingMenu = true;
         elapsed = 0f;
         handingOff = false;
         currentState = CameraState.Transitioning;
         Debug.Log("CameraTransitionManager: Transitioning.", this);
     }
 
+    public void OpenSettings()
+    {
+        if (!ready || currentState != CameraState.Title) return;
+        if (!CheckReference(titleMenu, nameof(titleMenu)) ||
+            !CheckReference(settingsPanel, nameof(settingsPanel))) return;
+        titleMenu.gameObject.SetActive(false);
+        settingsPanel.SetActive(true);
+    }
+
+    public void CloseSettings()
+    {
+        if (!ready || currentState != CameraState.Title) return;
+        if (!CheckReference(titleMenu, nameof(titleMenu)) ||
+            !CheckReference(settingsPanel, nameof(settingsPanel))) return;
+        settingsPanel.SetActive(false);
+        titleMenu.gameObject.SetActive(true);
+        titleMenu.alpha = 1f;
+        titleMenu.interactable = true;
+        titleMenu.blocksRaycasts = true;
+    }
+
+    public void QuitGame()
+    {
+        if (!ready || currentState != CameraState.Title) return;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
     private void LateUpdate()
     {
         if (!ready || currentState != CameraState.Transitioning || handingOff) return;
+        if (fadingMenu)
+        {
+            if (!CheckReference(titleMenu, nameof(titleMenu))) { enabled = false; return; }
+            fadeElapsed += Time.unscaledDeltaTime;
+            float fade = menuFadeDuration <= 0f ? 1f : Mathf.Clamp01(fadeElapsed / menuFadeDuration);
+            float smoothFade = fade * fade * (3f - 2f * fade);
+            titleMenu.alpha = Mathf.Lerp(fadeStartAlpha, 0f, smoothFade);
+            if (fade < 1f) return;
+            titleMenu.alpha = 0f;
+            titleMenu.gameObject.SetActive(false);
+            fadingMenu = false;
+            // The existing hold and camera journey start after the fade finishes.
+            return;
+        }
         bool valid = true;
         valid &= CheckReference(gameplayCamera, nameof(gameplayCamera));
         valid &= CheckReference(gameplayRig, nameof(gameplayRig));

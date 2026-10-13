@@ -857,7 +857,11 @@ public class PlayerDeathFX : MonoBehaviour
         {
             hubLoading = true;
             RestoreTime();   // the next scene must not start in slow motion
-            if (Application.CanStreamedLevelBeLoaded(hubSceneName)) SceneManager.LoadScene(hubSceneName);
+            if (Application.CanStreamedLevelBeLoaded(hubSceneName))
+            {
+                CameraTransitionManager.RequestGameplayEntry(hubSceneName);
+                SceneManager.LoadScene(hubSceneName);
+            }
             else Debug.LogError("[PlayerDeathFX] Scene '" + hubSceneName + "' is not in Build Settings, so the hub cannot load.", this);
         }
     }
