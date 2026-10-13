@@ -40,6 +40,9 @@ public class MinionShotVFX : MonoBehaviour
     public Shader zoneShader;
     [Tooltip("Set this to your ground layer.")]
     public LayerMask groundMask = ~0;
+    [Tooltip("Small stars rise from the danger zone while the minion charges, and burst when the aim locks.")]
+    public bool zoneDust = true;
+    public float zoneDustRate = 45f;
 
     [Header("Telegraph (while it aims)")]
     public float orbSize = 0.7f;
@@ -54,8 +57,10 @@ public class MinionShotVFX : MonoBehaviour
     public int muzzleSparks = 18;
     [Tooltip("Half angle of the cone of extra streaks (degrees).")]
     public float muzzleCone = 35f;
-    public float ringSize = 1f;
-    public float flashSize = 1.2f;
+    [Tooltip("Size of the ring at the muzzle.")]
+    public float muzzleRingSize = 0.9f;
+    [Tooltip("Size of the flash at the muzzle.")]
+    public float muzzleFlashSize = 1f;
 
     private const int MaxDirs = 24;   // a pattern with more bullets uses a sample of its directions for the muzzle streaks
 
@@ -79,6 +84,8 @@ public class MinionShotVFX : MonoBehaviour
     private BulletPattern zoneBuiltFor;
     private bool zoneBuilt;
     private bool dirty;
+    private ParticleSystem dustPS;
+    private float lockStart;
 
     // ------------------------------------------------------------------ API (called by RangedMinionBrain)
     /// <param name="muzzle">The fire point (or the minion itself if there is none).</param>
@@ -128,6 +135,8 @@ public class MinionShotVFX : MonoBehaviour
     {
         SetAim(direction);
         locked = true;
+        lockStart = Time.time;
+        if (dustPS != null && zoneMr != null && zoneMr.enabled) dustPS.Emit(30);   // a burst of stars over the zone
     }
 
     /// <summary>The shot leaves: muzzle flash, ring, shards along every bullet direction.</summary>
@@ -140,25 +149,49 @@ public class MinionShotVFX : MonoBehaviour
         StopCharge();
         if (hover != null) hover.Surge();
 
-        EmitOne(flashPS, spawnPoint, Vector3.zero, 0.15f, flashSize, coreColor);
-        EmitOne(ringPS, spawnPoint, Vector3.zero, 0.25f, ringSize, mainColor);
+        // The bullets may start lower than the minion (they start at the player's height). A bright streak falls from the
+        // minion's muzzle to that point, so the shot looks like it is thrown down into the lane.
+        Vector3 from = Origin();
+        float drop = Vector3.Distance(from, spawnPoint);
+        if (drop > 0.5f)
+        {
+            Vector3 dn = (spawnPoint - from) / drop;
+            for (int i = 0; i < 3; i++)
+                EmitOne(burstPS, from + dn * HalfLength(0.12f, 45f), dn * 45f, drop / 45f, 0.12f, i == 0 ? coreColor : mainColor);
+        }
 
-        // shards along every bullet direction of the pattern
+        EmitOne(flashPS, spawnPoint, Vector3.zero, 0.15f, muzzleFlashSize, coreColor);
+        EmitOne(ringPS, spawnPoint, Vector3.zero, 0.25f, muzzleRingSize, mainColor);
+
+        // Shards along every bullet direction of the pattern. A stretched particle is centered on its position and reaches
+        // as far backward as forward, so each one is started half its length AHEAD of the muzzle: nothing sticks out behind it.
         int dirs = ComputeDirections(aimDir);
         for (int i = 0; i < dirs; i++)
         {
             if (waveBuf[i] != 0) continue;
-            EmitOne(burstPS, spawnPoint, dirBuf[i] * Random.Range(8f, 14f), Random.Range(0.2f, 0.35f),
-                    Random.Range(0.05f, 0.09f), Random.value < 0.5f ? coreColor : mainColor);
+            float speed = Random.Range(8f, 14f);
+            float size = Random.Range(0.05f, 0.09f);
+            EmitOne(burstPS, spawnPoint + dirBuf[i] * HalfLength(size, speed), dirBuf[i] * speed, Random.Range(0.2f, 0.35f),
+                    size, Random.value < 0.5f ? coreColor : mainColor);
         }
 
         for (int i = 0; i < muzzleSparks; i++)
         {
             Vector3 dir = Vector3.Slerp(aimDir, Random.onUnitSphere, Mathf.Clamp01(muzzleCone / 180f) * Random.value).normalized;
             float r = Random.value;
-            EmitOne(burstPS, spawnPoint, dir * Random.Range(4f, 10f), Random.Range(0.2f, 0.45f),
-                    Random.Range(0.04f, 0.09f), r < 0.45f ? mainColor : (r < 0.8f ? coreColor : accentColor));
+            float speed = Random.Range(4f, 10f);
+            float size = Random.Range(0.04f, 0.09f);
+            EmitOne(burstPS, spawnPoint + dir * HalfLength(size, speed), dir * speed, Random.Range(0.2f, 0.45f),
+                    size, r < 0.45f ? mainColor : (r < 0.8f ? coreColor : accentColor));
         }
+    }
+
+    // how far a stretched shard reaches to each side of its position
+    private const float BurstLengthScale = 6f;
+    private const float BurstVelocityScale = 0.05f;
+    private static float HalfLength(float size, float speed)
+    {
+        return 0.5f * (size * BurstLengthScale + speed * BurstVelocityScale);
     }
 
     /// <summary>The attack was interrupted: it fizzles out.</summary>
@@ -207,7 +240,7 @@ public class MinionShotVFX : MonoBehaviour
         if (zoneMesh != null) Destroy(zoneMesh);
         zoneBuilt = false;
         zoneBuiltFor = null;
-        zoneMesh = null; zoneMat = null; zoneMr = null; zoneMf = null; zoneTf = null;
+        zoneMesh = null; zoneMat = null; zoneMr = null; zoneMf = null; zoneTf = null; dustPS = null;
         built = false;
         EnsureBuilt();
     }
@@ -403,6 +436,11 @@ public class MinionShotVFX : MonoBehaviour
         zoneMesh.SetTriangles(tris, 0);
         zoneMesh.bounds = new Bounds(Vector3.zero, new Vector3(100f, 10f, 100f));
         zoneMf.sharedMesh = zoneMesh;
+        if (dustPS != null)
+        {
+            ParticleSystem.ShapeModule dsh = dustPS.shape;
+            dsh.mesh = zoneMesh;
+        }
     }
 
     // ------------------------------------------------------------------ build
@@ -458,9 +496,9 @@ public class MinionShotVFX : MonoBehaviour
         burstPS = HealVFXAssets.MakeSystem(anchor, "ShotBurst", dotMat, 150, true);
         ParticleSystemRenderer br = burstPS.GetComponent<ParticleSystemRenderer>();
         br.renderMode = ParticleSystemRenderMode.Stretch;
-        br.velocityScale = 0.05f;
-        br.lengthScale = 6f;
-        HealVFXAssets.FadeInOut(burstPS, 0.05f, 0.5f, 1f);
+        br.velocityScale = BurstVelocityScale;
+        br.lengthScale = BurstLengthScale;
+        HealVFXAssets.FadeInOut(burstPS, 0.3f, 0.6f, 1f);   // fades in, so the first frame is never a hard white burst
         HealVFXAssets.SizeCurve(burstPS, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.2f)));
 
         ringPS = HealVFXAssets.MakeSystem(anchor, "ShotRing", ringMat, 4, true);   // faces the camera
@@ -489,6 +527,32 @@ public class MinionShotVFX : MonoBehaviour
             zoneMr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
             zoneMr.enabled = false;
             HealVFXAssets.ProtectFromHitFX(gameObject, zoneMr);
+
+            // small stars that rise from the whole surface of the zone (the mesh is the emitter)
+            if (zoneDust)
+            {
+                Material starMat = HealVFXAssets.CreateMaterial(HealVFXAssets.BulletStar, brightness);
+                dustPS = HealVFXAssets.MakeSystem(zoneTf, "ZoneDust", starMat, 200, true);
+                ParticleSystem.MainModule dm = dustPS.main;
+                dm.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.1f);
+                dm.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
+                dm.startColor = new ParticleSystem.MinMaxGradient(mainColor, coreColor);
+                ParticleSystem.ShapeModule dsh = dustPS.shape;
+                dsh.enabled = true;
+                dsh.shapeType = ParticleSystemShapeType.Mesh;
+                dsh.meshShapeType = ParticleSystemMeshShapeType.Triangle;
+                ParticleSystem.VelocityOverLifetimeModule dv = dustPS.velocityOverLifetime;
+                dv.enabled = true;
+                dv.space = ParticleSystemSimulationSpace.World;
+                dv.x = new ParticleSystem.MinMaxCurve(0f, 0f);
+                dv.y = new ParticleSystem.MinMaxCurve(0.4f, 1f);
+                dv.z = new ParticleSystem.MinMaxCurve(0f, 0f);
+                ParticleSystem.RotationOverLifetimeModule dr = dustPS.rotationOverLifetime;
+                dr.enabled = true;
+                dr.z = new ParticleSystem.MinMaxCurve(-2f, 2f);
+                HealVFXAssets.FadeInOut(dustPS, 0.15f, 0.5f, 1f);
+                HealVFXAssets.SizeCurve(dustPS, new AnimationCurve(new Keyframe(0f, 0.3f), new Keyframe(0.3f, 1f), new Keyframe(1f, 0f)));
+            }
         }
     }
 
@@ -536,6 +600,7 @@ public class MinionShotVFX : MonoBehaviour
         if (!show)
         {
             if (zoneMr.enabled) zoneMr.enabled = false;
+            if (dustPS != null) HealVFXAssets.SetRate(dustPS, 0f);
             return;
         }
 
@@ -559,5 +624,9 @@ public class MinionShotVFX : MonoBehaviour
         zoneMat.SetFloat("_Progress", flash ? 1f : p);
         zoneMat.SetFloat("_Lock", lockBlend);
         zoneMat.SetFloat("_Alpha", alpha);
+
+        // a wave races across the zone when the aim locks; stars rise from it while the minion charges
+        zoneMat.SetFloat("_LockT", locked ? Mathf.Clamp01((Time.time - lockStart) / 0.35f) : (flash ? 1f : 0f));
+        if (dustPS != null) HealVFXAssets.SetRate(dustPS, zoneDust && telegraphing ? zoneDustRate * (0.3f + 0.7f * p) : 0f);
     }
 }

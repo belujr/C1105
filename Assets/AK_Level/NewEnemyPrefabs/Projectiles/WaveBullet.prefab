@@ -352,11 +352,12 @@ MonoBehaviour:
   matchHitbox: 1
   hitDiameter: 1
   shardLength: 1.2
-  shardThickness: 0.5
+  shardThickness: 0.15
   cometLength: 1.6
   roundSize: 1.2
   spinSpeed: 120
-  pulse: 0.12
+  pulse: 0.05
+  alignOnScreen: 1
   bodyColor: {r: 0.62, g: 0.58, b: 1, a: 1}
   streakColor: {r: 0.35, g: 0.6, b: 1, a: 1}
   glintColor: {r: 0.92, g: 0.96, b: 1, a: 1}
@@ -366,15 +367,16 @@ MonoBehaviour:
   homingColor: {r: 0.7, g: 0.35, b: 1, a: 1}
   pierceColor: {r: 1, g: 0.95, b: 0.6, a: 1}
   showStreaks: 1
-  streakCount: 3
-  streakTime: 0.5
+  streakCount: 4
+  streakTime: 2
   streakWidth: 0.09
   streakSpread: 0.14
-  wobble: 1
+  wobble: 0.12
+  fanOutTime: 0.45
   wobbleSpeed: 9
   maxBulletsWithStreaks: 120
   sparkles: 1
-  sparklesPerSecond: 200
+  sparklesPerSecond: 500
   tipFlares: 1
   popOnEnd: 1
   popSize: 1

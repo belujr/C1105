@@ -33,11 +33,22 @@ public class MinionHoverVFX : MonoBehaviour
     [Tooltip("How far below the minion the ground is searched (world units).")]
     public float groundSearchDistance = 15f;
 
+    [Tooltip("Draws the ring over EVERYTHING, also over trees and walls. Off = the ring is hidden behind objects, like the enemy itself. The grass under the ring is cleared, so the ring is visible without this.")]
+    public bool ringIgnoreDepth = false;
+    [Tooltip("Optional. Drag the VFX_GroundOverlay shader here so it is always included in builds. Empty = it is found by name.")]
+    public Shader overlayShader;
+
     [Header("Clearing the grass under the ring")]
     [Tooltip("Needs the HealAuraGrassMask shader. The grass is cleared so the ring can be seen.")]
     public bool clearGrass = true;
     [Tooltip("Radius of the cleared patch (world units). It does not shrink when the minion floats higher, and it should be larger than the ring: the grass mask is not very sharp.")]
     public float clearRadius = 2f;
+
+    [Header("Debug (to find out why the grass is not cleared)")]
+    [Tooltip("Shows a red disc exactly where the grass is supposed to be cleared. If the disc is under the minion but the grass stays, the grass mask is not receiving it. If the disc is somewhere else, the ground search is wrong.")]
+    public bool debugShowClearArea = false;
+    [Tooltip("Prints what this effect is doing to the Console, once per second.")]
+    public bool debugLog = false;
 
     [Header("Levitation motes (drift down from under the body)")]
     public bool showMotes = true;
@@ -59,8 +70,13 @@ public class MinionHoverVFX : MonoBehaviour
     private HealGroundRune ring;
     private Transform shadowTf;
     private MeshRenderer shadowMr;
-    private Material shadowMat, moteMat, orbMat, trailMat;
-    private readonly MaterialPropertyBlock shadowBlock = new MaterialPropertyBlock();
+    private Material shadowMat, moteMat, orbMat, trailMat, overlayMat, debugMat;
+    private Transform debugTf;
+    private bool lastFound;
+    private float nextLog;
+    private Transform ringRoot;
+    private Vector3 lastRingPos;
+    private MaterialPropertyBlock shadowBlock;   // created at runtime (Unity objects must not be created in a field initializer of a component)
     private bool built, dirty, warnedNoGround;
     private float phase, charge, surge, lastGroundY;
     private bool haveGround;
@@ -108,7 +124,13 @@ public class MinionHoverVFX : MonoBehaviour
 
     private void DestroyBuilt()
     {
-        if (ring != null) { ring.DestroyObjects(); ring.Dispose(); ring = null; }
+        if (ring != null) { ring.Dispose(); ring = null; }
+        if (ringRoot != null) Destroy(ringRoot.gameObject);
+        if (overlayMat != null) Destroy(overlayMat);
+        ringRoot = null; overlayMat = null;
+        if (debugTf != null) Destroy(debugTf.gameObject);
+        if (debugMat != null) Destroy(debugMat);
+        debugTf = null; debugMat = null;
         if (shadowTf != null) Destroy(shadowTf.gameObject);
         if (motePS != null) Destroy(motePS.gameObject);
         if (orbPS != null) Destroy(orbPS.gameObject);
@@ -120,6 +142,16 @@ public class MinionHoverVFX : MonoBehaviour
         shadowMat = null; moteMat = null; orbMat = null; trailMat = null;
     }
 
+    // In the Scene view (select the minion in Play mode): a yellow circle shows where the grass is cleared and the ring sits.
+    // If it is not under the minion, the ground search found the wrong surface (check 'Ground Mask').
+    private void OnDrawGizmosSelected()
+    {
+        if (!Application.isPlaying || !built) return;
+        Gizmos.color = new Color(1f, 0.9f, 0.2f, 0.9f);
+        Gizmos.DrawWireSphere(lastRingPos, clearRadius);
+        Gizmos.DrawLine(transform.position, lastRingPos);
+    }
+
     // ------------------------------------------------------------------ build
     private void EnsureBuilt()
     {
@@ -127,6 +159,8 @@ public class MinionHoverVFX : MonoBehaviour
         built = true;
 
         HealVFXAssets.EnsureHitFX(gameObject);   // before any child mesh, see HealVFXAssets.EnsureHitFX
+
+        if (shadowBlock == null) shadowBlock = new MaterialPropertyBlock();
 
         // soft dark shadow on the ground (alpha blended)
         if (showShadow)
@@ -149,11 +183,53 @@ public class MinionHoverVFX : MonoBehaviour
         // glowing ring on the ground (with its own grass-clearing patch)
         if (showRing)
         {
-            ring = new HealGroundRune(transform, "MinionHoverRing", HealVFXAssets.Ring, brightness);
+            // The ring lives on its own object, NOT under the minion: the scale, rotation or mirroring of the minion
+            // can never disturb the ring or the patch of cleared grass. It is hidden when the minion is disabled and
+            // removed when the minion is destroyed.
+            ringRoot = new GameObject("MinionHoverRingRoot").transform;
+            ring = new HealGroundRune(ringRoot, "MinionHoverRing", HealVFXAssets.Ring, brightness);
             ring.clearGrass = clearGrass;
             ring.startScale = 0.8f;
-            HealVFXAssets.ProtectFromHitFX(gameObject, ring.Renderer);
-            HealVFXAssets.ProtectFromHitFX(gameObject, ring.MaskRenderer);
+
+            {
+                Shader os = overlayShader != null ? overlayShader : Shader.Find("VFX/GroundOverlay");
+                if (os != null)
+                {
+                    overlayMat = new Material(os);
+                    overlayMat.SetTexture("_MainTex", HealVFXAssets.Ring);
+                    overlayMat.SetFloat("_ZTest", ringIgnoreDepth ? 8f : 4f);   // 4 = hidden behind objects, 8 = over everything
+                    ring.UseMaterial(overlayMat);
+                }
+                else
+                {
+                    Debug.LogWarning("[MinionHoverVFX] Shader 'VFX/GroundOverlay' not found, so the ring is drawn normally and the grass can hide it. " +
+                                     "Add VFX_GroundOverlay.shader to the project.", this);
+                }
+            }
+
+            if (clearGrass && ring.MaskRenderer == null)
+                Debug.LogWarning("[MinionHoverVFX] Shader 'InfiniteGrass/Modifiers/HealAuraGrassMask' not found, so the grass under the ring is not cleared.", this);
+        }
+
+        // debug: a red disc where the grass is supposed to be cleared
+        if (debugShowClearArea)
+        {
+            Shader ds = overlayShader != null ? overlayShader : Shader.Find("VFX/GroundOverlay");
+            if (ds != null)
+            {
+                GameObject dg = new GameObject("MinionHoverDebugDisc");
+                debugTf = dg.transform;
+                debugTf.SetParent(ringRoot != null ? ringRoot : transform, false);
+                dg.AddComponent<MeshFilter>().sharedMesh = HealVFXAssets.FlatQuad;
+                MeshRenderer dmr = dg.AddComponent<MeshRenderer>();
+                debugMat = new Material(ds);
+                debugMat.SetTexture("_MainTex", HealVFXAssets.Blob);
+                debugMat.SetColor("_Color", new Color(1f, 0.1f, 0.1f, 0.35f));
+                debugMat.SetFloat("_ZTest", 8f);   // the debug disc is always visible
+                dmr.sharedMaterial = debugMat;
+                dmr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                dmr.receiveShadows = false;
+            }
         }
 
         // motes drifting down from under the body (world space, emitted by time and by the distance flown)
@@ -229,6 +305,7 @@ public class MinionHoverVFX : MonoBehaviour
     private void LateUpdate()
     {
         if (!built) return;
+        if (shadowBlock == null) shadowBlock = new MaterialPropertyBlock();
         if (dirty)
         {
             dirty = false;
@@ -252,12 +329,14 @@ public class MinionHoverVFX : MonoBehaviour
         if (HealVFXAssets.TryGroundPoint(transform, groundMask, groundOffset, groundSearchDistance, out found))
         {
             groundY = found.y;
+            lastFound = true;
             lastGroundY = groundY;
             haveGround = true;
             warnedNoGround = false;
         }
         else
         {
+            lastFound = false;
             // nothing below: keep the last known ground (and warn once, this is almost always a wrong Ground Mask or a ground without a collider)
             groundY = haveGround ? lastGroundY : transform.position.y - Mathf.Min(1.5f, groundSearchDistance) + groundOffset;
             if (!warnedNoGround)
@@ -299,7 +378,24 @@ public class MinionHoverVFX : MonoBehaviour
             // the cleared patch of grass has a fixed size, whatever the ring does
             ring.clearGrass = clearGrass;
             ring.clearScale = Mathf.Max(1f, clearRadius / Mathf.Max(0.1f, radius));
-            ring.Tick(Time.deltaTime, true, new Vector3(transform.position.x, groundY, transform.position.z), radius, c, 0f, 0.4f, 0.4f);
+            if (overlayMat != null) c = new Color(c.r * brightness, c.g * brightness, c.b * brightness, 1f);   // this material has no built-in brightness
+            lastRingPos = new Vector3(transform.position.x, groundY, transform.position.z);
+            ring.Tick(Time.deltaTime, true, lastRingPos, radius, c, 0f, 0.4f, 0.4f);
+        }
+
+        if (debugTf != null)
+        {
+            debugTf.position = lastRingPos + Vector3.up * 0.05f;
+            debugTf.rotation = Quaternion.identity;
+            debugTf.localScale = new Vector3(clearRadius, 1f, clearRadius);
+        }
+
+        if (debugLog && Time.unscaledTime >= nextLog)
+        {
+            nextLog = Time.unscaledTime + 1f;
+            Debug.Log(string.Format("[MinionHoverVFX] {0}: minion y={1:F2} | ground found={2} (y={3:F2}) | ring at {4} | clear radius {5} | grass-mask quad exists={6} | overlay material={7}",
+                                    name, transform.position.y, lastFound, groundY, lastRingPos, clearRadius,
+                                    ring != null && ring.MaskRenderer != null, overlayMat != null), this);
         }
     }
 }

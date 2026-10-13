@@ -1366,8 +1366,10 @@ GameObject:
   - component: {fileID: 7185991076286389422}
   - component: {fileID: 2845370007556556877}
   - component: {fileID: 1212929064186875640}
-  - component: {fileID: 6602324674702280247}
   - component: {fileID: 5223767122600191771}
+  - component: {fileID: 319945910997311908}
+  - component: {fileID: 6123886950238107439}
+  - component: {fileID: 5228374931340393400}
   m_Layer: 6
   m_Name: BulletHellMinion
   m_TagString: Untagged
@@ -1467,9 +1469,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   enemyData: {fileID: 11400000, guid: 70b21f9b1c1e4f349ad0c4d4aae8afe8, type: 2}
-  animProfile: {fileID: 11400000, guid: 976346c6b82c98e40a034bd17cbd3516, type: 2}
+  animProfile: {fileID: 11400000, guid: 84b27f5633907584bbe890a9977b282f, type: 2}
   directDeathClip: {fileID: 7400000, guid: 7f0b16d67db4d0349993822251b989b3, type: 3}
-  directHitClip: {fileID: 7400000, guid: 77214854f62866c4db0d2b1999fcdf96, type: 3}
+  directHitClip: {fileID: 7400000, guid: acbe57a104d8c114c8487055894b3188, type: 3}
   tripClip: {fileID: 0}
   getUpClip: {fileID: 0}
   tripDuration: 1.5
@@ -1561,19 +1563,6 @@ MonoBehaviour:
   attackClip: {fileID: 7400000, guid: c1857e4094b87fe40a724b81e470c20d, type: 3}
   bulletFireDelay: 0.7
   rangedTokenType: 4
---- !u!114 &6602324674702280247
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7572696427137771666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 126fd39090fd091498bdc641be086ec3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
-  soulEnergyValue: 30
 --- !u!114 &5223767122600191771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1587,6 +1576,122 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 25
+--- !u!114 &319945910997311908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1550416c9a580b341a8c0f46cb13afd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealReceiveFX
+  color: {r: 0.3, g: 1, b: 0.5, a: 1}
+  accent: {r: 0.85, g: 1, b: 0.9, a: 1}
+  brightness: 2.2
+  showGroundAura: 1
+  auraRadius: 0
+  autoRadiusScale: 1.7
+  spinDegreesPerSecond: 25
+  fadeIn: 0.25
+  fadeOut: 0.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundOffset: 0.05
+  clearGrassUnderAura: 1
+  grassClearScale: 1.3
+  plusPerSecond: 14
+  pulseRings: 1
+  ringInterval: 0.9
+  chestGlow: 1
+  chestGlowStrength: 0.45
+  bodyRipple: 1
+  rippleInterval: 0.8
+  rippleIntensity: 1
+  rippleDuration: 0.6
+  rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
+  rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
+--- !u!114 &6123886950238107439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d5b54feeec5e145ac17b35bfcfab53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinionShotVFX
+  mainColor: {r: 0.55, g: 0.5, b: 1, a: 1}
+  coreColor: {r: 0.96, g: 0.96, b: 1, a: 1}
+  accentColor: {r: 0.5, g: 0.82, b: 1, a: 1}
+  brightness: 1
+  originMode: 0
+  bodyHeight: 1.2
+  muzzleOffset: {x: 0, y: 0, z: 0}
+  showZone: 1
+  zoneMaxRange: 14
+  zoneFill: 0.35
+  zoneHeight: 0.08
+  zoneShader: {fileID: 4800000, guid: 1ff37b7ddaf6db44489f2cf9330019fd, type: 3}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  zoneDust: 1
+  zoneDustRate: 45
+  orbSize: 5
+  convergeRadius: 10
+  convergeRate: 60
+  showCastCircle: 1
+  castCircleSize: 2
+  muzzleSparks: 18
+  muzzleCone: 35
+  muzzleRingSize: 0.9
+  muzzleFlashSize: 1
+--- !u!114 &5228374931340393400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0e1a74c5fc56a46abbdcc82cab0db5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinionHoverVFX
+  mainColor: {r: 1, g: 0.25, b: 0.6, a: 1}
+  accentColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  brightness: 2.2
+  showShadow: 0
+  shadowRadius: 0.8
+  shadowOpacity: 0.45
+  showRing: 1
+  ringRadius: 0.9
+  fadeHeight: 4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  groundOffset: 0.01
+  groundSearchDistance: 15
+  ringIgnoreDepth: 0
+  overlayShader: {fileID: 4800000, guid: 7a6625d35b1b89347956c2b96e199380, type: 3}
+  clearGrass: 1
+  clearRadius: 1.5
+  debugShowClearArea: 0
+  debugLog: 0
+  showMotes: 1
+  moteRate: 14
+  motesPerMeter: 6
+  underBodyOffset: {x: 0, y: 0.3, z: 0}
+  showOrbs: 1
+  orbRadius: 0.6
+  orbSpeed: 3
+  orbCenterOffset: {x: 0, y: 1, z: 0}
 --- !u!1 &7611261585105808180
 GameObject:
   m_ObjectHideFlags: 0

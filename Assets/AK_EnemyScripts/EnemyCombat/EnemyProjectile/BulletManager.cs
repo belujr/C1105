@@ -4,15 +4,23 @@ using System.Collections.Generic;
 
 public class BulletManager : MonoBehaviour
 {
+    public enum HeightMode { MuzzleHeight, PlayerChestHeight }
+
     public static BulletManager Instance { get; private set; }
 
     [Header("Settings")]
     public int maxLiveBullets = 1000;
     public LayerMask wallLayerMask;
 
+    [Header("Bullet height (the height the bullets fly at)")]
+    [Tooltip("MuzzleHeight = the bullets fly at the height of the muzzle, so 'Body Height' and 'Muzzle Offset' on the minion decide it. PlayerChestHeight = the bullets always fly at the chest height of the player, whatever the height of the enemy.")]
+    public HeightMode bulletHeight = HeightMode.MuzzleHeight;
+    [Tooltip("Added to the bullet height (meters). Positive = higher.")]
+    public float bulletHeightOffset = 0f;
+
     [Header("Hit detection")]
-    [Tooltip("Bullets that start high (a floating minion) glide down to the player's chest height, so they can actually hit. Before, a bullet that flew at the minion's height passed over the player's head.")]
-    public bool dropToPlayerHeight = true;
+    [Tooltip("A bullet that flies high (a floating minion) glides down to the player's chest height, so it can hit. This makes bullets swoop at the start, so it is off by default. Instead use Bullet Height = PlayerChestHeight, or raise Vertical Tolerance.")]
+    public bool glideToPlayerHeight = false;
     [Tooltip("How fast bullets glide down to the player's height (meters per second).")]
     public float dropSpeed = 8f;
     [Tooltip("A bullet hits when it is close enough sideways AND within this height of the player's chest.")]
@@ -60,7 +68,7 @@ public class BulletManager : MonoBehaviour
     public void FirePattern(BulletPattern patternPrefab, Vector3 spawnPoint, Vector3 targetDirection)
     {
         if (patternPrefab == null) return;
-        StartCoroutine(FirePatternRoutine(patternPrefab, patternPrefab.GetInstanceID(), spawnPoint, targetDirection.normalized));
+        StartCoroutine(FirePatternRoutine(patternPrefab, patternPrefab.GetInstanceID(), BulletOrigin(spawnPoint), targetDirection.normalized));
     }
 
     private IEnumerator FirePatternRoutine(BulletPattern pattern, int pId, Vector3 origin, Vector3 fwd)
@@ -97,6 +105,17 @@ public class BulletManager : MonoBehaviour
                 yield return new WaitForSeconds(pattern.interval);
             }
         }
+    }
+
+    /// <summary>
+    /// Where a bullet that is fired from 'muzzle' really starts (the height follows 'Bullet Height' and 'Bullet Height Offset').
+    /// FirePattern applies this itself; use it only for effects (the muzzle flash), so the flash and the bullets line up.
+    /// </summary>
+    public Vector3 BulletOrigin(Vector3 muzzle)
+    {
+        if (bulletHeight == HeightMode.PlayerChestHeight && playerTransform != null) muzzle.y = playerTransform.position.y + 1.0f;
+        muzzle.y += bulletHeightOffset;
+        return muzzle;
     }
 
     private void SpawnBullet(BulletPattern data, int pId, Vector3 pos, Vector3 dir)
@@ -179,7 +198,7 @@ public class BulletManager : MonoBehaviour
             Vector3 nextPos = b.position + b.velocity * dt;
 
             // bullets that started high glide down to the player's chest height
-            if (dropToPlayerHeight && hasPlayer)
+            if (glideToPlayerHeight && hasPlayer)
                 nextPos.y = Mathf.MoveTowards(nextPos.y, playerPos.y, dropSpeed * dt);
 
             // 4. Analytic Player Collision
@@ -210,9 +229,11 @@ public class BulletManager : MonoBehaviour
             }
 
             // 6. Sync Visuals
+            Vector3 moved = nextPos - b.position;   // the real path, including the glide down to the player's height
             b.position = nextPos;
             b.tr.position = b.position;
-            if (b.velocity.sqrMagnitude > 0.001f) b.tr.rotation = Quaternion.LookRotation(b.velocity);
+            if (moved.sqrMagnitude > 0.00000001f) b.tr.rotation = Quaternion.LookRotation(moved);
+            else if (b.velocity.sqrMagnitude > 0.001f) b.tr.rotation = Quaternion.LookRotation(b.velocity);
         }
     }
 

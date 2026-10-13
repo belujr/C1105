@@ -792,7 +792,7 @@ public class HealGroundRune
 
         float ease = level * level * (3f - 2f * level);
         float world = radius * Mathf.Lerp(startScale, 1f, ease) * (1f + 0.05f * Mathf.Sin(Time.time * 5f));
-        tf.localScale = Vector3.one * (world / Mathf.Max(0.0001f, owner.lossyScale.x));
+        tf.localScale = FlatScale(world);
 
         Color c = color;
         c.a = ease * (0.85f + 0.15f * Mathf.Sin(Time.time * 7f));
@@ -808,11 +808,28 @@ public class HealGroundRune
             {
                 maskTf.position = groundPos;
                 maskTf.rotation = Quaternion.identity;
-                maskTf.localScale = Vector3.one * (world * clearScale / Mathf.Max(0.0001f, owner.lossyScale.x));
+                maskTf.localScale = FlatScale(world * clearScale);
                 maskMpb.SetFloat(OpacityId, ease);
                 maskMr.SetPropertyBlock(maskMpb);
             }
         }
+    }
+
+    // The quad is flat (it lies in the XZ plane), so only x and z matter. A parent with a flipped (negative) or non-uniform scale
+    // is handled: before, a parent that was mirrored with scale -1 made the quad enormous.
+    private Vector3 FlatScale(float world)
+    {
+        Vector3 ls = owner.lossyScale;
+        float sx = Mathf.Abs(ls.x), sz = Mathf.Abs(ls.z);
+        if (sx < 0.0001f) sx = 1f;
+        if (sz < 0.0001f) sz = 1f;
+        return new Vector3(world / sx, 1f, world / sz);
+    }
+
+    /// <summary>Draw the visible quad with another material (for example one that is drawn over the grass).</summary>
+    public void UseMaterial(Material m)
+    {
+        if (m != null) mr.sharedMaterial = m;
     }
 
     public void Reset()

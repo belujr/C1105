@@ -192,10 +192,12 @@ public class RangedMinionBrain : MinionEnemyBrain
 
         // Cast bullet pattern via BulletManager
         // the bullets start exactly where the effects start (see 'Where the shot starts' on MinionShotVFX)
-        Vector3 spawnPoint = shotVFX != null ? shotVFX.MuzzlePosition() : (firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.2f);
+        Vector3 muzzle = shotVFX != null ? shotVFX.MuzzlePosition() : (firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.2f);
+        Vector3 spawnPoint = muzzle;   // where the bullets really start (the manager works it out from the muzzle; the effects use it too)
         if (BulletManager.Instance != null)
         {
-            BulletManager.Instance.FirePattern(selectedPattern, spawnPoint, aimDir);
+            spawnPoint = BulletManager.Instance.BulletOrigin(muzzle);
+            BulletManager.Instance.FirePattern(selectedPattern, muzzle, aimDir);
         }
         shotVFX.Fire(spawnPoint, aimDir);   // muzzle flash, ring and streaks
 
