@@ -61,28 +61,22 @@ public class HubNPC : MonoBehaviour
     }
 
     private void Interact()
+{
+    // If this NPC is Milo and he has already arrived at Master Ren, trigger his cyclical single-line dialogue
+    if (npcRole == NPCType.Milo && MiloController.Instance != null && MiloController.Instance.isAtRen)
     {
-        // Milo, once he has arrived at Master Ren, plays his cyclical single-line dialogue
-        if (npcRole == NPCType.Milo && MiloController.Instance != null && MiloController.Instance.isAtRen)
-        {
-            MiloController.Instance.HandleMiloInteraction();
-        }
-        else if (HubNarrativeManager.Instance != null)
-        {
-            HubNarrativeManager.Instance.ProcessNPCInteraction(this);
-        }
-        else
-        {
-            Debug.LogWarning("[HubNPC] No HubNarrativeManager in this scene - playing fallback dialogue.");
-            PlayFallbackDialogue();
-        }
-
-        onInteracted?.Invoke();
+        MiloController.Instance.HandleMiloInteraction();
     }
-
+    else
+    {
+        HubNarrativeManager.Instance.ProcessNPCInteraction(this);
+    }
+    
+    onInteracted?.Invoke();
+}
     public void PlayFallbackDialogue()
     {
-        if (defaultAmbientDialogue != null && DialogueUI.Instance != null)
+        if (defaultAmbientDialogue != null)
         {
             DialogueUI.Instance.StartSequence(defaultAmbientDialogue);
         }

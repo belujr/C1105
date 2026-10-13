@@ -1,392 +1,258 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Reflection;
 
-/// <summary>
-/// Persistent narrative / run service (same pattern as SoulManager).
-/// Place ONE instance on a root GameObject in the FIRST scene (Scene_Level). It survives every scene load.
-///
-/// Run model:
-///   Run 0 = game start in the Level until the first death.
-///   Each death increments the run; Run N begins when the player arrives in the Hub after death N.
-///   The steps used are the ones inside the runNarratives element whose "Run Number" equals the current run.
-///
-/// It listens to PlayerHealth.Died itself, so a death is counted in whichever scene it happens in.
-/// Hub-scene objects (spawn point, VFX, player prefab, Milo events) live in HubSceneSetup, not here,
-/// because a persistent object cannot hold references to objects of another scene.
-/// </summary>
-[DefaultExecutionOrder(-100)]
-[DisallowMultipleComponent]
 public class HubNarrativeManager : MonoBehaviour
 {
-    public static HubNarrativeManager Instance { get; private set; }
-
-    /// <summary>Fired with the new run number whenever the run changes.</summary>
-    public static event System.Action<int> RunNumberChanged;
+    public static HubNarrativeManager Instance;
 
     [Header("Debug & Testing")]
-    [Tooltip("Wipes narrative save data when you hit Play. Editor only.")]
+    [Tooltip("Check this box to automatically wipe save data every time you hit Play in the Editor.")]
     public bool resetSaveDataOnStart = false;
 
-    [Tooltip("LIVE run number. While playing, type a new value here to jump to that run: that run's steps (and later runs) " +
-             "are reset so they play again.")]
-    [SerializeField, Min(0)] private int currentRunNumber = 0;
+    [Header("Save Keys")]
+    private const string SAVE_RUN_KEY = "Narrative_CurrentRunNumber";
+    private const string SAVE_STEP_KEY = "Narrative_Run1ProgressStep";
+    private const string SAVE_SEQUENCES_KEY = "Narrative_CompletedSequences";
 
-    [Tooltip("When jumping to run N, treat every step of runs below N as already completed " +
-             "(so cross-run dependencies are satisfied).")]
-    public bool markEarlierRunsCompleteWhenJumping = true;
-
-    [Tooltip("READ-ONLY info: steps completed during the current run.")]
-    [SerializeField] private int stepsCompletedThisRun = 0;
-
-    [Header("Scenes")]
-    [Tooltip("Scene that is loaded after the player dies.")]
-    public string hubSceneName = "Scene_Hub";
+    [Header("Legacy Progress Tracking")]
+    public int run1ProgressStep = 0;
 
     [Header("Run Configuration")]
-    [Tooltip("One element per run. Set 'Run Number' on each element; name them whatever you like.")]
+    public int currentRunNumber = 1;
     public List<RunNarrativeData> runNarratives = new List<RunNarrativeData>();
 
-    // ------------------------------------------------------------------ internals
-    private const string SAVE_RUN_KEY = "Narrative_CurrentRunNumber";
-    private const string SAVE_STEP_KEY = "Narrative_RunProgressStep";
-    private const string SAVE_SEQUENCES_KEY = "Narrative_CompletedSteps_v2";
-    private const string KEY_SEPARATOR = "::";
+    [Header("VFX & Spawn")]
+    public GameObject vesselConjureVFX;
+    public Transform spawnPoint;
+    public GameObject playerPrefab;
 
-    // "run::sequenceName" = completed in that specific run
-    private readonly HashSet<string> completedKeys = new HashSet<string>();
-    // "sequenceName" = completed in any run
-    private readonly HashSet<string> completedNames = new HashSet<string>();
+    private HashSet<DialogueSequence> completedSequences = new HashSet<DialogueSequence>();
 
-    private int appliedRunNumber;
-    private bool jumpRequested;
-
-    // ------------------------------------------------------------------ static helpers
-    public static int CurrentRun => Instance != null ? Instance.currentRunNumber : PlayerPrefs.GetInt(SAVE_RUN_KEY, 0);
-    public static int DeathCount => CurrentRun;
-    public static string HubSceneNameOrDefault => Instance != null ? Instance.hubSceneName : "Scene_Hub";
-
-    // Keeps static state clean when "Enter Play Mode > Reload Domain" is disabled.
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetStatics()
+    // Add this inside HubNarrativeManager.cs
+    // Add this method inside HubNarrativeManager.cs
+    public bool HasActiveStep(HubNPC.NPCType role)
     {
-        Instance = null;
-        RunNumberChanged = null;
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null) return false;
+
+        return currentRunData.steps.Exists(step =>
+            step.triggerNPC == role &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
     }
 
-    // ------------------------------------------------------------------ lifecycle
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance == null) Instance = this;
+        else 
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject); // must be a ROOT GameObject
-
-        if (resetSaveDataOnStart && Application.isEditor) ClearSave();
-        else LoadState();
-
-        appliedRunNumber = currentRunNumber;
-        PlayerHealth.Died += HandlePlayerDied;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance != this) return;
-        PlayerHealth.Died -= HandlePlayerDied;
-        Instance = null;
-    }
-
-    private void Update()
-    {
-        // Inspector edits are applied here (not inside OnValidate) so it is safe to touch dialogue/UI.
-        if (jumpRequested)
+        if (resetSaveDataOnStart)
         {
-            jumpRequested = false;
-            JumpToRun(currentRunNumber);
-        }
-    }
-
-    private void OnValidate()
-    {
-        AutoNumberRuns();
-
-        if (Application.isPlaying && Instance == this && currentRunNumber != appliedRunNumber)
-            jumpRequested = true;
-    }
-
-    // ------------------------------------------------------------------ death -> run increment
-    private void HandlePlayerDied(PlayerHealth player)
-    {
-        if (HubSceneSetup.Current != null)
-        {
-            Debug.LogWarning("[NarrativeManager] Player died inside the Hub - not counted as a run.");
-            return;
+            ResetSaveData();
         }
 
-        int endedRun = currentRunNumber;
-        currentRunNumber++;
-        appliedRunNumber = currentRunNumber;
-        stepsCompletedThisRun = 0;
-        SaveState();
-
-        Debug.Log($"[NarrativeManager] Player died. Run {endedRun} ended -> Run {currentRunNumber} will start at the Hub. (Deaths: {currentRunNumber})");
-        RunNumberChanged?.Invoke(currentRunNumber);
+        LoadProgress();
     }
 
-    // ------------------------------------------------------------------ narrative flow
-    /// <summary>Plays this run's auto-trigger step (if any). Called by HubSceneSetup once the player has spawned.</summary>
-    public void PlayOpeningStep()
+    private void Start()
     {
-        if (HubSceneSetup.Current == null) return; // the opening only plays in the Hub
-        if (DialogueUI.Instance != null && DialogueUI.Instance.dialoguePanel.activeSelf) return;
-
-        RunNarrativeData data = GetCurrentRunData();
-        if (data == null) return;
-
-        NarrativeStep opening = data.steps.Find(s => s.autoTriggerOnRunStart && IsStepAvailable(s));
-        if (opening != null) PlayNarrativeStep(opening);
+        StartCoroutine(Sequence_ConjureVessel());
     }
 
-    public bool HasActiveStep(HubNPC.NPCType role)
+    private IEnumerator Sequence_ConjureVessel()
     {
-        RunNarrativeData data = GetCurrentRunData();
-        return data != null && data.steps.Exists(s => IsStepAvailable(s) && s.triggerNPC == role);
+        if (spawnPoint == null) yield break;
+
+        if (vesselConjureVFX != null)
+            Instantiate(vesselConjureVFX, spawnPoint.position, Quaternion.identity);
+
+        GameObject activePlayer = null;
+        if (playerPrefab != null)
+        {
+            activePlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+            PlayerDissolveController dissolveController = activePlayer.GetComponent<PlayerDissolveController>();
+            if (dissolveController != null)
+            {
+                dissolveController.TriggerDissolveIn();
+            }
+        }
+
+        if (activePlayer != null)
+        {
+            IsoCameraRig camRig = Object.FindFirstObjectByType<IsoCameraRig>();
+            if (camRig != null)
+            {
+                FieldInfo targetField = typeof(IsoCameraRig).GetField("target", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (targetField != null) targetField.SetValue(camRig, activePlayer.transform);
+            }
+        }
+
+        yield return new WaitForSeconds(1.5f);
+
+        NarrativeStep openingStep = GetAutoTriggerStepForCurrentRun();
+        if (openingStep != null)
+        {
+            PlayNarrativeStep(openingStep);
+        }
     }
 
     public void ProcessNPCInteraction(HubNPC npc)
     {
-        RunNarrativeData data = GetCurrentRunData();
-        if (data == null)
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null)
         {
-            Debug.LogWarning($"[NarrativeManager] No element with Run Number {currentRunNumber} in runNarratives. Using fallback dialogue.");
+            Debug.LogWarning($"[NarrativeManager] No narrative data configured for Run {currentRunNumber}.");
             npc.PlayFallbackDialogue();
             return;
         }
 
-        NarrativeStep step = data.steps.Find(s => IsStepAvailable(s) && s.triggerNPC == npc.npcRole);
-        if (step != null) PlayNarrativeStep(step);
-        else npc.PlayFallbackDialogue();
+        NarrativeStep validStep = currentRunData.steps.Find(step =>
+            step.triggerNPC == npc.npcRole &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
+
+        if (validStep != null)
+        {
+            PlayNarrativeStep(validStep);
+        }
+        else
+        {
+            npc.PlayFallbackDialogue();
+        }
     }
 
     private void PlayNarrativeStep(NarrativeStep step)
     {
-        if (step == null || step.dialogueSequence == null || DialogueUI.Instance == null) return;
+        if (step.dialogueSequence == null) return;
 
-        int runAtStart = currentRunNumber;
-        DialogueSequence sequence = step.dialogueSequence;
-
-        DialogueUI.Instance.StartSequence(sequence, () =>
-        {
-            if (MarkCompleted(runAtStart, sequence))
+        DialogueUI.Instance.StartSequence(
+            step.dialogueSequence,
+            () =>
             {
-                if (runAtStart == currentRunNumber) stepsCompletedThisRun++;
-                SaveState();
+                if (!completedSequences.Contains(step.dialogueSequence))
+                {
+                    completedSequences.Add(step.dialogueSequence);
+                    run1ProgressStep++; 
+                    SaveProgress();
+                }
+
+                step.onStepCompleted?.Invoke();
+                Debug.Log($"[NarrativeManager] Completed & Saved Step: {step.stepLabel}");
             }
-
-            step.onStepCompleted?.Invoke();
-            if (HubSceneSetup.Current != null) HubSceneSetup.Current.InvokeStepEvents(sequence, runAtStart);
-
-            Debug.Log($"[NarrativeManager] Run {runAtStart} - Completed & Saved Step: {step.stepLabel}");
-        });
-    }
-
-    private bool IsStepAvailable(NarrativeStep step)
-    {
-        if (step == null || step.dialogueSequence == null) return false;
-        if (completedKeys.Contains(MakeKey(currentRunNumber, step.dialogueSequence.name))) return false;
-        return IsDependencySatisfied(step);
+        );
     }
 
     private bool IsDependencySatisfied(NarrativeStep step)
     {
         if (step.dependency == null) return true;
+        return completedSequences.Contains(step.dependency);
+    }
 
-        string depName = step.dependency.name;
-        RunNarrativeData data = GetCurrentRunData();
+    private NarrativeStep GetAutoTriggerStepForCurrentRun()
+    {
+        RunNarrativeData currentRunData = GetCurrentRunData();
+        if (currentRunData == null) return null;
 
-        // Dependency is itself a step of THIS run -> it must be completed in this run.
-        // Otherwise it is a "story so far" dependency -> completed in any earlier run is fine.
-        bool belongsToThisRun = data != null &&
-            data.steps.Exists(s => s != null && s.dialogueSequence == step.dependency);
-
-        return belongsToThisRun
-            ? completedKeys.Contains(MakeKey(currentRunNumber, depName))
-            : completedNames.Contains(depName);
+        return currentRunData.steps.Find(step =>
+            step.autoTriggerOnRunStart &&
+            !completedSequences.Contains(step.dialogueSequence) &&
+            IsDependencySatisfied(step)
+        );
     }
 
     private RunNarrativeData GetCurrentRunData()
     {
-        for (int i = 0; i < runNarratives.Count; i++)
+        int runIndex = currentRunNumber - 1;
+        if (runIndex >= 0 && runIndex < runNarratives.Count)
         {
-            if (runNarratives[i] != null && runNarratives[i].runNumber == currentRunNumber)
-                return runNarratives[i];
+            return runNarratives[runIndex];
         }
         return null;
     }
 
     public bool IsSequenceCompleted(DialogueSequence sequence)
-        => sequence != null && completedNames.Contains(sequence.name);
-
-    public bool IsSequenceCompletedThisRun(DialogueSequence sequence)
-        => sequence != null && completedKeys.Contains(MakeKey(currentRunNumber, sequence.name));
-
-    // ------------------------------------------------------------------ jumping between runs (testing)
-    /// <summary>Jumps to a run: resets that run and every later run so their steps play again.</summary>
-    public void JumpToRun(int run)
     {
-        run = Mathf.Max(0, run);
-        if (!Application.isPlaying) LoadCompletedKeys();
-
-        completedKeys.RemoveWhere(k => ParseRunFromKey(k) >= run);
-
-        if (markEarlierRunsCompleteWhenJumping)
-        {
-            foreach (RunNarrativeData data in runNarratives)
-            {
-                if (data == null || data.runNumber >= run) continue;
-                foreach (NarrativeStep step in data.steps)
-                    if (step != null && step.dialogueSequence != null)
-                        completedKeys.Add(MakeKey(data.runNumber, step.dialogueSequence.name));
-            }
-        }
-
-        RebuildNames();
-        currentRunNumber = run;
-        appliedRunNumber = run;
-        stepsCompletedThisRun = 0;
-        SaveState();
-
-        Debug.Log($"[NarrativeManager] Jumped to Run {run}. Steps for Run {run}+ were reset.");
-        RunNumberChanged?.Invoke(run);
-
-        if (Application.isPlaying) PlayOpeningStep(); // only does something when you are standing in the Hub
+        return completedSequences.Contains(sequence);
     }
 
-    // ------------------------------------------------------------------ save system
-    private static string MakeKey(int run, string sequenceName) => run + KEY_SEPARATOR + sequenceName;
+    #region Save & Load System
 
-    private static int ParseRunFromKey(string key)
+    public void AdvanceToNextRun()
     {
-        int sep = key.IndexOf(KEY_SEPARATOR, System.StringComparison.Ordinal);
-        if (sep <= 0) return -1;
-        return int.TryParse(key.Substring(0, sep), out int run) ? run : -1;
+        currentRunNumber++;
+        SaveProgress();
     }
 
-    private bool MarkCompleted(int run, DialogueSequence sequence)
-    {
-        bool added = completedKeys.Add(MakeKey(run, sequence.name));
-        completedNames.Add(sequence.name);
-        return added;
-    }
-
-    private void RebuildNames()
-    {
-        completedNames.Clear();
-        foreach (string key in completedKeys)
-        {
-            int sep = key.IndexOf(KEY_SEPARATOR, System.StringComparison.Ordinal);
-            if (sep >= 0) completedNames.Add(key.Substring(sep + KEY_SEPARATOR.Length));
-        }
-    }
-
-    private void LoadState()
-    {
-        currentRunNumber = Mathf.Max(0, PlayerPrefs.GetInt(SAVE_RUN_KEY, 0));
-        stepsCompletedThisRun = PlayerPrefs.GetInt(SAVE_STEP_KEY, 0);
-        LoadCompletedKeys();
-    }
-
-    private void LoadCompletedKeys()
-    {
-        completedKeys.Clear();
-        string saved = PlayerPrefs.GetString(SAVE_SEQUENCES_KEY, "");
-        if (!string.IsNullOrEmpty(saved))
-        {
-            foreach (string key in saved.Split('|'))
-                if (!string.IsNullOrEmpty(key)) completedKeys.Add(key);
-        }
-        RebuildNames();
-    }
-
-    private void SaveState()
+    public void SaveProgress()
     {
         PlayerPrefs.SetInt(SAVE_RUN_KEY, currentRunNumber);
-        PlayerPrefs.SetInt(SAVE_STEP_KEY, stepsCompletedThisRun);
-        PlayerPrefs.SetString(SAVE_SEQUENCES_KEY, string.Join("|", completedKeys));
+        PlayerPrefs.SetInt(SAVE_STEP_KEY, run1ProgressStep);
+
+        List<string> savedNames = new List<string>();
+        foreach (DialogueSequence seq in completedSequences)
+        {
+            if (seq != null) savedNames.Add(seq.name);
+        }
+        
+        string joinedData = string.Join("|", savedNames);
+        PlayerPrefs.SetString(SAVE_SEQUENCES_KEY, joinedData);
         PlayerPrefs.Save();
     }
 
-    private void ClearSave()
+    public void LoadProgress()
+    {
+        currentRunNumber = PlayerPrefs.GetInt(SAVE_RUN_KEY, 1);
+        run1ProgressStep = PlayerPrefs.GetInt(SAVE_STEP_KEY, 0);
+
+        completedSequences.Clear();
+
+        string savedData = PlayerPrefs.GetString(SAVE_SEQUENCES_KEY, "");
+        if (string.IsNullOrEmpty(savedData)) return;
+
+        Dictionary<string, DialogueSequence> sequenceMap = new Dictionary<string, DialogueSequence>();
+        foreach (var run in runNarratives)
+        {
+            foreach (var step in run.steps)
+            {
+                if (step.dialogueSequence != null && !sequenceMap.ContainsKey(step.dialogueSequence.name))
+                    sequenceMap.Add(step.dialogueSequence.name, step.dialogueSequence);
+                if (step.dependency != null && !sequenceMap.ContainsKey(step.dependency.name))
+                    sequenceMap.Add(step.dependency.name, step.dependency);
+            }
+        }
+
+        string[] names = savedData.Split('|');
+        foreach (string seqName in names)
+        {
+            if (sequenceMap.TryGetValue(seqName, out DialogueSequence sequence))
+            {
+                completedSequences.Add(sequence);
+            }
+        }
+    }
+
+    [ContextMenu("Reset Save Data (Debug)")]
+    public void ResetSaveData()
     {
         PlayerPrefs.DeleteKey(SAVE_RUN_KEY);
         PlayerPrefs.DeleteKey(SAVE_STEP_KEY);
         PlayerPrefs.DeleteKey(SAVE_SEQUENCES_KEY);
         PlayerPrefs.Save();
-
-        currentRunNumber = 0;
-        appliedRunNumber = 0;
-        stepsCompletedThisRun = 0;
-        completedKeys.Clear();
-        completedNames.Clear();
-
-        Debug.Log("[NarrativeManager] Save Data Reset Successfully (Run 0).");
+        
+        currentRunNumber = 1;
+        run1ProgressStep = 0;
+        completedSequences.Clear();
+        
+        Debug.Log("[NarrativeManager] Save Data Reset Successfully.");
     }
 
-    // ------------------------------------------------------------------ run numbering helper
-    /// <summary>
-    /// Keeps Run Numbers sane without touching the names you type:
-    ///  - brand-new data (every element still 0) gets numbered by list order,
-    ///  - an element you just added with "+" (Unity clones the previous one) gets the next free number.
-    /// </summary>
-    private void AutoNumberRuns()
-    {
-        if (runNarratives == null || runNarratives.Count == 0) return;
-
-        bool allZero = true;
-        foreach (RunNarrativeData r in runNarratives)
-            if (r != null && r.runNumber != 0) { allZero = false; break; }
-
-        if (allZero && runNarratives.Count > 1)
-        {
-            for (int i = 0; i < runNarratives.Count; i++)
-                if (runNarratives[i] != null) runNarratives[i].runNumber = i;
-            return;
-        }
-
-        int last = runNarratives.Count - 1;
-        RunNarrativeData lastData = runNarratives[last];
-        if (lastData == null) return;
-
-        int max = -1;
-        bool duplicate = false;
-        for (int i = 0; i < runNarratives.Count; i++)
-        {
-            if (runNarratives[i] == null) continue;
-            if (runNarratives[i].runNumber < 0) runNarratives[i].runNumber = 0;
-            max = Mathf.Max(max, runNarratives[i].runNumber);
-            if (i != last && runNarratives[i].runNumber == lastData.runNumber) duplicate = true;
-        }
-        if (duplicate) lastData.runNumber = max + 1;
-    }
-
-    // ------------------------------------------------------------------ context menus
-    [ContextMenu("Jump To Current Run Number (Debug)")]
-    private void ContextJump() => JumpToRun(currentRunNumber);
-
-    [ContextMenu("Reset Save Data (Debug)")]
-    public void ResetSaveData()
-    {
-        ClearSave();
-        RunNumberChanged?.Invoke(0);
-    }
-
-    [ContextMenu("Auto-Number Runs From List Order")]
-    private void ContextAutoNumber()
-    {
-        for (int i = 0; i < runNarratives.Count; i++)
-            if (runNarratives[i] != null) runNarratives[i].runNumber = i;
-    }
+    #endregion
 }

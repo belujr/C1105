@@ -46163,7 +46163,7 @@ Transform:
   m_GameObject: {fileID: 446062488}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.281, z: 0.78}
+  m_LocalPosition: {x: 0, y: 1.281, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -82456,55 +82456,6 @@ MonoBehaviour:
     generateLeaves: 1
     generateLightmapUVs: 0
   growth: {fileID: 1683891244}
---- !u!1 &860908182
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 860908184}
-  - component: {fileID: 860908183}
-  m_Layer: 0
-  m_Name: HubSceneSetup_Narrative
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &860908183
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 860908182}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd3ff61642ffb2f42a975a7121e05fd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HubSceneSetup
-  vesselConjureVFX: {fileID: 0}
-  spawnPoint: {fileID: 446062489}
-  playerPrefab: {fileID: 459098319445998704, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
-  openingDelay: 1.5
-  stepEvents: []
---- !u!4 &860908184
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 860908182}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -63.36277, y: 8.93008, z: 138.34387}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &865100171
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -144086,11 +144037,113 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 9a7f60740d3ab3042ab8508b65d29335, type: 2}
   uv2Rects: []
   leavesDataInitialized: 1
---- !u!4 &1607887043 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-  m_PrefabInstance: {fileID: 8200244789738850302}
+--- !u!1 &1607887041
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1607887043}
+  - component: {fileID: 1607887042}
+  m_Layer: 0
+  m_Name: _NarrativeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1607887042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607887041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ef7f131e8d2a404bb9d002f8e3123db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HubNarrativeManager
+  resetSaveDataOnStart: 1
+  run1ProgressStep: 0
+  currentRunNumber: 1
+  runNarratives:
+  - runName: 1
+    steps:
+    - stepLabel: RUN 1 ATLAS
+      dialogueSequence: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
+      triggerNPC: 3
+      autoTriggerOnRunStart: 1
+      dependency: {fileID: 0}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls: []
+    - stepLabel: RUN 1 TRENCH
+      dialogueSequence: {fileID: 11400000, guid: e04680f935b301d4c9b6ac049b6333b9, type: 2}
+      triggerNPC: 0
+      autoTriggerOnRunStart: 0
+      dependency: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls:
+          - m_Target: {fileID: 1440518673}
+            m_TargetAssemblyTypeName: MiloController, Assembly-CSharp
+            m_MethodName: BeginMiloSequence
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 2
+    - stepLabel: RUN 1 MILO
+      dialogueSequence: {fileID: 11400000, guid: 59b2d0c7c9ce5aa4f89e9ed4753f106b, type: 2}
+      triggerNPC: 1
+      autoTriggerOnRunStart: 0
+      dependency: {fileID: 11400000, guid: e04680f935b301d4c9b6ac049b6333b9, type: 2}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls: []
+    - stepLabel: RUN 1 MASTER REN
+      dialogueSequence: {fileID: 11400000, guid: 8f0a9ccac7c8b7047be6c834ab60c99d, type: 2}
+      triggerNPC: 2
+      autoTriggerOnRunStart: 0
+      dependency: {fileID: 11400000, guid: e04680f935b301d4c9b6ac049b6333b9, type: 2}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls: []
+    - stepLabel: RUN 1 REN
+      dialogueSequence: {fileID: 11400000, guid: 0c3adcd7f45da454eb400b9c2d1a52d9, type: 2}
+      triggerNPC: 2
+      autoTriggerOnRunStart: 0
+      dependency: {fileID: 11400000, guid: e04680f935b301d4c9b6ac049b6333b9, type: 2}
+      onStepCompleted:
+        m_PersistentCalls:
+          m_Calls: []
+  - runName: 2
+    steps: []
+  vesselConjureVFX: {fileID: 0}
+  spawnPoint: {fileID: 446062489}
+  playerPrefab: {fileID: 459098319445998704, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
+--- !u!4 &1607887043
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607887041}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2002436115}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1627674562
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -210128,7 +210181,6 @@ MonoBehaviour:
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   deathAnimatorTrigger: 
-  hubTransitionDelay: 1.5
   isImmortal: 0
 --- !u!23 &4687526243511177748
 MeshRenderer:
@@ -231717,71 +231769,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8561367560748239103}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &8200244789738850302
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2002436115}
-    m_Modifications:
-    - target: {fileID: 902950577904402603, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_Name
-      value: _NarrativeManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 1933726290693250745, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: spawnPoint
-      value: 
-      objectReference: {fileID: 446062489}
-    - target: {fileID: 1933726290693250745, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: runNarratives.Array.data[1].steps.Array.data[1].onStepCompleted.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 1440518673}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2635851200817775080, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f80e650cda7631c47a46ad746bcae6f0, type: 3}
 --- !u!137 &8219535070343722834
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -235122,4 +235109,3 @@ SceneRoots:
   - {fileID: 2098605739}
   - {fileID: 159149425}
   - {fileID: 1014008448}
-  - {fileID: 860908184}
