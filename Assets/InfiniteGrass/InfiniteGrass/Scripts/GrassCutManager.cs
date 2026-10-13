@@ -134,7 +134,9 @@ public class GrassCutManager : MonoBehaviour
             origin = new Vector2(origin.x, origin.z),
             dir = dir,
             radius = radius,
-            cosHalf = Mathf.Cos(Mathf.Clamp(coneAngleDegrees * 0.5f, 0f, 180f) * Mathf.Deg2Rad),
+            // A full circle (360) needs cosHalf BELOW -1: the cone edge is soft (it fades over 0.1 of cos), so with exactly -1
+            // the blades straight behind the cut direction only got half cut and a strip of grass survived.
+            cosHalf = coneAngleDegrees >= 359f ? -1.2f : Mathf.Cos(Mathf.Clamp(coneAngleDegrees * 0.5f, 0f, 180f) * Mathf.Deg2Rad),
             startTime = Time.time
         };
 

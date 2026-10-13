@@ -5,7 +5,8 @@ using UnityEngine;
 /// the first time a bat spawns, you don't have to add it; you can also drop it into the scene to edit the colors).
 /// The rings grow to the real damage radius, so the player can read how far the blast reaches.
 /// Cyan and violet, like the bats and the Healer's summon: flash, a fireball, two shockwave rings,
-/// streaks of light, dark smoke and drifting embers.
+/// streaks of light, dark smoke and drifting embers. Afterwards the grass below the blast is blown away
+/// (your GrassCutManager does the real sweep).
 /// </summary>
 public class BatBlastFX : MonoBehaviour
 {
@@ -24,6 +25,11 @@ public class BatBlastFX : MonoBehaviour
     public bool smoke = true;
     public int embers = 12;
 
+    [Header("Aftermath")]
+    [Tooltip("The grass inside the blast is swept away (blades whip outward, fly off and shrink, then regrow). Needs a GrassCutManager in the scene, the same one your AOE attack uses.")]
+    public bool blowAwayGrass = true;
+    [Tooltip("1 = exactly the damage radius.")]
+    public float grassRadiusScale = 1f;
     private ParticleSystem flashPS, corePS, ringPS, ringGroundPS, sparkPS, smokePS, emberPS;
     private bool built;
 
@@ -163,6 +169,12 @@ public class BatBlastFX : MonoBehaviour
         for (int i = 0; i < embers; i++)
             EmitOne(emberPS, pos, Random.insideUnitSphere * 1.5f * k, Random.Range(0.8f, 1.4f),
                     Random.Range(0.04f, 0.08f), Pick());
+
+        // ----- the aftermath -----
+        Vector3 ground = new Vector3(pos.x, groundY, pos.z);
+
+        // the grass below the blast is blown away (a full 360 degree sweep, the same effect as your AOE attack)
+        if (blowAwayGrass) GrassCutManager.Cut(ground, Vector3.forward, radius * grassRadiusScale, 360f);
     }
 
     private void Puff(Vector3 pos)

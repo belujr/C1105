@@ -11,6 +11,12 @@ public class HubNarrativeManager : MonoBehaviour
     [Tooltip("Check this box to automatically wipe save data every time you hit Play in the Editor.")]
     public bool resetSaveDataOnStart = false;
 
+    private static bool hasResetThisSession;
+
+    // Clears the flag on every new Play, even with Domain Reload disabled
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ClearResetFlag() => hasResetThisSession = false;
+
     [Header("Save Keys")]
     private const string SAVE_RUN_KEY = "Narrative_CurrentRunNumber";
     private const string SAVE_STEP_KEY = "Narrative_Run1ProgressStep";
@@ -20,7 +26,7 @@ public class HubNarrativeManager : MonoBehaviour
     public int run1ProgressStep = 0;
 
     [Header("Run Configuration")]
-    public int currentRunNumber = 1;
+    public int currentRunNumber = 0;
     public List<RunNarrativeData> runNarratives = new List<RunNarrativeData>();
 
     [Header("VFX & Spawn")]
@@ -47,14 +53,16 @@ public class HubNarrativeManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else 
+        else
         {
             Destroy(gameObject);
             return;
         }
 
-        if (resetSaveDataOnStart)
+        // Reset only once per Play session, not every time scene_hub reloads after a death
+        if (resetSaveDataOnStart && !hasResetThisSession)
         {
+            hasResetThisSession = true;
             ResetSaveData();
         }
 
@@ -140,7 +148,7 @@ public class HubNarrativeManager : MonoBehaviour
                 if (!completedSequences.Contains(step.dialogueSequence))
                 {
                     completedSequences.Add(step.dialogueSequence);
-                    run1ProgressStep++; 
+                    run1ProgressStep++;
                     SaveProgress();
                 }
 
@@ -201,7 +209,7 @@ public class HubNarrativeManager : MonoBehaviour
         {
             if (seq != null) savedNames.Add(seq.name);
         }
-        
+
         string joinedData = string.Join("|", savedNames);
         PlayerPrefs.SetString(SAVE_SEQUENCES_KEY, joinedData);
         PlayerPrefs.Save();
@@ -209,7 +217,7 @@ public class HubNarrativeManager : MonoBehaviour
 
     public void LoadProgress()
     {
-        currentRunNumber = PlayerPrefs.GetInt(SAVE_RUN_KEY, 1);
+        currentRunNumber = PlayerPrefs.GetInt(SAVE_RUN_KEY, 0);
         run1ProgressStep = PlayerPrefs.GetInt(SAVE_STEP_KEY, 0);
 
         completedSequences.Clear();
@@ -246,11 +254,11 @@ public class HubNarrativeManager : MonoBehaviour
         PlayerPrefs.DeleteKey(SAVE_STEP_KEY);
         PlayerPrefs.DeleteKey(SAVE_SEQUENCES_KEY);
         PlayerPrefs.Save();
-        
-        currentRunNumber = 1;
+
+        currentRunNumber = 0;
         run1ProgressStep = 0;
         completedSequences.Clear();
-        
+
         Debug.Log("[NarrativeManager] Save Data Reset Successfully.");
     }
 

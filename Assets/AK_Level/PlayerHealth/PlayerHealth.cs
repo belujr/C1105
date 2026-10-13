@@ -239,6 +239,9 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         PlayerIsDead = true;
 
+        // Each death ends the current run (run 0 -> run 1, etc.)
+        RunState.Advance();
+
         // a knockback that is still running from an earlier hit must stop too
         if (activeKnockback != null)
         {
