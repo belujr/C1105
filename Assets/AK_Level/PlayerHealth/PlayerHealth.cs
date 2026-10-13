@@ -32,6 +32,9 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     [Tooltip("Optional. Name of an Animator trigger to play when the player dies. Leave empty for none.")]
     public string deathAnimatorTrigger = "";
 
+    [Tooltip("Seconds to let the death effects play before loading the Hub.")]
+    public float hubTransitionDelay = 1.5f;
+
     [SerializeField]
     private bool isImmortal = false;
 
@@ -121,7 +124,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         currentHealth -= finalDamage;
         Debug.Log($"Player took {finalDamage} damage! Remaining Health: {currentHealth}/{maxHealth}");
 
-        // the killing blow does not push the player: the death effects start exactly where he stood
         bool lethal = currentHealth <= 0;
 
         if (force > 0f && !lethal)
@@ -134,7 +136,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             audioSource.PlayOneShot(hitSound);
         }
 
-        // Trigger the modular HitState using the hash passed from the enemy
         if (playerController != null && !isDead && !lethal)
         {
             float reactionTime = stunDuration > 0f ? stunDuration : 0.4f;
@@ -163,16 +164,13 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     private bool EvaluateDirectionalDodge(Vector3 hitDirection)
     {
-        // 1. If we aren't actively in the Dash State, we get hit. Walking doesn't grant i-frames!
         if (playerController != null && playerController.CurrentState != playerController.DashState)
         {
             return false;
         }
 
-        // 2. If we are dashing but moving too slow, we get hit
         if (playerVelocity.sqrMagnitude < 0.2f) return false;
 
-        // 3. If we are dashing sideways or backwards relative to the attack, we successfully dodge!
         Vector3 moveDir = playerVelocity.normalized;
         float dot = Vector3.Dot(moveDir, hitDirection.normalized);
         return dot >= -0.3f;
@@ -181,7 +179,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     public void SetComboStunLock(bool isLocked)
     {
         isCaughtInEnemyCombo = isLocked;
-        // playerController.enabled modification removed to allow state-based stuns
     }
 
     private IEnumerator ApplyPlayerKnockback(Vector3 hitDirection, float force)
@@ -234,22 +231,19 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        if (isDead) return;
+        if (isDead) return; // guarantees the run counter is incremented only once per death
         isDead = true;
 
         PlayerIsDead = true;
 
-        // a knockback that is still running from an earlier hit must stop too
         if (activeKnockback != null)
         {
             StopCoroutine(activeKnockback);
             activeKnockback = null;
         }
 
-        // Take control away (this also switches the CharacterController off)
         if (playerController != null) playerController.OnPlayerDied();
 
-        // Every other collider on the player goes off too, so nothing can hit the body. They come back on respawn.
         foreach (Collider c in GetComponentsInChildren<Collider>())
         {
             if (c.enabled)
@@ -261,11 +255,23 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         if (animator != null && !string.IsNullOrEmpty(deathAnimatorTrigger)) animator.SetTrigger(deathAnimatorTrigger);
 
-        // the death sequence (souls, floor rune, screen fade, dissolve); put PlayerDeathFX on the player prefab to edit its values
         if (GetComponent<PlayerDeathFX>() == null) gameObject.AddComponent<PlayerDeathFX>();
 
         Debug.Log("Player died.");
+
+        if (HubNarrativeManager.Instance == null)
+            Debug.LogError("[PlayerHealth] No HubNarrativeManager found - this death will NOT be counted as a run. Add the manager to the first scene (Scene_Level).");
+
+        // HubNarrativeManager subscribes to this event: it ends the current run, starts the next one and saves.
         if (Died != null) Died(this);
+
+        StartCoroutine(DeathTransitionRoutine());
+    }
+
+    private IEnumerator DeathTransitionRoutine()
+    {
+        yield return new WaitForSeconds(hubTransitionDelay); // Allow death visual effects to play
+        UnityEngine.SceneManagement.SceneManager.LoadScene(HubNarrativeManager.HubSceneNameOrDefault);
     }
 
     private void SetRenderersVisible(bool isVisible)
