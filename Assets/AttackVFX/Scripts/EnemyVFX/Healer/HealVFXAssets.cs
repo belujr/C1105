@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 /// </summary>
 public static class HealVFXAssets
 {
-    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex, sigilTex, vignetteTex, beamTex, spotTex, noiseTex, blobTex, splatTex;
+    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex, sigilTex, vignetteTex, beamTex, spotTex, noiseTex, blobTex, splatTex, summonTex;
     private static Mesh flatQuad;
     private static readonly RaycastHit[] rayBuf = new RaycastHit[8];
 
@@ -24,6 +24,8 @@ public static class HealVFXAssets
     public static Texture2D Rune { get { if (runeTex == null) runeTex = MakeRune(); return runeTex; } }
     /// <summary>The death floor pattern: a crown of spikes, a dashed ring, three spiral arms and an eye in the middle.</summary>
     public static Texture2D Sigil { get { if (sigilTex == null) sigilTex = MakeSigil(); return sigilTex; } }
+    /// <summary>The summoning circle: a double ring with eight nodes, a dashed ring and an eight-pointed star. Different from the heal rune and the death sigil.</summary>
+    public static Texture2D Summon { get { if (summonTex == null) summonTex = MakeSummon(); return summonTex; } }
     /// <summary>Tileable fractal noise (Wrap Mode = Repeat). Used by the blood pool shader.</summary>
     public static Texture2D Noise { get { if (noiseTex == null) noiseTex = MakeNoise(); return noiseTex; } }
     /// <summary>Red blood splatter on a transparent background, for the camera lens (big splats near the edges, thrown drops around them).</summary>
@@ -192,6 +194,39 @@ public static class HealVFXAssets
             float rise = Smooth(0f, 0.04f, v);                          // soft start at the floor
             float fall = 1f - Smooth(0.25f, 1f, v);                     // fades toward the top
             return (body * 0.6f + core) * rise * Mathf.Pow(fall, 1.2f);
+        });
+    }
+
+    private static Texture2D MakeSummon()
+    {
+        const float TwoPi = Mathf.PI * 2f;
+        return Make("SummonCircle", 256, 256, true, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;
+            float y = (v - 0.5f) * 2f;
+            float r = Mathf.Sqrt(x * x + y * y);
+            float ang = Mathf.Atan2(y, x);
+
+            float outer = Band(r, 0.94f, 0.018f, 0.015f);
+            float outer2 = 0.8f * Band(r, 0.86f, 0.008f, 0.012f);
+
+            // eight round nodes between the two rings
+            float arc = (Mathf.Repeat(ang / TwoPi * 8f, 1f) - 0.5f) * TwoPi * 0.90f / 8f;
+            float nd = Mathf.Sqrt((r - 0.90f) * (r - 0.90f) + arc * arc);
+            float nodes = 1f - Smooth(0.022f, 0.034f, nd);
+
+            float dashed = Band(Mathf.Repeat(ang / TwoPi * 24f, 1f), 0.5f, 0.3f, 0.05f) * Band(r, 0.70f, 0.008f, 0.012f) * 0.9f;
+
+            // eight-pointed star: two squares, one turned by 45 degrees
+            float sq1 = r * Mathf.Cos(Mathf.Repeat(ang, TwoPi / 4f) - Mathf.PI / 4f);
+            float sq2 = r * Mathf.Cos(Mathf.Repeat(ang + Mathf.PI / 4f, TwoPi / 4f) - Mathf.PI / 4f);
+            float star = Mathf.Max(Band(sq1, 0.5f, 0.008f, 0.012f), Band(sq2, 0.5f, 0.008f, 0.012f)) * (1f - Smooth(0.68f, 0.72f, r)) * 0.9f;
+
+            float core = Band(r, 0.16f, 0.010f, 0.012f) + (1f - Smooth(0.04f, 0.06f, r)) * 0.9f;
+            float fill = 0.10f * Smooth(0.25f, 0.85f, r) * (1f - Smooth(0.85f, 0.9f, r));
+
+            float a = Mathf.Max(Mathf.Max(Mathf.Max(outer, outer2), Mathf.Max(nodes, dashed)), Mathf.Max(star, core)) + fill;
+            return a * (1f - Smooth(0.985f, 1f, r));
         });
     }
 

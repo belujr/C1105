@@ -23,6 +23,7 @@ public class HealerController : MonoBehaviour, IDamageable
     private LineRenderer healBeam;
     private Collider bodyCollider;
     private HealerHealVFX healVFX;
+    private HealerSummonVFX summonVFX;
     private HealReceiveFX allyFX;
     private Transform allyFXOwner;
 
@@ -112,6 +113,7 @@ public class HealerController : MonoBehaviour, IDamageable
         pendingSpawnAfterHit = false;
         if (healBeam != null) healBeam.enabled = false;
         if (healVFX != null) healVFX.StopCasting();
+        if (summonVFX != null) summonVFX.Cancel();
     }
 
     private void Awake()
@@ -125,6 +127,9 @@ public class HealerController : MonoBehaviour, IDamageable
         healVFX = GetComponent<HealerHealVFX>();
         if (healVFX == null) healVFX = gameObject.AddComponent<HealerHealVFX>();
         healVFX.staff = staffTransform;
+
+        summonVFX = GetComponent<HealerSummonVFX>();
+        if (summonVFX == null) summonVFX = gameObject.AddComponent<HealerSummonVFX>();
 
         if (animProfile != null) animProfile.InitializeDictionary();
         if (playerTransform == null) playerTransform = FindObjectOfType<PlayerController>()?.transform;
@@ -183,6 +188,9 @@ public class HealerController : MonoBehaviour, IDamageable
         bool batsSpawned = false;
         float halfDuration = totalDuration * 0.5f;
 
+        // the magic circle spins up between the raised hands until the bat appears
+        if (summonVFX != null) summonVFX.BeginCharge(batSpawnPoint, halfDuration);
+
         // Stay stationary while spawning, but smoothly track and face the player
         while (elapsed < totalDuration)
         {
@@ -232,6 +240,8 @@ public class HealerController : MonoBehaviour, IDamageable
 
     private void SpawnBatsAction()
     {
+        if (summonVFX != null) summonVFX.Release();   // flash, sparks and a ring where the bat appears
+
         if (EnemyObjectPool.Instance != null && batPrefab != null && batSpawnPoint != null)
         {
             EnemyObjectPool.Instance.GetPooledEnemy(batPrefab, batSpawnPoint.position, Quaternion.identity);
@@ -522,6 +532,7 @@ public class HealerController : MonoBehaviour, IDamageable
                 spawnRoutine = null;
             }
             isSpawning = false;
+            if (summonVFX != null) summonVFX.Cancel();   // the summon fizzles out
             pendingSpawnAfterHit = true; // Mark to replay spawn animation & spawn bats AFTER getting hit
         }
 
@@ -567,6 +578,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        if (summonVFX != null) summonVFX.Cancel();
         if (isDead) return;
         isDead = true;
         StopHealing();
