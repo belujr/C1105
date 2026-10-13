@@ -80,6 +80,7 @@ public class KamikazeBatController : MonoBehaviour, IDamageable
 
     private Renderer[] batRenderers;
     private MaterialPropertyBlock propBlock;
+    private BatVFX batVFX;
 
     private static readonly int ColorPropID = Shader.PropertyToID("_Color");
     private static readonly int BaseColorPropID = Shader.PropertyToID("_BaseColor");
@@ -150,11 +151,22 @@ public class KamikazeBatController : MonoBehaviour, IDamageable
         // created here also take part in the fuse colour flash.
         SetupWings();
 
-        batRenderers = GetComponentsInChildren<Renderer>();
+        // only the bat's own meshes flash red during the fuse (not the trail and particle effects)
+        List<Renderer> flashRenderers = new List<Renderer>();
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        {
+            if (r is TrailRenderer || r is ParticleSystemRenderer || r is LineRenderer) continue;
+            flashRenderers.Add(r);
+        }
+        batRenderers = flashRenderers.ToArray();
         propBlock = new MaterialPropertyBlock();
 
         FindPlayerReference();
         timeOffset = Random.Range(0f, 100f);
+
+        // trail, glints and the explosion effect
+        batVFX = GetComponent<BatVFX>();
+        if (batVFX == null) batVFX = gameObject.AddComponent<BatVFX>();
     }
 
     private void OnEnable()
@@ -325,6 +337,7 @@ public class KamikazeBatController : MonoBehaviour, IDamageable
             }
 
             currentState = BatState.Fusing;
+            if (batVFX != null) batVFX.SetFusing(fuseDuration);   // the trail turns hot
             activeFuseRoutine = StartCoroutine(FuseAndExplodeRoutine());
         }
     }
@@ -389,7 +402,12 @@ public class KamikazeBatController : MonoBehaviour, IDamageable
 
         if (audioSource != null) audioSource.Stop();
 
-        if (explosionVFXPrefab != null)
+        // the blast grows to the real damage radius (the bat's ground level is its hover height below it)
+        if (batVFX != null)
+        {
+            batVFX.PlayExplosion(cachedTransform.position, baseY - hoverHeightOffset, explosionRadius);
+        }
+        else if (explosionVFXPrefab != null)
         {
             ParticleSystem vfx = Instantiate(explosionVFXPrefab, cachedTransform.position, Quaternion.identity);
             vfx.Play();
@@ -442,6 +460,8 @@ public class KamikazeBatController : MonoBehaviour, IDamageable
 
         if (activeFuseRoutine != null) StopCoroutine(activeFuseRoutine);
         if (audioSource != null) audioSource.Stop();
+
+        if (batVFX != null) batVFX.PlayDeathPuff(cachedTransform.position);
 
         ReturnToPool();
     }
