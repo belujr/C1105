@@ -11,19 +11,19 @@ public class EnemySoulDrop : MonoBehaviour
     [Min(0)] public int soulEnergyValue = 25;
 
     private bool hasDroppedSouls;
-
-    private void OnEnable() => hasDroppedSouls = false;
+    private static BeaconSpawnerManager spawner;
 
     public void TriggerSoulDrop()
     {
         if (hasDroppedSouls) return;
         hasDroppedSouls = true;
 
-        // EnemyHitFX is added at runtime on the first hit, so it can't be cached in Awake.
-        // Look it up now, and create it if the enemy was never hit, so the flag is always set.
         EnemyHitFX hitFx = GetComponent<EnemyHitFX>();
         if (hitFx == null) hitFx = gameObject.AddComponent<EnemyHitFX>();
         hitFx.MarkKillHandled();
+
+        if (spawner == null) spawner = FindObjectOfType<BeaconSpawnerManager>();
+        if (spawner != null) spawner.ReportEnemyDeath(gameObject);
 
         HitFeedbackManager.NotifyKill(transform.position, transform.forward, soulEnergyValue);
     }

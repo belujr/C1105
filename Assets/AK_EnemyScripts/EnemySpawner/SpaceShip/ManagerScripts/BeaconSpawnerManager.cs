@@ -80,10 +80,10 @@ public class BeaconSpawnerManager : MonoBehaviour
 
         activeEnemies.RemoveAll(enemy => enemy == null || !enemy.activeInHierarchy);
 
-        if (beaconHealth != null && beaconHealth.IsShieldActive && 
-            allowReinforcements && 
-            activeEnemies.Count <= reinforcementThreshold && 
-            !isWaitingForReinforcements && 
+        if (beaconHealth != null && beaconHealth.IsShieldActive &&
+            allowReinforcements &&
+            activeEnemies.Count <= reinforcementThreshold &&
+            !isWaitingForReinforcements &&
             activeShipsInTransit == 0)
         {
             StartCoroutine(SpawnReinforcementWaveRoutine());
@@ -108,7 +108,7 @@ public class BeaconSpawnerManager : MonoBehaviour
         }
     }
 
-    
+
 
     private System.Collections.IEnumerator SpawnReinforcementWaveRoutine()
     {
@@ -188,11 +188,11 @@ public class BeaconSpawnerManager : MonoBehaviour
             {
                 // FIX: Both ImpBrain and UltraInstinctCapsule implement IDamageable. 
                 IDamageable damageable = enemy.GetComponentInChildren<IDamageable>();
-                
+
                 if (damageable != null)
                 {
-                   // FIX: Filled in the missing parameters (force, sound, attackID, isAOE)
-                   damageable.TakeDamage(99999f, enemy.transform.position, Vector3.up, 0f, null, 0, false);
+                    // FIX: Filled in the missing parameters (force, sound, attackID, isAOE)
+                    damageable.TakeDamage(99999f, enemy.transform.position, Vector3.up, 0f, null, 0, false);
                 }
                 else
                 {
@@ -215,12 +215,11 @@ public class BeaconSpawnerManager : MonoBehaviour
             beaconHealth.RegisterEnemyKilled();
         }
     }
-public void RegisterEnemyDefeated(GameObject enemy)
-{
-    if (!activeEnemies.Contains(enemy)) return;
-    RegisterOnlyKill(enemy);
-    EnemyObjectPool.Instance.ReturnToPool(enemy);
-}
+    public void RegisterEnemyDefeated(GameObject enemy)
+    {
+        activeEnemies.Remove(enemy);
+        if (EnemyObjectPool.Instance != null) EnemyObjectPool.Instance.ReturnToPool(enemy);
+    }
 
     private void OnShieldDropped()
     {
@@ -229,22 +228,22 @@ public void RegisterEnemyDefeated(GameObject enemy)
         escalationRoutine = StartCoroutine(EscalationSpawnRoutine());
     }
 
-private System.Collections.IEnumerator EscalationSpawnRoutine()
-{
-    float currentDelay = initialEscalationDelay;
-    yield return new WaitForSeconds(currentDelay);
-
-    while (isEncounterRunning && beaconHealth != null && !beaconHealth.IsShieldActive)
+    private System.Collections.IEnumerator EscalationSpawnRoutine()
     {
-        if (activeEnemies.Count < maxAliveEnemies && activeShipsInTransit < maxShipsInTransit)
-        {
-            DispatchRandomSpaceship();
-            currentDelay = Mathf.Max(minimumSpawnDelay, currentDelay * intensityAccelerationFactor);
-        }
+        float currentDelay = initialEscalationDelay;
         yield return new WaitForSeconds(currentDelay);
+
+        while (isEncounterRunning && beaconHealth != null && !beaconHealth.IsShieldActive)
+        {
+            if (activeEnemies.Count < maxAliveEnemies && activeShipsInTransit < maxShipsInTransit)
+            {
+                DispatchRandomSpaceship();
+                currentDelay = Mathf.Max(minimumSpawnDelay, currentDelay * intensityAccelerationFactor);
+            }
+            yield return new WaitForSeconds(currentDelay);
+        }
     }
-}
-    
+
 
     private void OnBeaconDestroyed()
     {
@@ -258,10 +257,21 @@ private System.Collections.IEnumerator EscalationSpawnRoutine()
         }
 
         StopAllCoroutines();
-        
+
         // FIX: Instantly deal lethal damage to all spawned enemies before shutting down
-        KillAllActiveEnemies(); 
-        
+        KillAllActiveEnemies();
+
         activeShipsInTransit = 0;
+    }
+
+    /// Called by EnemySoulDrop at the moment of a real kill. Only counts enemies this beacon spawned.
+    public void ReportEnemyDeath(GameObject enemy)
+    {
+        if (!activeEnemies.Contains(enemy))
+        {
+            Debug.Log($"[Spawner] {enemy.name} died but is not in activeEnemies, so it is not counted.");
+            return;
+        }
+        RegisterOnlyKill(enemy);   // removes it from the list and counts exactly one kill
     }
 }

@@ -2,36 +2,20 @@ using UnityEngine;
 
 public class BeaconEnemyLink : MonoBehaviour
 {
-    private bool hasBeenEnabled = false;
-    private bool hasRegisteredDeath = false;
-    private BeaconSpawnerManager spawnerManager;
+    private static BeaconSpawnerManager spawner;
+    private bool hasRegisteredDeath;
 
-    private void Awake()
+    private void OnEnable() => hasRegisteredDeath = false;   // pooled enemies count again next life
+
+    /// Called by EnemySoulDrop at the moment of a real kill.
+    public void ReportKill()
     {
-        // Cache the manager once to avoid expensive lookups when dying
-        spawnerManager = FindObjectOfType<BeaconSpawnerManager>();
-    }
+        if (hasRegisteredDeath) return;
+        hasRegisteredDeath = true;
 
-    private void OnEnable()
-    {
-        // Mark that this enemy has successfully spawned/activated from the pool
-        hasBeenEnabled = true;
-        
-        // Reset the death flag so it can count again for its next life!
-        hasRegisteredDeath = false; 
-    }
+        Debug.Log($"[BeaconEnemyLink] ReportKill on {name}. spawnerFound={spawner != null}", this);
 
-    private void OnDisable()
-    {
-        // Ignore if unspawning during scene shutdown or if it was never formally enabled
-        if (!hasBeenEnabled || !gameObject.scene.isLoaded) return;
-
-        // THIS is the only circumstance where the death is counted.
-        // It triggers exactly once when the enemy is returned to the Object Pool.
-        if (!hasRegisteredDeath && spawnerManager != null)
-        {
-            hasRegisteredDeath = true;
-            spawnerManager.RegisterOnlyKill(gameObject);
-        }
+        if (spawner == null) spawner = FindObjectOfType<BeaconSpawnerManager>();  // looked up when needed, never stale
+        if (spawner != null) spawner.RegisterOnlyKill(gameObject);
     }
 }

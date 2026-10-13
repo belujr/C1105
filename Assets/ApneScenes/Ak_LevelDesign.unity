@@ -860,8 +860,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d310f21283c19d47b09c26b8e1dccdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoulManager
+  resetSaveDataOnStart: 0
+  saveDelaySeconds: 1.5
   totalSouls: 0
-  soulCounterText: {fileID: 0}
 --- !u!4 &376933569
 Transform:
   m_ObjectHideFlags: 0
@@ -3446,7 +3447,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1191904385516748377, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
       propertyPath: maxHealth
-      value: 10
+      value: 500
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7567965575449163767, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
