@@ -147,6 +147,7 @@ GameObject:
   - component: {fileID: 7501776007554158415}
   - component: {fileID: 2378619950951942694}
   - component: {fileID: 8927129479503520099}
+  - component: {fileID: 3512757250595188403}
   m_Layer: 6
   m_Name: UltraInstinchCapsule
   m_TagString: Untagged
@@ -430,6 +431,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 5
+--- !u!114 &3512757250595188403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047082666833305160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126fd39090fd091498bdc641be086ec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
+  soulEnergyValue: 25
 --- !u!1 &2163117183044104549
 GameObject:
   m_ObjectHideFlags: 0

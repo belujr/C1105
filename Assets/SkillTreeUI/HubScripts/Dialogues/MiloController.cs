@@ -29,6 +29,7 @@ public class MiloController : MonoBehaviour
     public float playerStopDistance = 1.5f;
     public float timeToStayAtPlayer = 1.0f;
     public float timeToReachRen = 5.0f;
+    public float rotationSpeed = 12f;
 
     private Transform playerTransform;
     private Animator miloAnimator;
@@ -46,10 +47,14 @@ public class MiloController : MonoBehaviour
             return;
         }
 
-        // Locate Animator
         miloAnimator = GetComponentInChildren<Animator>();
+        
+        // CRITICAL FIX: Disable Animator Root Motion so script movement isn't overridden/teleported
+        if (miloAnimator != null)
+        {
+            miloAnimator.applyRootMotion = false;
+        }
 
-        // Hide visuals without deactivating this script component
         SetMiloVisibility(false);
     }
 
@@ -61,7 +66,6 @@ public class MiloController : MonoBehaviour
         }
         else
         {
-            // Toggle child renderers if no separate visual object is assigned
             foreach (Renderer r in GetComponentsInChildren<Renderer>())
             {
                 r.enabled = visible;
@@ -95,6 +99,7 @@ public class MiloController : MonoBehaviour
         isAtRen = false;
         renIdleLineIndex = 0;
 
+        StopAllCoroutines();
         StartCoroutine(MiloSequenceRoutine());
     }
 
@@ -111,7 +116,7 @@ public class MiloController : MonoBehaviour
             }
         }
 
-        // SEQUENCE 1: Dialogue while walking to Player
+        // --- PHASE 1: Walk from Spawn to Player ---
         if (dialogueSpawnToPlayer != null && DialogueUI.Instance != null)
         {
             DialogueUI.Instance.StartSequence(dialogueSpawnToPlayer);
@@ -135,20 +140,24 @@ public class MiloController : MonoBehaviour
             yield return null;
         }
 
+        // Switch to Idle at Player
         if (miloAnimator != null) miloAnimator.SetBool("IsWalking", false);
-
         yield return new WaitForSeconds(timeToStayAtPlayer);
 
-        // SEQUENCE 2: Dialogue while walking to Ren
+        // --- PHASE 2: Walk from Player to Master Ren ---
         if (dialoguePlayerToRen != null && DialogueUI.Instance != null)
         {
             DialogueUI.Instance.StartSequence(dialoguePlayerToRen);
         }
 
+        // Compile clean path, filtering out null references to prevent jumping/teleporting
         List<Vector3> fullPath = new List<Vector3>();
-        foreach (var wp in waypointsToRen)
+        if (waypointsToRen != null)
         {
-            if (wp != null) fullPath.Add(new Vector3(wp.position.x, fixedY, wp.position.z));
+            foreach (var wp in waypointsToRen)
+            {
+                if (wp != null) fullPath.Add(new Vector3(wp.position.x, fixedY, wp.position.z));
+            }
         }
         if (masterRenPoint != null)
         {
@@ -159,6 +168,7 @@ public class MiloController : MonoBehaviour
         {
             if (miloAnimator != null) miloAnimator.SetBool("IsWalking", true);
 
+            // Calculate exact total path distance for smooth movement timing
             float totalDistance = 0f;
             Vector3 lastPos = new Vector3(transform.position.x, fixedY, transform.position.z);
             foreach (var point in fullPath)
@@ -174,7 +184,7 @@ public class MiloController : MonoBehaviour
                 while (true)
                 {
                     Vector3 currentPosXZ = new Vector3(transform.position.x, fixedY, transform.position.z);
-                    if (Vector3.Distance(currentPosXZ, targetPoint) < 0.1f) break;
+                    if (Vector3.Distance(currentPosXZ, targetPoint) <= 0.05f) break;
 
                     Vector3 nextPos = Vector3.MoveTowards(currentPosXZ, targetPoint, travelSpeed * Time.deltaTime);
                     nextPos.y = fixedY;
@@ -185,6 +195,7 @@ public class MiloController : MonoBehaviour
                 }
             }
 
+            // Arrived at Ren: switch to continuous idle animation
             if (miloAnimator != null) miloAnimator.SetBool("IsWalking", false);
         }
 
@@ -212,13 +223,13 @@ public class MiloController : MonoBehaviour
 
     private void RotateTowardsXZ(Vector3 targetPosition)
     {
-        Vector3 direction = (targetPosition - transform.position).normalized;
+        Vector3 direction = (targetPosition - transform.position);
         direction.y = 0;
 
-        if (direction != Vector3.zero)
+        if (direction.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRot = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 10f);
+            Quaternion targetRot = Quaternion.LookRotation(direction.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSpeed);
         }
     }
 }

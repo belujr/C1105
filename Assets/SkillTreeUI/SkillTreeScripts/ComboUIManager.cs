@@ -24,6 +24,10 @@ public class ComboUIManager : MonoBehaviour
 
     private SkillTreeNode[] allTreeNodes;
 
+    // Set by Shopkeeper so it can fade the panel out BEFORE the menu closes.
+    // Defaults to false, so the menu behaves exactly as before everywhere else.
+    [HideInInspector] public bool suppressBackClose;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -66,6 +70,7 @@ public class ComboUIManager : MonoBehaviour
 
     private void OnBackPressed(InputAction.CallbackContext context)
     {
+        if (suppressBackClose) return;
         if (skillTreePanel.activeSelf) CloseMenu();
     }
 

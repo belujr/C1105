@@ -817,7 +817,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928f136b10b9abe4ab249293ce5dc11d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 10
+  maxHealth: 100
   animator: {fileID: 3408760209031683829}
   audioSource: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
@@ -931,8 +931,6 @@ MonoBehaviour:
   emberRate: 140
   emberColorA: {r: 1, g: 0.3, b: 0.1, a: 1}
   emberColorB: {r: 0.7, g: 0.04, b: 0.03, a: 1}
-  finalBurst: 1
-  finalBurstCount: 70
   redLight: 1
   lightIntensity: 150
   lightRange: 6
