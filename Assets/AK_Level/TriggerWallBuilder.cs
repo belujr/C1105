@@ -8,15 +8,18 @@ public class TriggerWallBuilder : MonoBehaviour
     [Tooltip("Add all the Beacon wall objects you want to build/destroy here.")]
     [SerializeField] private BeaconWallBarrier[] targetBarriers;
 
-    [Header("Enemies")]
-    [Tooltip("Drag the enemies for this area here. Walls drop when all are destroyed or disabled.")]
-    [SerializeField] private GameObject[] arenaEnemies;
+    [Header("Phase 1: Pre-Placed Enemies")]
+    [Tooltip("Drag pre-placed enemies here. Waves start only after these are defeated.")]
+    [SerializeField] private GameObject[] prePlacedEnemies;
+
+    [Header("Phase 2: Wave Spawners")]
+    [Tooltip("Drag the Wave Spawners here. Walls drop when all spawners finish and disable themselves.")]
+    [SerializeField] private WaveSpawner[] waveSpawners;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            // 1. Build the walls
             if (targetBarriers != null)
             {
                 foreach (BeaconWallBarrier barrier in targetBarriers)
@@ -25,24 +28,39 @@ public class TriggerWallBuilder : MonoBehaviour
                 }
             }
             
-            // 2. Disable trigger so it doesn't fire again
             GetComponent<Collider>().enabled = false;
-
-            // 3. Start monitoring the enemies in the background
-            StartCoroutine(MonitorEnemiesRoutine());
+            StartCoroutine(ArenaProgressionRoutine());
         }
     }
 
-    // A Coroutine is highly optimized here because it avoids checking every single frame in Update()
-    private IEnumerator MonitorEnemiesRoutine()
+    private IEnumerator ArenaProgressionRoutine()
     {
-        // Check every 0.5 seconds if enemies are still alive
-        while (HasLivingEnemies())
+        // PHASE 1: Monitor pre-placed enemies
+        while (HasActiveObjects(prePlacedEnemies))
         {
-            yield return new WaitForSeconds(0.5f); 
+            yield return new WaitForSeconds(0.5f);
         }
 
-        // The loop breaks when zero enemies are left. Now, destroy the walls.
+        // PHASE 2: Start all Wave Spawners
+        if (waveSpawners != null)
+        {
+            foreach (WaveSpawner spawner in waveSpawners)
+            {
+                if (spawner != null) 
+                {
+                    spawner.gameObject.SetActive(true);
+                    spawner.StartSpawning();
+                }
+            }
+        }
+
+        // PHASE 3: Monitor spawners (they disable themselves when waves are cleared)
+        while (HasActiveSpawners())
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // PHASE 4: Open the walls
         if (targetBarriers != null)
         {
             foreach (BeaconWallBarrier barrier in targetBarriers)
@@ -52,19 +70,23 @@ public class TriggerWallBuilder : MonoBehaviour
         }
     }
 
-    private bool HasLivingEnemies()
+    private bool HasActiveObjects(GameObject[] objects)
     {
-        if (arenaEnemies == null || arenaEnemies.Length == 0) return false;
-
-        foreach (GameObject enemy in arenaEnemies)
+        if (objects == null || objects.Length == 0) return false;
+        foreach (GameObject obj in objects)
         {
-            // If the enemy GameObject hasn't been Destroyed (null) AND is currently active
-            if (enemy != null && enemy.activeInHierarchy)
-            {
-                return true; // At least one enemy is still alive
-            }
+            if (obj != null && obj.activeInHierarchy) return true;
         }
-        
-        return false; // All enemies are null or disabled
+        return false;
+    }
+
+    private bool HasActiveSpawners()
+    {
+        if (waveSpawners == null || waveSpawners.Length == 0) return false;
+        foreach (WaveSpawner spawner in waveSpawners)
+        {
+            if (spawner != null && spawner.gameObject.activeInHierarchy) return true;
+        }
+        return false;
     }
 }

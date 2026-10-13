@@ -496,6 +496,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HealerEnemy
       objectReference: {fileID: 0}
+    - target: {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2147,6 +2151,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: IMPEnemy
       objectReference: {fileID: 0}
+    - target: {fileID: 1808740274306136521, guid: ad95db996f7e41a458ebd05a573356c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3563,6 +3571,73 @@ MonoBehaviour:
   rippleDuration: 0.6
   rippleHot: {r: 1.2, g: 3, b: 1.6, a: 1}
   rippleEdge: {r: 0.2, g: 1.6, b: 0.5, a: 1}
+--- !u!114 &1605028569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1605028554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0e1a74c5fc56a46abbdcc82cab0db5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinionHoverVFX
+  mainColor: {r: 1, g: 0.25, b: 0.6, a: 1}
+  accentColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  brightness: 2.2
+  showShadow: 1
+  shadowRadius: 0.8
+  shadowOpacity: 0.45
+  showRing: 1
+  ringRadius: 0.9
+  fadeHeight: 4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  groundOffset: 0.5
+  clearGrass: 1
+  showMotes: 1
+  moteRate: 14
+  motesPerMeter: 6
+  underBodyOffset: {x: 0, y: 0.3, z: 0}
+  showOrbs: 1
+  orbRadius: 0.6
+  orbSpeed: 3
+  orbCenterOffset: {x: 0, y: 1, z: 0}
+--- !u!114 &1605028570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1605028554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d5b54feeec5e145ac17b35bfcfab53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinionShotVFX
+  mainColor: {r: 0.55, g: 0.5, b: 1, a: 1}
+  coreColor: {r: 0.96, g: 0.96, b: 1, a: 1}
+  accentColor: {r: 0.5, g: 0.82, b: 1, a: 1}
+  brightness: 2.5
+  showZone: 1
+  zoneMaxRange: 14
+  zoneFill: 0.35
+  zoneHeight: 0.08
+  zoneShader: {fileID: 4800000, guid: 1ff37b7ddaf6db44489f2cf9330019fd, type: 3}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  orbSize: 0.7
+  convergeRadius: 0.9
+  convergeRate: 60
+  showCastCircle: 1
+  castCircleSize: 1.4
+  muzzleSparks: 18
+  muzzleCone: 35
+  ringSize: 1.6
+  flashSize: 1.8
 --- !u!1 &1620996821
 GameObject:
   m_ObjectHideFlags: 0
@@ -3990,13 +4065,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: BulletHellMinion
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6602324674702280247, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7572696427137771666, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1605028561}
+    - targetCorrespondingSourceObject: {fileID: 7572696427137771666, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1605028570}
+    - targetCorrespondingSourceObject: {fileID: 7572696427137771666, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1605028569}
   m_SourcePrefab: {fileID: 100100000, guid: 7cfd10750ae1b9f4abeb05a0ada7386c, type: 3}
 --- !u!64 &1914729524
 MeshCollider:
@@ -4074,6 +4156,10 @@ PrefabInstance:
     - target: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
       propertyPath: m_Name
       value: UltraInstinchCapsule
+      objectReference: {fileID: 0}
+    - target: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6668522441401500159, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
       propertyPath: m_LocalPosition.x

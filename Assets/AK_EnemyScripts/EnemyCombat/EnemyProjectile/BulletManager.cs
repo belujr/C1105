@@ -10,6 +10,14 @@ public class BulletManager : MonoBehaviour
     public int maxLiveBullets = 1000;
     public LayerMask wallLayerMask;
 
+    [Header("Hit detection")]
+    [Tooltip("Bullets that start high (a floating minion) glide down to the player's chest height, so they can actually hit. Before, a bullet that flew at the minion's height passed over the player's head.")]
+    public bool dropToPlayerHeight = true;
+    [Tooltip("How fast bullets glide down to the player's height (meters per second).")]
+    public float dropSpeed = 8f;
+    [Tooltip("A bullet hits when it is close enough sideways AND within this height of the player's chest.")]
+    public float verticalTolerance = 1.6f;
+
     private Transform playerTransform;
     private IDamageable playerDamageable;
 
@@ -19,7 +27,7 @@ public class BulletManager : MonoBehaviour
         public int prefabId;
         public GameObject go;
         public Transform tr;
-        
+
         public BulletPattern pattern;
         public Vector3 position;
         public Vector3 velocity;
@@ -30,7 +38,7 @@ public class BulletManager : MonoBehaviour
 
     private BulletNode[] bullets;
     private Dictionary<int, Queue<GameObject>> visualPools = new Dictionary<int, Queue<GameObject>>();
-    
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -60,12 +68,12 @@ public class BulletManager : MonoBehaviour
         int count = Mathf.Max(1, pattern.count);
         int waves = Mathf.Max(1, pattern.waves);
         float arc = pattern.arc;
-        
+
         float startAngle = count > 1 ? -arc * 0.5f + pattern.angleOffset : pattern.angleOffset;
         float step = count > 1 ? arc / (count - 1) : 0f;
-        
+
         // Override for perfect 360 rings
-        if (pattern.mode == FireMode.Ring && count > 1) 
+        if (pattern.mode == FireMode.Ring && count > 1)
         {
             startAngle = pattern.angleOffset;
             step = 360f / count;
@@ -74,12 +82,12 @@ public class BulletManager : MonoBehaviour
         for (int w = 0; w < waves; w++)
         {
             float waveRot = w * pattern.perWaveRotationDelta;
-            
+
             for (int i = 0; i < count; i++)
             {
                 float angle = startAngle + (step * i) + waveRot;
                 if (pattern.jitter > 0f) angle += UnityEngine.Random.Range(-pattern.jitter, pattern.jitter);
-                
+
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * fwd;
                 SpawnBullet(pattern, pId, origin, dir);
             }
@@ -103,7 +111,7 @@ public class BulletManager : MonoBehaviour
 
         // 2. Fetch or Instantiate Visual (Warm-up phase creates, Runtime reuses)
         if (!visualPools.ContainsKey(pId)) visualPools[pId] = new Queue<GameObject>();
-        
+
         if (visualPools[pId].Count > 0)
         {
             node.go = visualPools[pId].Dequeue();
@@ -167,15 +175,22 @@ public class BulletManager : MonoBehaviour
                 b.currentSpeed += b.pattern.acceleration * dt;
                 b.velocity = b.velocity.normalized * b.currentSpeed;
             }
-            
+
             Vector3 nextPos = b.position + b.velocity * dt;
+
+            // bullets that started high glide down to the player's chest height
+            if (dropToPlayerHeight && hasPlayer)
+                nextPos.y = Mathf.MoveTowards(nextPos.y, playerPos.y, dropSpeed * dt);
 
             // 4. Analytic Player Collision
             if (hasPlayer)
             {
-                float sqrDist = (playerPos - nextPos).sqrMagnitude;
+                // a cylinder around the player: close enough sideways, and within a height tolerance
+                Vector3 toPlayer = playerPos - nextPos;
+                float dy = Mathf.Abs(toPlayer.y);
+                toPlayer.y = 0f;
                 float r = b.pattern.hitRadius + 0.5f; // player radius approx
-                if (sqrDist <= r * r)
+                if (dy <= verticalTolerance && toPlayer.sqrMagnitude <= r * r)
                 {
                     ApplyDamageToPlayer(b);
                     RetireBullet(b);
@@ -225,6 +240,6 @@ public class BulletManager : MonoBehaviour
         // Pool the visual itself, never the mutable logic slot that owned it.
         visualPools[b.prefabId].Enqueue(b.go);
         b.go = null;
-        b.tr = null; 
+        b.tr = null;
     }
 }

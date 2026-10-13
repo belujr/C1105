@@ -180,28 +180,7 @@ public class BeaconSpawnerManager : MonoBehaviour
         }
     }
 
-    public void KillAllActiveEnemies()
-    {
-        foreach (var enemy in new List<GameObject>(activeEnemies))
-        {
-            if (enemy != null && enemy.activeInHierarchy)
-            {
-                // FIX: Both ImpBrain and UltraInstinctCapsule implement IDamageable. 
-                IDamageable damageable = enemy.GetComponentInChildren<IDamageable>();
-
-                if (damageable != null)
-                {
-                    // FIX: Filled in the missing parameters (force, sound, attackID, isAOE)
-                    damageable.TakeDamage(99999f, enemy.transform.position, Vector3.up, 0f, null, 0, false);
-                }
-                else
-                {
-                    Debug.LogWarning($"[Spawner] No IDamageable found on {enemy.name}. Cannot kill!");
-                }
-            }
-        }
-        activeEnemies.Clear();
-    }
+   
 
     public void RegisterOnlyKill(GameObject enemy)
     {
@@ -258,9 +237,8 @@ public class BeaconSpawnerManager : MonoBehaviour
 
         StopAllCoroutines();
 
-        // FIX: Instantly deal lethal damage to all spawned enemies before shutting down
-        KillAllActiveEnemies();
-
+    
+     
         activeShipsInTransit = 0;
     }
 

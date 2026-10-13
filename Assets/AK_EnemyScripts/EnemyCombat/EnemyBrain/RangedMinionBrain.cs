@@ -31,6 +31,9 @@ public class RangedMinionBrain : MinionEnemyBrain
     private bool hasCandidatePosition;
     private float repositionTimer;
 
+    private MinionShotVFX shotVFX;
+    private MinionHoverVFX hoverVFX;
+
     protected float RangedSpeed => MoveSpd * moveSpeedMultiplier;
 
     // The base class requests/releases this token for the engage slot.
@@ -56,6 +59,8 @@ public class RangedMinionBrain : MinionEnemyBrain
         if (target == null) return;
         Vector3 toTarget = Flat(target.position - transform.position);
         float dist = toTarget.magnitude;
+
+        if (hoverVFX == null) EnsureVFX();
 
         // 1. Kiting fallback: player closed in past safe threshold
         if (dist < minSafeDistance)
@@ -105,6 +110,7 @@ public class RangedMinionBrain : MinionEnemyBrain
             return;
         }
 
+        if (hoverVFX == null) EnsureVFX();
         TryAcquireRangedToken();
 
         // Strafe facing player within preferred band
@@ -147,13 +153,19 @@ public class RangedMinionBrain : MinionEnemyBrain
         BulletPattern selectedPattern = bulletPatterns[Random.Range(0, bulletPatterns.Length)];
         PressureAllies();
 
+        // the telegraph: an orb swells at the muzzle and a line shows where it aims
+        EnsureVFX();
+        shotVFX.BeginTelegraph(firePoint != null ? firePoint : transform, Vector3.up * 1.2f, telegraphTime);
+        shotVFX.SetPattern(selectedPattern);   // the aim lines show the real shape of the pattern (fan, ring, waves)
+
         // Telegraph phase: aim tracks perceived delayed player position
         float t = 0f;
         while (t < telegraphTime)
         {
-            if (target == null) { ReturnToPatrol(); yield break; }
+            if (target == null) { shotVFX.Cancel(); ReturnToPatrol(); yield break; }
             t += Time.deltaTime;
             HoldAndFace();
+            shotVFX.SetAim(Flat(PerceivedTargetPosition - transform.position));
             yield return null;
         }
 
@@ -161,6 +173,7 @@ public class RangedMinionBrain : MinionEnemyBrain
         Vector3 aimDir = Flat(PerceivedTargetPosition - transform.position).normalized;
         if (aimDir.sqrMagnitude < 0.001f) aimDir = transform.forward;
         desiredFacing = aimDir;
+        shotVFX.LockAim(aimDir);   // the aim line flashes: the shot is locked
 
         // Play attack clip via EnemyAnimationEngine
         PlayAttackAnimation();
@@ -178,11 +191,13 @@ public class RangedMinionBrain : MinionEnemyBrain
         }
 
         // Cast bullet pattern via BulletManager
-        Vector3 spawnPoint = firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.2f;
+        // the bullets start exactly where the effects start (see 'Where the shot starts' on MinionShotVFX)
+        Vector3 spawnPoint = shotVFX != null ? shotVFX.MuzzlePosition() : (firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.2f);
         if (BulletManager.Instance != null)
         {
             BulletManager.Instance.FirePattern(selectedPattern, spawnPoint, aimDir);
         }
+        shotVFX.Fire(spawnPoint, aimDir);   // muzzle flash, ring and streaks
 
         // Breather phase
         float breatherTimer = 0f;
@@ -197,6 +212,21 @@ public class RangedMinionBrain : MinionEnemyBrain
         engageReadyTime = Time.time + ReEngageDelay();
         waitingSince = engageReadyTime;
         TransitionToState(MinionState.Recover);
+    }
+
+    // the shot and hover effects are added on the first use (you can also add them to the prefab to edit their values)
+    private void EnsureVFX()
+    {
+        if (shotVFX == null)
+        {
+            shotVFX = GetComponent<MinionShotVFX>();
+            if (shotVFX == null) shotVFX = gameObject.AddComponent<MinionShotVFX>();
+        }
+        if (hoverVFX == null)
+        {
+            hoverVFX = GetComponent<MinionHoverVFX>();
+            if (hoverVFX == null) hoverVFX = gameObject.AddComponent<MinionHoverVFX>();
+        }
     }
 
     private void FindCandidateFiringPosition()

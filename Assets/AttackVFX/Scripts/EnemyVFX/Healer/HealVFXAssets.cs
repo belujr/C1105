@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 /// </summary>
 public static class HealVFXAssets
 {
-    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex, sigilTex, vignetteTex, beamTex, spotTex, noiseTex, blobTex, splatTex, summonTex;
+    private static Texture2D dotTex, plusTex, ribbonTex, ringTex, runeTex, sigilTex, vignetteTex, beamTex, spotTex, noiseTex, blobTex, splatTex, summonTex, bulletOrbTex, bulletStarTex, bulletShardTex, bulletCometTex, bulletShardCoreTex;
     private static Mesh flatQuad;
     private static readonly RaycastHit[] rayBuf = new RaycastHit[8];
 
@@ -24,6 +24,16 @@ public static class HealVFXAssets
     public static Texture2D Rune { get { if (runeTex == null) runeTex = MakeRune(); return runeTex; } }
     /// <summary>The death floor pattern: a crown of spikes, a dashed ring, three spiral arms and an eye in the middle.</summary>
     public static Texture2D Sigil { get { if (sigilTex == null) sigilTex = MakeSigil(); return sigilTex; } }
+    /// <summary>An enemy bullet: a bright core, a soft halo and a thin ring.</summary>
+    public static Texture2D BulletOrb { get { if (bulletOrbTex == null) bulletOrbTex = MakeBulletOrb(); return bulletOrbTex; } }
+    /// <summary>An enemy bullet: a four-pointed star with short diagonal spikes and a bright core.</summary>
+    public static Texture2D BulletStar { get { if (bulletStarTex == null) bulletStarTex = MakeBulletStar(); return bulletStarTex; } }
+    /// <summary>An enemy bullet shaped like a crystal shard: a sharp tip at the top (v = 1), two bright facets and a ridge. Stretch the quad along its length.</summary>
+    public static Texture2D BulletShard { get { if (bulletShardTex == null) bulletShardTex = MakeBulletShard(); return bulletShardTex; } }
+    /// <summary>The bright part of a crystal shard: a thin ridge down the middle and a glint at the tip. Drawn on top of BulletShard in a whiter color.</summary>
+    public static Texture2D BulletShardCore { get { if (bulletShardCoreTex == null) bulletShardCoreTex = MakeBulletShardCore(); return bulletShardCoreTex; } }
+    /// <summary>An enemy bullet shaped like a comet: a bright elongated head at the top (v = 1) with a short soft tail. Stretch the quad along its length.</summary>
+    public static Texture2D BulletComet { get { if (bulletCometTex == null) bulletCometTex = MakeBulletComet(); return bulletCometTex; } }
     /// <summary>The summoning circle: a double ring with eight nodes, a dashed ring and an eight-pointed star. Different from the heal rune and the death sigil.</summary>
     public static Texture2D Summon { get { if (summonTex == null) summonTex = MakeSummon(); return summonTex; } }
     /// <summary>Tileable fractal noise (Wrap Mode = Repeat). Used by the blood pool shader.</summary>
@@ -194,6 +204,98 @@ public static class HealVFXAssets
             float rise = Smooth(0f, 0.04f, v);                          // soft start at the floor
             float fall = 1f - Smooth(0.25f, 1f, v);                     // fades toward the top
             return (body * 0.6f + core) * rise * Mathf.Pow(fall, 1.2f);
+        });
+    }
+
+    private static Texture2D MakeBulletOrb()
+    {
+        return Make("BulletOrb", 64, 64, false, (u, v) =>
+        {
+            float r = Mathf.Sqrt((u - 0.5f) * (u - 0.5f) + (v - 0.5f) * (v - 0.5f)) * 2f;
+            float core = Mathf.Pow(Mathf.Clamp01(1f - r / 0.45f), 2.2f);
+            float halo = 0.35f * Mathf.Pow(Mathf.Clamp01(1f - r), 2f);
+            float ring = 0.7f * Band(r, 0.82f, 0.04f, 0.06f);
+            return (core + halo + ring) * (1f - Smooth(0.97f, 1f, r));
+        });
+    }
+
+    private static Texture2D MakeBulletStar()
+    {
+        return Make("BulletStar", 64, 64, false, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;
+            float y = (v - 0.5f) * 2f;
+            float ax = Mathf.Abs(x), ay = Mathf.Abs(y);
+            float armX = Mathf.Pow(Mathf.Clamp01(1f - ay / 0.14f), 2f) * Mathf.Clamp01(1f - ax);
+            float armY = Mathf.Pow(Mathf.Clamp01(1f - ax / 0.14f), 2f) * Mathf.Clamp01(1f - ay);
+
+            float adx = Mathf.Abs((x + y) * 0.7071f), ady = Mathf.Abs((x - y) * 0.7071f);
+            float d1 = 0.5f * Mathf.Pow(Mathf.Clamp01(1f - ady / 0.12f), 2f) * Mathf.Clamp01(1f - adx * 1.4f);
+            float d2 = 0.5f * Mathf.Pow(Mathf.Clamp01(1f - adx / 0.12f), 2f) * Mathf.Clamp01(1f - ady * 1.4f);
+
+            float r = Mathf.Sqrt(x * x + y * y);
+            float core = Mathf.Pow(Mathf.Clamp01(1f - r / 0.45f), 2f);
+            return Mathf.Max(Mathf.Max(armX, armY), Mathf.Max(d1, d2)) + core;
+        });
+    }
+
+    // the outline of a crystal shard: a sharp tip at the top, widest at 62% of the length, a long taper to a thin tail
+    private static float ShardHalfWidth(float y)
+    {
+        return y > 0.62f
+            ? 0.8f * Mathf.Pow(Mathf.Clamp01((1f - y) / 0.38f), 0.9f)
+            : 0.8f * Mathf.Pow(Mathf.Clamp01(y / 0.62f), 1.1f);
+    }
+
+    private static Texture2D MakeBulletShard()
+    {
+        return Make("BulletShard", 32, 128, false, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;     // -1 .. 1 across
+            float y = v;                   // 0 = tail point, 1 = sharp tip
+            float d = Mathf.Abs(x);
+            float w = ShardHalfWidth(y);
+
+            float inside = 1f - Smooth(w - 0.08f, w, d);
+            float rim = Smooth(w - 0.28f, w - 0.04f, d) * inside;   // a bright rim along the edge, like cut glass
+            float facet = x < 0f ? 1f : 0.62f;                       // two facets: one bright, one darker
+            float body = inside * (0.28f + 0.3f * facet) + rim * 0.6f;
+
+            float halo = 0.3f * Mathf.Exp(-Mathf.Max(0f, d - w) * 6f) * Smooth(0f, 0.1f, y) * (1f - Smooth(0.97f, 1f, y));
+            return body + halo;
+        });
+    }
+
+    private static Texture2D MakeBulletShardCore()
+    {
+        return Make("BulletShardCore", 32, 128, false, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;
+            float y = v;
+            float ridge = Band(x, 0f, 0.05f, 0.14f) * Smooth(0.08f, 0.35f, y) * (1f - Smooth(0.9f, 1f, y));
+            float ty = (y - 0.9f) / 0.1f;
+            float tip = Mathf.Pow(Mathf.Clamp01(1f - Mathf.Sqrt(x * x * 4f + ty * ty)), 1.5f);   // a bright glint at the tip
+            return ridge * 0.9f + tip;
+        });
+    }
+
+    private static Texture2D MakeBulletComet()
+    {
+        return Make("BulletComet", 64, 128, false, (u, v) =>
+        {
+            float x = (u - 0.5f) * 2f;
+            float y = v;                   // 0 = end of the tail, 1 = front of the head
+
+            // the head: a bright elongated blob near the top
+            float hx = x / 0.85f;
+            float hy = (y - 0.82f) / 0.15f;
+            float head = Mathf.Pow(Mathf.Clamp01(1f - Mathf.Sqrt(hx * hx + hy * hy)), 1.3f);
+
+            // the tail: narrow and fading away downward
+            float tw = 0.1f + 0.35f * y;
+            float tail = Mathf.Pow(y, 1.6f) * Mathf.Exp(-(x * x) / (tw * tw) * 1.5f);
+
+            return head * 1.2f + tail * 0.55f;
         });
     }
 
@@ -556,11 +658,11 @@ public static class HealVFXAssets
 
     // ------------------------------------------------------------------ ground
     /// <summary>Point on the floor under 'owner', raised by 'offset' (raise it to clear grass). Falls back to the owner's own height.</summary>
-    public static Vector3 GroundPoint(Transform owner, LayerMask mask, float offset)
+    public static Vector3 GroundPoint(Transform owner, LayerMask mask, float offset, float maxDistance = 3f)
     {
         Vector3 p = owner.position;
         float y = p.y;
-        int n = Physics.RaycastNonAlloc(p + Vector3.up, Vector3.down, rayBuf, 3f, mask, QueryTriggerInteraction.Ignore);
+        int n = Physics.RaycastNonAlloc(p + Vector3.up, Vector3.down, rayBuf, maxDistance, mask, QueryTriggerInteraction.Ignore);
         float best = float.MaxValue;
         for (int i = 0; i < n; i++)
         {
@@ -570,6 +672,24 @@ public static class HealVFXAssets
         }
         p.y = y + offset;
         return p;
+    }
+
+    /// <summary>Like GroundPoint, but also tells you whether the ray really hit the ground (false = it found nothing).</summary>
+    public static bool TryGroundPoint(Transform owner, LayerMask mask, float offset, float maxDistance, out Vector3 point)
+    {
+        Vector3 p = owner.position;
+        int n = Physics.RaycastNonAlloc(p + Vector3.up, Vector3.down, rayBuf, maxDistance, mask, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        bool found = false;
+        for (int i = 0; i < n; i++)
+        {
+            RaycastHit h = rayBuf[i];
+            if (h.collider == null || h.collider.transform.IsChildOf(owner)) continue;
+            if (h.distance < best) { best = h.distance; p.y = h.point.y; found = true; }
+        }
+        if (found) p.y += offset;
+        point = p;
+        return found;
     }
 
     // ------------------------------------------------------------------ EnemyHitFX safety
@@ -700,6 +820,13 @@ public class HealGroundRune
         level = 0f;
         mr.enabled = false;
         if (maskMr != null) maskMr.enabled = false;
+    }
+
+    /// <summary>Removes the quads of this rune from the scene (used when an effect rebuilds itself).</summary>
+    public void DestroyObjects()
+    {
+        if (tf != null) Object.Destroy(tf.gameObject);
+        if (maskTf != null) Object.Destroy(maskTf.gameObject);
     }
 
     public void Dispose()

@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 1129289046780939379}
   - component: {fileID: 3601198502929347121}
   - component: {fileID: 3698991296270736241}
+  - component: {fileID: 2405569953914343523}
   m_Layer: 0
   m_Name: RingBullet
   m_TagString: Untagged
@@ -335,3 +336,36 @@ MonoBehaviour:
   castTime: 0.5
   lockAimDuringTelegraph: 1
   safetyCap: 200
+--- !u!114 &2405569953914343523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7475563255106513035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5aad49d127ea5aa4882603162f323bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BulletVisual
+  shape: 0
+  size: 0.5
+  matchHitbox: 1
+  hitboxSizeMultiplier: 1.3
+  spinSpeed: 120
+  pulse: 0.12
+  mainColor: {r: 1, g: 0.25, b: 0.6, a: 1}
+  coreColor: {r: 1, g: 0.92, b: 0.96, a: 1}
+  accentColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  colorByModifier: 1
+  homingColor: {r: 0.7, g: 0.35, b: 1, a: 1}
+  pierceColor: {r: 1, g: 0.95, b: 0.6, a: 1}
+  brightness: 2.5
+  showTrail: 1
+  trailTime: 0.3
+  trailWidth: 0.9
+  maxTrails: 150
+  popOnEnd: 1
+  popSize: 1
+  minLifeForPop: 0.15
+  hideOriginalLook: 1

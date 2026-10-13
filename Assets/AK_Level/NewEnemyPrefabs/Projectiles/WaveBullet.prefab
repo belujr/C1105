@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 1129289046780939379}
   - component: {fileID: 3601198502929347121}
   - component: {fileID: 3698991296270736241}
+  - component: {fileID: -2024299524560448765}
   m_Layer: 0
   m_Name: WaveBullet
   m_TagString: Untagged
@@ -335,3 +336,47 @@ MonoBehaviour:
   castTime: 0.5
   lockAimDuringTelegraph: 1
   safetyCap: 200
+--- !u!114 &-2024299524560448765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7475563255106513035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5aad49d127ea5aa4882603162f323bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BulletVisual
+  shape: 0
+  matchHitbox: 1
+  hitDiameter: 1
+  shardLength: 1.2
+  shardThickness: 0.5
+  cometLength: 1.6
+  roundSize: 1.2
+  spinSpeed: 120
+  pulse: 0.12
+  bodyColor: {r: 0.62, g: 0.58, b: 1, a: 1}
+  streakColor: {r: 0.35, g: 0.6, b: 1, a: 1}
+  glintColor: {r: 0.92, g: 0.96, b: 1, a: 1}
+  bodyBrightness: 2.5
+  streakBrightness: 2
+  colorByModifier: 1
+  homingColor: {r: 0.7, g: 0.35, b: 1, a: 1}
+  pierceColor: {r: 1, g: 0.95, b: 0.6, a: 1}
+  showStreaks: 1
+  streakCount: 3
+  streakTime: 0.5
+  streakWidth: 0.09
+  streakSpread: 0.14
+  wobble: 1
+  wobbleSpeed: 9
+  maxBulletsWithStreaks: 120
+  sparkles: 1
+  sparklesPerSecond: 200
+  tipFlares: 1
+  popOnEnd: 1
+  popSize: 1
+  minLifeForPop: 0.15
+  hideOriginalLook: 1
