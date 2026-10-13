@@ -8,15 +8,10 @@ using UnityEngine;
 public class EnemySoulDrop : MonoBehaviour
 {
     [Header("Soul Energy Config")]
-    [Tooltip("Souls awarded when this enemy dies. Split across the soul wisps.")]
     [Min(0)] public int soulEnergyValue = 25;
 
-    private EnemyHitFX hitFx;       // cached once, not looked up on every kill
     private bool hasDroppedSouls;
 
-    private void Awake() => TryGetComponent(out hitFx);
-
-    // Pooled enemies come back to life through OnEnable, so each life can drop souls once.
     private void OnEnable() => hasDroppedSouls = false;
 
     public void TriggerSoulDrop()
@@ -24,8 +19,11 @@ public class EnemySoulDrop : MonoBehaviour
         if (hasDroppedSouls) return;
         hasDroppedSouls = true;
 
-        // Stop EnemyHitFX from announcing a second kill when this body despawns.
-        if (hitFx != null) hitFx.MarkKillHandled();
+        // EnemyHitFX is added at runtime on the first hit, so it can't be cached in Awake.
+        // Look it up now, and create it if the enemy was never hit, so the flag is always set.
+        EnemyHitFX hitFx = GetComponent<EnemyHitFX>();
+        if (hitFx == null) hitFx = gameObject.AddComponent<EnemyHitFX>();
+        hitFx.MarkKillHandled();
 
         HitFeedbackManager.NotifyKill(transform.position, transform.forward, soulEnergyValue);
     }
