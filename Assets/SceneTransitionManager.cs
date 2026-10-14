@@ -34,8 +34,10 @@ public class SceneTransitionManager : MonoBehaviour
     [Header("Loading Scene")]
     [Tooltip("Must be added to Build Settings. Leave empty to disable the loading scene.")]
     [SerializeField] private string loadingSceneName = "Scene_Loading";
-    [Tooltip("Shortest time the loading scene stays up, so it never just flashes. Set 0 for none.")]
-    [SerializeField] private float minLoadingTime = 1.5f;
+    [Tooltip("Shortest time the loading scene stays up, so it never just flashes. The progress bar takes this long to fill. Set 0 for none.")]
+    [SerializeField] private float minLoadingTime = 3f;
+    [Tooltip("Extra time the loading scene waits at 100% before fading out to the target scene. Set 0 for none.")]
+    [SerializeField] private float holdAtFullTime = 1f;
 
     [Header("Timing (seconds)")]
     [SerializeField] private float fadeOutTime = 0.4f;
@@ -44,6 +46,7 @@ public class SceneTransitionManager : MonoBehaviour
     [SerializeField] private float minBlackTime = 0.15f;
 
     private CanvasGroup group;
+    private Canvas fadeCanvas;
     private bool busy;
 
     // Creates the manager automatically before the first scene loads.
@@ -76,8 +79,8 @@ public class SceneTransitionManager : MonoBehaviour
             return false;
         }
 
-        bool showLoading = useLoadingScreen && instance.HasLoadingScene();
-        instance.StartCoroutine(instance.Transition(sceneName, showLoading));
+        int loadingIndex = useLoadingScreen ? instance.FindLoadingSceneIndex() : -1;
+        instance.StartCoroutine(instance.Transition(sceneName, loadingIndex));
         return true;
     }
 
@@ -95,23 +98,45 @@ public class SceneTransitionManager : MonoBehaviour
 
     // ------------------------------------------------------------------ Transitions
 
-    private bool HasLoadingScene()
+    /// <summary>
+    /// Finds the loading scene in Build Settings (upper/lower case ignored).
+    /// Returns its build index, or -1 if it is missing (and logs what IS in the build).
+    /// </summary>
+    private int FindLoadingSceneIndex()
     {
-        if (string.IsNullOrEmpty(loadingSceneName)) return false;
+        if (string.IsNullOrEmpty(loadingSceneName)) return -1;
 
-        if (!Application.CanStreamedLevelBeLoaded(loadingSceneName))
+        int count = SceneManager.sceneCountInBuildSettings;
+        var found = new System.Text.StringBuilder();
+
+        for (int i = 0; i < count; i++)
         {
-            Debug.LogWarning($"SceneTransitionManager: loading scene '{loadingSceneName}' is not in Build Settings, skipping the loading screen.");
-            return false;
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string sceneName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+            if (string.Equals(sceneName, loadingSceneName, System.StringComparison.OrdinalIgnoreCase))
+                return i;
+
+            found.Append("\n   ").Append(i).Append(": ").Append(sceneName);
         }
-        return true;
+
+        Debug.LogError(
+            $"SceneTransitionManager: loading scene '{loadingSceneName}' was NOT found in the build, so the loading screen is skipped.\n" +
+            $"Scenes currently in the build ({count}):{found}\n" +
+            "Fix: File > Build Profiles > Scene List > Add Open Scenes (with Scene_Loading open) and make sure it is ticked.");
+        return -1;
     }
 
-    private IEnumerator Transition(string sceneName, bool showLoading)
+    private IEnumerator Transition(string sceneName, int loadingBuildIndex)
     {
+        bool showLoading = loadingBuildIndex >= 0;
+
         busy = true;
         TargetScene = sceneName;
         Progress = 0f;
+
+        if (Debug.isDebugBuild)
+            Debug.Log($"SceneTransitionManager: -> '{sceneName}' " + (showLoading ? "via loading scene" : "(fade only, no loading scene)"));
 
         // 1. Fade to black (unscaled time, so it works even if the game is paused/slowed)
         yield return Fade(1f, fadeOutTime);
@@ -119,7 +144,7 @@ public class SceneTransitionManager : MonoBehaviour
         // 2. Go to the loading scene (tiny, so it loads almost instantly) and reveal it
         if (showLoading)
         {
-            yield return SceneManager.LoadSceneAsync(loadingSceneName);
+            yield return SceneManager.LoadSceneAsync(loadingBuildIndex);
             yield return null;
             yield return null;
             yield return Fade(0f, fadeInTime);
@@ -148,17 +173,16 @@ public class SceneTransitionManager : MonoBehaviour
             yield return null;
         }
 
-        // 4. Short beat on 100%, then fade out the loading scene
-        yield return new WaitForSecondsRealtime(showLoading ? 0.2f : minBlackTime);
+        // 4. Wait on 100% (holdAtFullTime), then fade out the loading scene
+        yield return new WaitForSecondsRealtime(showLoading ? holdAtFullTime : minBlackTime);
         if (showLoading) yield return Fade(1f, fadeOutTime);
 
         // 5. Activate the target while the screen is black
         op.allowSceneActivation = true;
         yield return op;
 
-        // 6. Let the new scene run Awake/Start and render a couple of frames
-        yield return null;
-        yield return null;
+        // 6. Let the new scene run Awake/Start (and anything spawned right after load) and render a few frames
+        for (int i = 0; i < 4; i++) yield return null;
 
         // 7. Fade in
         yield return Fade(0f, fadeInTime);
@@ -188,6 +212,7 @@ public class SceneTransitionManager : MonoBehaviour
     private IEnumerator Fade(float targetAlpha, float duration)
     {
         float startAlpha = group.alpha;
+        fadeCanvas.enabled = true;   // only exists on screen while fading / black
         group.blocksRaycasts = true; // block UI clicks while fading
 
         for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
@@ -198,6 +223,7 @@ public class SceneTransitionManager : MonoBehaviour
 
         group.alpha = targetAlpha;
         group.blocksRaycasts = targetAlpha > 0f;
+        fadeCanvas.enabled = targetAlpha > 0f; // fully clear -> switch the canvas off completely (zero cost)
     }
 
     private void BuildFadeOverlay()
@@ -209,6 +235,7 @@ public class SceneTransitionManager : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = short.MaxValue; // always on top of everything
         canvasGO.AddComponent<GraphicRaycaster>();
+        fadeCanvas = canvas;
 
         group = canvasGO.AddComponent<CanvasGroup>();
         group.alpha = 0f;
@@ -224,5 +251,7 @@ public class SceneTransitionManager : MonoBehaviour
         rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
+
+        fadeCanvas.enabled = false; // idle until a transition starts
     }
 }

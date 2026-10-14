@@ -209,7 +209,7 @@ public class MapController : MonoBehaviour
 
     private void StartSelectedChamber()
     {
-        // Fade out -> swap map for level while the screen is black -> fade in
+        // Clean transition: fade out -> swap map for level while the screen is black -> fade in
         bool started = SceneTransitionManager.RunTransition(EnterLevel);
         if (!started) EnterLevel(); // fallback, should not normally happen
     }

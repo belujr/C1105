@@ -194460,6 +194460,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1710517118505280317, guid: 7c83e9d69e11fd542b889110653f2f05, type: 3}
+      propertyPath: holdAtFullTime
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1710517118505280317, guid: 7c83e9d69e11fd542b889110653f2f05, type: 3}
+      propertyPath: minLoadingTime
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2996033158248855650, guid: 7c83e9d69e11fd542b889110653f2f05, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.4
