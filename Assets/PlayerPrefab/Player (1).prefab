@@ -507,6 +507,7 @@ GameObject:
   - component: {fileID: 6175491832309531173}
   - component: {fileID: 1126067658267139612}
   - component: {fileID: 1338018920158427594}
+  - component: {fileID: 2249310026796722193}
   m_Layer: 14
   m_Name: Player (1)
   m_TagString: Player
@@ -632,6 +633,7 @@ MonoBehaviour:
   grappleOrigin: {fileID: 0}
   ropeRenderer: {fileID: 5328439643012407842}
   dashVFX: {fileID: 0}
+  hitFX: {fileID: 0}
   enemyGrappleReticle: {fileID: 0}
   equippedStyle: {fileID: 11400000, guid: 6b1fdbdf066b84b4a8150e669dcd4940, type: 2}
   specialAttackY: {fileID: 11400000, guid: d051e18c1327b3949b6dcdce2298c1bb, type: 2}
@@ -816,7 +818,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928f136b10b9abe4ab249293ce5dc11d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 100
+  maxHealth: 1000
   animator: {fileID: 3408760209031683829}
   audioSource: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
@@ -989,6 +991,74 @@ MonoBehaviour:
   orthoSizeKick: 0.8
   kickInSpeed: 14
   kickOutSpeed: 6
+--- !u!114 &2249310026796722193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459098319445998704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bbb5fe94cd05df438da2a5a51aba222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHitFX
+  impactMaterial: {fileID: 0}
+  particleMaterial: {fileID: 0}
+  bloodDecalMaterial: {fileID: 0}
+  bodyGlowMaterial: {fileID: 0}
+  enableBodyFlash: 1
+  enableImpactBurst: 0
+  enableBloodSpray: 0
+  enableSparks: 1
+  enableBloodSplatter: 1
+  enableScreenVignette: 1
+  enableCameraShake: 1
+  enableZoomPunch: 1
+  enableHitStop: 1
+  impactCoreColor: {r: 3, g: 2.2, b: 1.8, a: 1}
+  impactEdgeColor: {r: 2.4, g: 0.12, b: 0.1, a: 1}
+  bodyHotColor: {r: 3, g: 1.4, b: 1.1, a: 1}
+  bodyEdgeColor: {r: 2.2, g: 0.12, b: 0.1, a: 1}
+  bloodColor: {r: 0.5, g: 0.02, b: 0.04, a: 1}
+  sparkColor: {r: 3, g: 1.4, b: 0.5, a: 1}
+  bodyFlashDuration: 0.3
+  bodyFlashRadius: 1.6
+  bodyFlashIntensity: 10
+  impactSize: 2
+  impactDuration: 0.22
+  impactCameraOffset: 0.6
+  sprayCount: 22
+  spraySpeed: {x: 4, y: 9}
+  spraySize: {x: 0.08, y: 0.18}
+  sprayGravity: 2.2
+  spraySpread: 0.45
+  mistCount: 4
+  sprayCollidesWith:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  sparkCount: 20
+  splatterDistance: {x: 1.2, y: 1.9}
+  splatterSize: {x: 1.5, y: 2.1}
+  splatterLifetime: 8
+  splatterGroundOffset: 0.06
+  splatterGroundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxSplatters: 6
+  vignetteColor: {r: 0.6226415, g: 0.05286569, b: 0.06630377, a: 1}
+  vignetteStrength: 0.776
+  vignetteDuration: 0.55
+  shakeAmount: 0.12
+  shakeDuration: 0.25
+  orthoPunch: 0.35
+  fovPunch: 2.5
+  zoomDuration: 0.3
+  hitStopDuration: 0.06
+  hitStopTimeScale: 0.05
+  autoDetectRadius: 6
+  chestHeight: 1.1
+  minInterval: 0.08
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0

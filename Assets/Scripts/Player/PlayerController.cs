@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     public Transform grappleOrigin;
     public LineRenderer ropeRenderer;
     public DashVFX dashVFX;
+    public PlayerHitFX hitFX;
     public GameObject enemyGrappleReticle;
 
     [Header("Equipped Moveset")]
@@ -78,6 +79,7 @@ public class PlayerController : MonoBehaviour
         CharacterController = GetComponent<CharacterController>();
         InputHandler = GetComponent<PlayerInputHandler>();
         if (dashVFX == null) dashVFX = GetComponent<DashVFX>();
+        if (hitFX == null) hitFX = GetComponent<PlayerHitFX>();
         Animator = GetComponentInChildren<Animator>();
 
         DefaultHeight = CharacterController.height;
@@ -482,6 +484,7 @@ public class PlayerController : MonoBehaviour
 
     public void TakeHit(int animHash, float duration)
     {
+        if (hitFX != null) hitFX.PlayAuto();   // blood, impact burst, vignette, camera punch...
         HitState.SetUp(animHash, duration);
         TransitionToState(HitState);
     }
