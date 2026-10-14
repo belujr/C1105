@@ -31,6 +31,9 @@ public class MapController : MonoBehaviour
     // Cinematic map intro (MapIntroAnimator sits on this same GameObject)
     private MapIntroAnimator intro;
 
+    // Post-processing look for the map (MapPostFX sits on this same GameObject)
+    private MapPostFX fx;
+
     public static MapController Instance;
 
     void Awake()
@@ -39,6 +42,7 @@ public class MapController : MonoBehaviour
         {
             Instance = this;
             intro = GetComponent<MapIntroAnimator>();
+            fx = GetComponent<MapPostFX>();
             DontDestroyOnLoad(transform.root.gameObject);
         }
         else
@@ -75,7 +79,11 @@ public class MapController : MonoBehaviour
             bool skip = (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
                      || (Keyboard.current != null && (Keyboard.current.spaceKey.wasPressedThisFrame
                                                    || Keyboard.current.enterKey.wasPressedThisFrame));
-            if (skip) intro.Skip();
+            if (skip)
+            {
+                intro.Skip();
+                if (fx != null) fx.Skip();
+            }
             return;
         }
 
@@ -233,6 +241,7 @@ public class MapController : MonoBehaviour
 
             // Cinematic intro: forest rises, icons pop in, paths draw
             if (intro != null) intro.Play();
+            if (fx != null) fx.Show();
         }
     }
 
@@ -259,6 +268,7 @@ public class MapController : MonoBehaviour
     {
         // Make sure the intro can never be left half-finished when the map is switched off
         if (intro != null) intro.Skip();
+        if (fx != null) fx.Hide();
 
         RestoreFogForLevel();
 
