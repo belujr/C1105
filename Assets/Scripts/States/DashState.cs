@@ -35,11 +35,10 @@ public class DashState : PlayerState
         }
         // -----------------------------------------------------
 
-        // --- ENABLE DASH TRAIL ---
-        if (controller.dashTrailRenderer != null)
+        // --- DASH VFX (afterimages, burst, streaks) ---
+        if (controller.dashVFX != null)
         {
-            controller.dashTrailRenderer.Clear();
-            controller.dashTrailRenderer.emitting = true;
+            controller.dashVFX.Begin(dashDirection, controller.stats.dashSpeed);
         }
 
         // Freeze animator during dash
@@ -74,10 +73,10 @@ public class DashState : PlayerState
         base.Exit();
         controller.IsGravityEnabled = true;
 
-        // --- STOP EMITTING TRAIL (Line naturally fades away) ---
-        if (controller.dashTrailRenderer != null)
+        // --- STOP DASH VFX ---
+        if (controller.dashVFX != null)
         {
-            controller.dashTrailRenderer.emitting = false;
+            controller.dashVFX.End();
         }
 
         // Unfreeze animator

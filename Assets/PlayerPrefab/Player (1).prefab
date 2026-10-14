@@ -506,6 +506,7 @@ GameObject:
   - component: {fileID: -1262347586620216322}
   - component: {fileID: 6175491832309531173}
   - component: {fileID: 1126067658267139612}
+  - component: {fileID: 1338018920158427594}
   m_Layer: 14
   m_Name: Player (1)
   m_TagString: Player
@@ -601,8 +602,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInputHandler
   moveAction: {fileID: -7490205799116162124, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
-  sprintAction: {fileID: 6080482913769439043, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
-  jumpAction: {fileID: 6361180260622484101, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
   dashAction: {fileID: -480641015398562767, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
   slideAction: {fileID: -7588566336757531578, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
   attackAction: {fileID: -4848953684830760880, guid: 394ea1104e5d48345b9625499127cd13, type: 3}
@@ -632,7 +631,7 @@ MonoBehaviour:
     m_Bits: 256
   grappleOrigin: {fileID: 0}
   ropeRenderer: {fileID: 5328439643012407842}
-  dashTrailRenderer: {fileID: 5723103259682190553}
+  dashVFX: {fileID: 0}
   enemyGrappleReticle: {fileID: 0}
   equippedStyle: {fileID: 11400000, guid: 6b1fdbdf066b84b4a8150e669dcd4940, type: 2}
   specialAttackY: {fileID: 11400000, guid: d051e18c1327b3949b6dcdce2298c1bb, type: 2}
@@ -948,6 +947,41 @@ MonoBehaviour:
   impactSound: {fileID: 0}
   landSound: {fileID: 0}
   soundVolume: 1
+--- !u!114 &1338018920158427594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459098319445998704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e207aa839383ff42aba5f7813b6412a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashVFX
+  ghostMaterial: {fileID: 2100000, guid: 71e54c92da803444eb697f397455d97d, type: 2}
+  sourceRenderers: []
+  ghostInterval: 0.05
+  ghostLifetime: 0.75
+  maxGhosts: 28
+  ghostScaleMultiplier: 1
+  ghostDrift: 0.9
+  ghostFlicker: 0
+  ghostStartAlpha: 1
+  ghostStartIntensity: 3
+  ghostEndIntensity: 0.7
+  rimStart: {r: 1, g: 0.7625311, b: 0, a: 1}
+  rimEnd: {r: 1, g: 0.14460416, b: 0, a: 1}
+  coreStart: {r: 0, g: 1, b: 0.10273242, a: 0.56078434}
+  coreEnd: {r: 0.23493682, g: 0.22546561, b: 0.9559748, a: 0.24705882}
+  useTwoTone: 1
+  rimAltStart: {r: 1, g: 0.062577136, b: 0, a: 1}
+  rimAltEnd: {r: 0.6603774, g: 0, b: 0.6186321, a: 1}
+  useCameraKick: 1
+  fovKick: 10
+  orthoSizeKick: 0.8
+  kickInSpeed: 14
+  kickOutSpeed: 6
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask grappleLayer;
     public Transform grappleOrigin;
     public LineRenderer ropeRenderer;
-    public TrailRenderer dashTrailRenderer;
+    public DashVFX dashVFX;
     public GameObject enemyGrappleReticle;
 
     [Header("Equipped Moveset")]
@@ -77,6 +77,7 @@ public class PlayerController : MonoBehaviour
     {
         CharacterController = GetComponent<CharacterController>();
         InputHandler = GetComponent<PlayerInputHandler>();
+        if (dashVFX == null) dashVFX = GetComponent<DashVFX>();
         Animator = GetComponentInChildren<Animator>();
 
         DefaultHeight = CharacterController.height;

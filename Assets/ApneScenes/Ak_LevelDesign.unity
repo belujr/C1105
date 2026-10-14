@@ -3459,12 +3459,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7567965575449163767, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4665299932230242475, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 459098319445998704, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1897182830}
+      addedObject: {fileID: 1897182843}
   m_SourcePrefab: {fileID: 100100000, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
 --- !u!1 &1596455490
 GameObject:
@@ -3779,7 +3780,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 459098319445998704, guid: 1c30e58c5e5550249a45a6dbe7c887b4, type: 3}
   m_PrefabInstance: {fileID: 1557667587}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1897182830
+--- !u!114 &1897182843
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3788,85 +3789,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 1897182818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab564c8b484b8ab499abef87be0b3702, type: 3}
+  m_Script: {fileID: 11500000, guid: 6e207aa839383ff42aba5f7813b6412a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathFX
-  hitStopTime: 0.1
-  slowMoScale: 0.35
-  slowMoTime: 0.35
-  slowMoEaseTime: 0.3
-  freezeWorldAfterDeath: 1
-  endTimeScale: 0.03
-  flashColor: {r: 1, g: 0.88, b: 0.82, a: 1}
-  flashStrength: 0.9
-  flashDuration: 0.25
-  impactColor: {r: 0.75, g: 0.02, b: 0.04, a: 1}
-  vignetteStrength: 0.25
-  heartbeat: 1
-  heartbeatRate: 1.1
-  cameraShake: 0.4
-  shakeDuration: 0.6
-  landShake: 0
-  zoomPunch: 0.07
-  slowPushIn: 0.04
-  hideWorld: 1
-  blackCutTime: 0.1
-  fadeTargetAlpha: 0.9
-  collapseBody: 1
-  collapseDelay: 0.1
-  collapseTime: 0.3
-  collapseAngle: 82
-  collapseSink: 0.08
-  bloodColor: {r: 0.55, g: 0.01, b: 0.03, a: 1}
-  bloodBright: {r: 0.95, g: 0.06, b: 0.06, a: 1}
-  bloodDroplets: 140
-  landSplash: 80
-  bloodMist: 1
-  impactStreaks: 22
-  burstSparks: 30
-  sparkColor: {r: 1, g: 0.35, b: 0.1, a: 1}
-  shockwaveRadius: 6
-  showSigil: 1
-  sigilColor: {r: 0.9, g: 0.08, b: 0.06, a: 1}
-  sigilRadius: 2.5
-  sigilBrightness: 2.4
-  clearGrassUnderSigil: 1
-  showSouls: 1
-  soulCount: 18
-  soulEmitTime: 1.2
-  soulLifetime: 2.6
-  circleRadius: 0.9
-  riseHeight: 4
-  spinSpeed: 2.4
-  soulSize: {x: 0.28, y: 0.42}
-  trailLength: 0.3
-  emergeFraction: 0.16
-  soulColor: {r: 1, g: 0.72, b: 0.22, a: 1}
-  soulAccent: {r: 1, g: 0.6, b: 0.4, a: 1}
-  soulBrightness: 2
-  ash: 1
-  ashRate: 25
-  showEmbers: 1
-  emberRate: 140
-  emberColorA: {r: 1, g: 0.3, b: 0.1, a: 1}
-  emberColorB: {r: 0.7, g: 0.04, b: 0.03, a: 1}
-  redLight: 1
-  lightIntensity: 2.5
-  lightRange: 6
-  brightness: 3
-  dissolveDelay: 1.4
-  dissolveDuration: 1.8
-  blackoutDelay: 2.9
-  blackoutDuration: 1
-  hubSceneName: 
-  hubLoadDelay: 0.5
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  groundOffset: 0.05
-  impactSound: {fileID: 0}
-  landSound: {fileID: 0}
-  soundVolume: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DashVFX
+  ghostMaterial: {fileID: 2100000, guid: 71e54c92da803444eb697f397455d97d, type: 2}
+  glowMaterial: {fileID: 2100000, guid: 9523d2122ac4c7f459f765480f92a71a, type: 2}
+  sourceRenderers: []
+  ghostInterval: 0.03
+  ghostLifetime: 0.45
+  maxGhosts: 24
+  ghostScaleMultiplier: 1
+  logScaleDetection: 1
+  ghostStartAlpha: 0.9
+  ghostStartIntensity: 1.5
+  ghostEndIntensity: 0.8
+  rimStart: {r: 0.6, g: 1, b: 1, a: 1}
+  rimEnd: {r: 0.55, g: 0.25, b: 1, a: 1}
+  coreStart: {r: 0.1, g: 0.45, b: 1, a: 0.45}
+  coreEnd: {r: 0.25, g: 0.05, b: 0.6, a: 0.05}
+  useParticles: 1
+  effectScale: 1
+  accentColor: {r: 0.45, g: 0.9, b: 1, a: 1}
+  sparkCount: 24
+  startDustCount: 8
+  endDustCount: 6
+  streakRate: 110
+  useCameraKick: 1
+  fovKick: 10
+  orthoSizeKick: 0.8
+  kickInSpeed: 14
+  kickOutSpeed: 6
 --- !u!1001 &1901694596
 PrefabInstance:
   m_ObjectHideFlags: 0
