@@ -14,7 +14,7 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
+  m_Fog: 1
   m_FogColor: {r: 1, g: 1, b: 1, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.01
@@ -1499,7 +1499,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalSeeThrough
   player: {fileID: 229696000}
-  treeMaterial: {fileID: 0}
+  holeSize: 0.15
+  smoothness: 0.12
+  propHoleSize: 0.15
+  propSmoothness: 0.08
+  fadeSpeed: 6
+  blockerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  onlyWhenBlocked: 0
 --- !u!114 &1144697296
 MonoBehaviour:
   m_ObjectHideFlags: 0

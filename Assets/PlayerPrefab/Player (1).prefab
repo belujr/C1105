@@ -640,6 +640,7 @@ MonoBehaviour:
   equippedStyle: {fileID: 11400000, guid: 6b1fdbdf066b84b4a8150e669dcd4940, type: 2}
   specialAttackY: {fileID: 11400000, guid: d051e18c1327b3949b6dcdce2298c1bb, type: 2}
   VerticalVelocity: {x: 0, y: 0, z: 0}
+  aoeVfxUseAnimationEvent: 1
 --- !u!95 &3408760209031683829
 Animator:
   serializedVersion: 7
@@ -820,7 +821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928f136b10b9abe4ab249293ce5dc11d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 500
+  maxHealth: 5
   animator: {fileID: 3408760209031683829}
   audioSource: {fileID: 0}
   hitEffectPrefab: {fileID: 0}

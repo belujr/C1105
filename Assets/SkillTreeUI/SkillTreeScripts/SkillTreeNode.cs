@@ -26,6 +26,23 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     [Tooltip("Popup UI element displaying 'Hold A to Unlock'.")]
     public GameObject holdPromptUI;
 
+    [Header("Glow & Flash Settings")]
+    [Tooltip("How long (seconds) the player must hold the unlock button to buy this node.")]
+    [Min(0.05f)] public float requiredHoldDuration = 2f;
+
+    [Tooltip("Colour of the pulsing glow on a node you can afford and unlock right now (it pulses between this and white).")]
+    public Color availableGlowColor = new Color(1f, 1f, 0.4f, 1f);
+    [Tooltip("How fast the available-node glow pulses.")]
+    [Min(0f)] public float availablePulseSpeed = 8f;
+
+    [Tooltip("Colour of the flashing overlay while the unlock button is being held. Its alpha scales the flash strength.")]
+    public Color holdFlashColor = Color.white;
+
+    [Tooltip("Colour of the burst when the node finishes unlocking.")]
+    public Color successGlowColor = Color.white;
+    [Tooltip("How long (seconds) the unlock burst stays visible.")]
+    [Min(0f)] public float successGlowDuration = 0.5f;
+
     [Header("State")]
     public bool isUnlocked = false;
 
@@ -33,7 +50,6 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     private Image buttonImage;
     private Image flashOverlayImage;
     private float holdTimer = 0f;
-    private const float requiredHoldDuration = 2.0f;
     private string saveKey;
 
     private void Awake()
@@ -65,7 +81,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
 
         if (attackData != null)
         {
-            saveKey = "NodeUnlocked_" + attackData.name;
+            saveKey = SaveKeyFor(attackData);
             isUnlocked = PlayerPrefs.GetInt(saveKey, parentNode == null ? 1 : 0) == 1;
         }
 
@@ -106,10 +122,47 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         button.navigation = nav;
     }
 
+    private static string SaveKeyFor(AttackData data) => "NodeUnlocked_" + data.name;
+
+    /// <summary>
+    /// Editor/dev helper (called by ComboUIManager): forgets this node's saved unlock and
+    /// puts it back to its starting state. Root nodes (no parent) start unlocked.
+    /// </summary>
+    public void ResetUnlockSaveData()
+    {
+        if (attackData != null) PlayerPrefs.DeleteKey(SaveKeyFor(attackData));
+        isUnlocked = parentNode == null;
+        holdTimer = 0f;
+    }
+
+    // True only if EVERY node above this one in the chain is unlocked, not just the direct parent.
+    // (The loop guard stops a mis-wired circular parent link from hanging the game.)
+    private bool AncestorsUnlocked()
+    {
+        SkillTreeNode p = parentNode;
+        int guard = 0;
+        while (p != null && guard++ < 64)
+        {
+            if (!p.isUnlocked) return false;
+            p = p.parentNode;
+        }
+        return true;
+    }
+
+    // A node only counts as owned if its whole chain is owned. This also heals stale saves
+    // where a child was saved as unlocked while its parent is not.
+    public bool IsUnlockedEffective => isUnlocked && AncestorsUnlocked();
+
+    // The direct parent (and everything above it) must be unlocked.
     public bool CanBeUnlocked()
     {
-        return parentNode == null || parentNode.isUnlocked;
+        return AncestorsUnlocked();
     }
+
+    // The ONLY condition for the glow / hold-to-unlock prompt: this node is the immediate next
+    // step in its chain AND the player can afford it. Deeper nodes never qualify, because
+    // their parent is still locked.
+    public bool IsAvailableToUnlock => !IsUnlockedEffective && CanBeUnlocked() && HasEnoughSouls();
 
     public bool HasEnoughSouls()
     {
@@ -121,11 +174,11 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     {
         UpdateVisuals();
 
-        if (isUnlocked) return;
+        if (IsUnlockedEffective) return;
 
         // Robust selection check using EventSystem
         bool isSelected = EventSystem.current != null && EventSystem.current.currentSelectedGameObject == gameObject;
-        bool canUnlockNow = CanBeUnlocked() && HasEnoughSouls();
+        bool canUnlockNow = IsAvailableToUnlock;
 
         if (isSelected && canUnlockNow)
         {
@@ -176,7 +229,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
             // Dramatic high-contrast sweeping flash effect
             float alpha = Mathf.Clamp01(Mathf.Sin(progress * Mathf.PI * 5f + Time.unscaledTime * 15f) * 0.5f + 0.5f);
             float intensity = Mathf.Lerp(0.6f, 1.0f, progress);
-            flashOverlayImage.color = new Color(1f, 1f, 1f, alpha * intensity);
+            flashOverlayImage.color = new Color(holdFlashColor.r, holdFlashColor.g, holdFlashColor.b, alpha * intensity * holdFlashColor.a);
         }
         else
         {
@@ -187,6 +240,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     private void UnlockAttack()
     {
         if (attackData == null) return;
+        if (!CanBeUnlocked()) return; // never allow skipping a locked parent
 
         if (SoulManager.Instance != null)
         {
@@ -213,10 +267,10 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         if (flashOverlayImage != null)
         {
             flashOverlayImage.gameObject.SetActive(true);
-            flashOverlayImage.color = Color.white; // Blinding bright white success glow
+            flashOverlayImage.color = successGlowColor;
         }
 
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return new WaitForSecondsRealtime(successGlowDuration);
 
         if (flashOverlayImage != null)
         {
@@ -226,7 +280,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
 
     public void OnNodeClicked()
     {
-        if (isUnlocked && attackData != null && ComboUIManager.Instance != null)
+        if (IsUnlockedEffective && attackData != null && ComboUIManager.Instance != null)
         {
             ComboUIManager.Instance.TryEquipToSpecificSlot(attackData, targetComboSlot - 1);
         }
@@ -257,16 +311,16 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
             buttonImage.enabled = true;
         }
 
-        if (isUnlocked)
+        if (IsUnlockedEffective)
         {
             buttonImage.color = Color.white;
             button.interactable = true;
         }
-        else if (CanBeUnlocked() && HasEnoughSouls())
+        else if (IsAvailableToUnlock)
         {
             // Vibrant pulsing highlight when available to purchase
-            float pulse = (Mathf.Sin(Time.unscaledTime * 8f) + 1f) * 0.3f + 0.4f;
-            buttonImage.color = new Color(1f, 1f, pulse, 1f);
+            float pulse = (Mathf.Sin(Time.unscaledTime * availablePulseSpeed) + 1f) * 0.5f;
+            buttonImage.color = Color.Lerp(availableGlowColor, Color.white, pulse);
             button.interactable = true;
         }
         else

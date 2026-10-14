@@ -65,6 +65,17 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGravityEnabled { get; set; } = true;
 
+    // ------------------------------------------------------------------ Dash cooldown
+    // The duration is PlayerStatsData.dashCooldown (edit it on your player stats asset).
+    // Stored as a timestamp, so there is no per-frame timer to tick or keep in sync.
+    private float dashReadyTime;
+
+    public float DashCooldownDuration => stats != null ? Mathf.Max(0f, stats.dashCooldown) : 0f;
+    public float DashCooldownRemaining => Mathf.Max(0f, dashReadyTime - Time.time);
+    public bool CanDash => Time.time >= dashReadyTime;
+
+    private void StartDashCooldown() => dashReadyTime = Time.time + DashCooldownDuration;
+
     [Header("AOE VFX timing")]
     [Tooltip("ON = the AOE VFX waits for an Animation Event named AOEImpact on the attack animation (frame-exact). " +
              "OFF = it uses the Impact Time setting on the VFX component (a time estimate).")]
@@ -203,7 +214,7 @@ public class PlayerController : MonoBehaviour
         if (IsMovementLocked) return false;
 
         // 1. DASH CANCELS ATTACKS
-        if (InputHandler.DashTriggered && CurrentState != DashState)
+        if (InputHandler.DashTriggered && CurrentState != DashState && CanDash)
         {
             TransitionToState(DashState);
             return true;
@@ -392,6 +403,14 @@ public class PlayerController : MonoBehaviour
 
     public void TransitionToState(PlayerState newState)
     {
+        // Single choke point for the dash cooldown: every route into the dash (grounded, airborne,
+        // attack-cancel, ...) ends up here, so none of them can skip it.
+        if (newState != null && newState == DashState)
+        {
+            if (!CanDash) return;
+            StartDashCooldown();
+        }
+
         CurrentState?.Exit();
         CurrentState = newState;
         CurrentState?.Enter();
@@ -493,6 +512,7 @@ public class PlayerController : MonoBehaviour
     {
         IsDead = false;
         VerticalVelocity = Vector3.zero;
+        dashReadyTime = 0f; // a fresh life starts with the dash ready
         if (CharacterController != null) CharacterController.enabled = true;
     }
 

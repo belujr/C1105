@@ -29,6 +29,12 @@ public class SkillPreviewManager : MonoBehaviour
     public string knockbackPrefix = "KB: ";
     public string rangePrefix = "RNG: ";
 
+    [Header("Cost Display")]
+    [Tooltip("Text object that shows the soul cost of the previewed skill.")]
+    public TextMeshProUGUI costText;
+    [Tooltip("Label before the cost number, e.g. 'Cost: ' or 'Souls: '")]
+    public string costPrefix = "Cost: ";
+
     [Header("Player Dummy References")]
     public Animator dummyAnimator;
     public Transform dummySpawnPoint;
@@ -121,6 +127,9 @@ public class SkillPreviewManager : MonoBehaviour
         UpdateStatDisplay(damageBarImage, damageText, attack.damageLevel, damagePrefix);
         UpdateStatDisplay(knockbackBarImage, knockbackText, attack.knockbackLevel, knockbackPrefix);
         UpdateStatDisplay(rangeBarImage, rangeText, attack.rangeLevel, rangePrefix);
+
+        if (costText != null)
+            costText.text = $"{costPrefix}{attack.soulCost:N0}";
 
         // Restarting the animation can skip its "end hitbox" event, which would leave the hitbox
         // stuck active and fire a VFX at the wrong time. Always clear it, and tell it which attack to use.

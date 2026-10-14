@@ -343,7 +343,7 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8314571269056883277, guid: 6397d20c34f668f48aae29b88005aa7c, type: 3}
 --- !u!1 &749330550352706289
@@ -648,6 +648,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ecb2d90ff7b87846adb4bf322b9d1f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  loadingSceneName: Scene_Loading
+  minLoadingTime: 3
+  holdAtFullTime: 2
   fadeOutTime: 0.4
   fadeInTime: 0.5
   minBlackTime: 0.15
@@ -4870,7 +4873,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6635069264220965292, guid: 68b3832639b8cd74d9724fa3e223dadc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.61
+      value: 3.48
       objectReference: {fileID: 0}
     - target: {fileID: 6635069264220965292, guid: 68b3832639b8cd74d9724fa3e223dadc, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4878,7 +4881,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6635069264220965292, guid: 68b3832639b8cd74d9724fa3e223dadc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 15.96
+      value: 16.28
       objectReference: {fileID: 0}
     - target: {fileID: 6635069264220965292, guid: 68b3832639b8cd74d9724fa3e223dadc, type: 3}
       propertyPath: m_LocalRotation.w

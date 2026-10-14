@@ -57,14 +57,15 @@ public class DashCooldownHUD : MonoBehaviour
         if (dashFill == null)
             return;
 
-        if (player == null || player.DashState == null)
+        if (player == null)
         {
             dashFill.fillAmount = 0f;
             return;
         }
 
-        float maximum = player.DashState.MaxCooldown;
-        float remaining = player.DashState.CooldownTimer;
+        // Same values the player's dash is actually gated by, so the bar can never disagree with it.
+        float maximum = player.DashCooldownDuration;
+        float remaining = player.DashCooldownRemaining;
 
         // Ready = fully colored.
         // Dash begins = black-and-white background exposed.

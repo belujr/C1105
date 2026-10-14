@@ -51,6 +51,11 @@ public sealed class SoulManager : MonoBehaviour
         }
 
         Instance = this;
+
+        // DontDestroyOnLoad silently does nothing for objects nested under another object.
+        // The manager would then be destroyed when scene_hub unloads and scene_level would
+        // have no SoulManager at all (counter stuck at 0, kills never add souls).
+        if (transform.parent != null) transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
         saveWait = new WaitForSecondsRealtime(saveDelaySeconds);
 

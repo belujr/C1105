@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using System.Text;
 
 public class HubNarrativeManager : MonoBehaviour
 {
@@ -133,13 +134,18 @@ public class HubNarrativeManager : MonoBehaviour
         }
         else
         {
+            LogNoStepReason(npc, currentRunData);
             npc.PlayFallbackDialogue();
         }
     }
 
     private void PlayNarrativeStep(NarrativeStep step)
     {
-        if (step.dialogueSequence == null) return;
+        if (step.dialogueSequence == null)
+        {
+            Debug.LogWarning($"[NarrativeManager] Step '{step.stepLabel}' has no Dialogue Sequence assigned.");
+            return;
+        }
 
         DialogueUI.Instance.StartSequence(
             step.dialogueSequence,
@@ -162,6 +168,41 @@ public class HubNarrativeManager : MonoBehaviour
     {
         if (step.dependency == null) return true;
         return completedSequences.Contains(step.dependency);
+    }
+
+    // Tells you in the Console exactly why an NPC had nothing to say.
+    private void LogNoStepReason(HubNPC npc, RunNarrativeData runData)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"[NarrativeManager] No playable step for {npc.npcRole} in run {currentRunNumber} (narrative '{runData.runName}'):");
+
+        bool anyForNpc = false;
+        foreach (NarrativeStep step in runData.steps)
+        {
+            if (step.triggerNPC != npc.npcRole) continue;
+            anyForNpc = true;
+
+            string seq = step.dialogueSequence != null ? step.dialogueSequence.name : "NONE ASSIGNED";
+            string state;
+            if (step.dialogueSequence != null && completedSequences.Contains(step.dialogueSequence))
+                state = "already completed";
+            else if (!IsDependencySatisfied(step))
+                state = $"WAITING for '{step.dependency.name}' to be completed first";
+            else
+                state = "playable";
+
+            sb.AppendLine($"   - {step.stepLabel} [{seq}]: {state}");
+        }
+
+        if (!anyForNpc)
+            sb.AppendLine("   (no step in this run uses this NPC role - check the Trigger NPC dropdown)");
+
+        List<string> done = new List<string>();
+        foreach (DialogueSequence seq in completedSequences)
+            if (seq != null) done.Add(seq.name);
+        sb.Append("   Completed so far: " + (done.Count > 0 ? string.Join(", ", done) : "nothing"));
+
+        Debug.Log(sb.ToString(), this);
     }
 
     private NarrativeStep GetAutoTriggerStepForCurrentRun()

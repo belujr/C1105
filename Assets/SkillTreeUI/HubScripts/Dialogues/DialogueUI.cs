@@ -41,6 +41,9 @@ public class DialogueUI : MonoBehaviour
     private Coroutine autoAdvanceCoroutine;
     private Coroutine promptDelayCoroutine;
 
+    // Frame on which the current dialogue was opened (see Update)
+    private int lastStartFrame = -1;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -55,7 +58,7 @@ public class DialogueUI : MonoBehaviour
     {
         if (sequence == null) return;
 
-        onDialogueComplete = callback;
+        onDialogueComplete = ChainWithInterrupted(callback);
         currentAdvanceMode = sequence.advanceMode;
         currentMovementMode = sequence.movementMode;
         currentAutoAdvanceTime = sequence.autoAdvanceTime;
@@ -69,6 +72,7 @@ public class DialogueUI : MonoBehaviour
             linesQueue.Enqueue(line);
         }
 
+        lastStartFrame = Time.frameCount;
         dialoguePanel.SetActive(true);
         DisplayNextLine();
     }
@@ -80,7 +84,7 @@ public class DialogueUI : MonoBehaviour
         float autoAdvanceTime = 3.0f, 
         Action callback = null)
     {
-        onDialogueComplete = callback;
+        onDialogueComplete = ChainWithInterrupted(callback);
         currentAdvanceMode = advanceMode;
         currentMovementMode = movementMode;
         currentAutoAdvanceTime = autoAdvanceTime;
@@ -93,8 +97,24 @@ public class DialogueUI : MonoBehaviour
             linesQueue.Enqueue(line);
         }
 
+        lastStartFrame = Time.frameCount;
         dialoguePanel.SetActive(true);
         DisplayNextLine();
+    }
+
+    // If a dialogue is still playing when a new one starts, the old one used to lose its completion
+    // callback (so e.g. a narrative step was never marked as completed and the next NPC stayed locked).
+    // Now the interrupted dialogue's callback is kept and runs when the new dialogue ends.
+    private Action ChainWithInterrupted(Action newCallback)
+    {
+        bool interrupting = dialoguePanel != null && dialoguePanel.activeSelf;
+        if (!interrupting) return newCallback;
+
+        if (onDialogueComplete != null)
+            Debug.LogWarning("[DialogueUI] A dialogue started while another was still playing. " +
+                             "The first one's completion callback is kept and will run when the new one ends.");
+
+        return onDialogueComplete + newCallback;
     }
 
     public void DisplayNextLine()
@@ -184,7 +204,9 @@ public class DialogueUI : MonoBehaviour
         // Always restore full player movement when dialogue ends
         SetPlayerMovementAllowed(true);
 
-        onDialogueComplete?.Invoke();
+        Action finished = onDialogueComplete;
+        onDialogueComplete = null;
+        finished?.Invoke();
     }
 
     private void SetPlayerMovementAllowed(bool allowed)
@@ -209,7 +231,7 @@ public class DialogueUI : MonoBehaviour
                               (Keyboard.current != null && Keyboard.current.enterKey.wasPressedThisFrame) ||
                               (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
 
-        if (dialoguePanel != null && dialoguePanel.activeSelf && advancePressed)
+        if (dialoguePanel != null && dialoguePanel.activeSelf && advancePressed && Time.frameCount != lastStartFrame)
         {
             DisplayNextLine();
         }

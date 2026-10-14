@@ -16,7 +16,8 @@ public class PlayerStatsData : ScriptableObject
 	[Header("Dash Settings")]
 	public float dashSpeed = 30f;
 	public float dashDuration = 0.1f;
-	public float dashCooldown = 1f;
+	[Tooltip("Seconds before the player can dash again, counted from the moment a dash starts. 0 = no cooldown.")]
+	[Min(0f)] public float dashCooldown = 1f;
 
 	[Header("Slide Settings")]
 	public float slideSpeed = 20f;

@@ -13,6 +13,10 @@ public class EnemySoulDrop : MonoBehaviour
     private bool hasDroppedSouls;
     private static BeaconSpawnerManager spawner;
 
+    // The summary promises pooled enemies re-arm on enable, but nothing did it before.
+    // Without this, a pooled enemy only ever paid out souls on its first death.
+    private void OnEnable() => hasDroppedSouls = false;
+
     public void TriggerSoulDrop()
     {
         if (hasDroppedSouls) return;

@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Collections;
 
+// Runs before the skill nodes' Awake so the editor reset below lands before they read PlayerPrefs.
+[DefaultExecutionOrder(-50)]
 public class ComboUIManager : MonoBehaviour
 {
     public static ComboUIManager Instance;
@@ -24,6 +26,17 @@ public class ComboUIManager : MonoBehaviour
 
     private SkillTreeNode[] allTreeNodes;
 
+    [Header("Debug & Testing")]
+    [Tooltip("UNITY EDITOR ONLY. Wipes every saved skill-tree unlock once each time you press Play, so you can " +
+             "re-test buying skills with the souls you have. Builds ignore this: players keep their unlocks.")]
+    public bool resetSkillUnlocksOnPlay = true;
+
+    private static bool hasResetUnlocksThisSession;
+
+    // Clears the flag on every new Play, even with Domain Reload disabled
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ClearUnlockResetFlag() => hasResetUnlocksThisSession = false;
+
     // Set by Shopkeeper so it can fade the panel out BEFORE the menu closes.
     // Defaults to false, so the menu behaves exactly as before everywhere else.
     [HideInInspector] public bool suppressBackClose;
@@ -32,6 +45,59 @@ public class ComboUIManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+#if UNITY_EDITOR
+        // Once per Play session (not every time the hub reloads after a death), and only for the real instance.
+        if (Instance == this && resetSkillUnlocksOnPlay && !hasResetUnlocksThisSession)
+        {
+            hasResetUnlocksThisSession = true;
+            ResetAllSkillUnlocks();
+        }
+#endif
+    }
+
+    private SkillTreeNode[] FindAllNodes()
+    {
+        if (treeContainer != null)
+            return treeContainer.GetComponentsInChildren<SkillTreeNode>(true);
+
+        return FindObjectsByType<SkillTreeNode>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    }
+
+    [ContextMenu("Reset Skill Unlocks (Debug)")]
+    public void ResetAllSkillUnlocks()
+    {
+        foreach (SkillTreeNode node in FindAllNodes())
+            node.ResetUnlockSaveData();
+
+        PlayerPrefs.Save();
+        Debug.Log("[ComboUIManager] Skill tree unlocks reset.");
+    }
+
+    // Right-click the component > "Log Skill Tree Wiring" to print every node's parent and attack.
+    // Use it to spot a child whose Parent Node points at the wrong node, or two nodes sharing one AttackData.
+    [ContextMenu("Log Skill Tree Wiring")]
+    private void LogSkillTreeWiring()
+    {
+        var seen = new Dictionary<AttackData, SkillTreeNode>();
+
+        foreach (SkillTreeNode n in FindAllNodes())
+        {
+            string parent = n.parentNode != null ? n.parentNode.name : "NONE (root, unlocked for free)";
+            string attack = n.attackData != null ? n.attackData.name : "NONE";
+            Debug.Log($"[SkillTree] {n.name}  <-  parent: {parent}  |  attack: {attack}", n);
+
+            if (n.parentNode == n)
+                Debug.LogWarning($"[SkillTree] {n.name} is its own parent!", n);
+
+            if (n.attackData == null) continue;
+
+            if (seen.TryGetValue(n.attackData, out SkillTreeNode other))
+                Debug.LogWarning($"[SkillTree] {n.name} and {other.name} share the same AttackData '{n.attackData.name}'. " +
+                                 "They share one save key, so unlocking one unlocks the other on the next launch.", n);
+            else
+                seen.Add(n.attackData, n);
+        }
     }
 
     private void Start()
