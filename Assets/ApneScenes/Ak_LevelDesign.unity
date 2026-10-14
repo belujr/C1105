@@ -498,7 +498,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5078519104124031077, guid: b452eab56528362448f00d61ae5d3624, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2153,7 +2153,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1808740274306136521, guid: ad95db996f7e41a458ebd05a573356c0, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3799,7 +3799,8 @@ MonoBehaviour:
   ghostLifetime: 0.45
   maxGhosts: 24
   ghostScaleMultiplier: 1
-  logScaleDetection: 1
+  ghostDrift: 0
+  ghostFlicker: 0
   ghostStartAlpha: 0.9
   ghostStartIntensity: 1.5
   ghostEndIntensity: 0.8
@@ -3807,13 +3808,15 @@ MonoBehaviour:
   rimEnd: {r: 0.55, g: 0.25, b: 1, a: 1}
   coreStart: {r: 0.1, g: 0.45, b: 1, a: 0.45}
   coreEnd: {r: 0.25, g: 0.05, b: 0.6, a: 0.05}
-  useParticles: 1
-  effectScale: 1
-  accentColor: {r: 0.45, g: 0.9, b: 1, a: 1}
-  sparkCount: 24
-  startDustCount: 8
-  endDustCount: 6
-  streakRate: 110
+  useTwoTone: 1
+  rimAltStart: {r: 1, g: 0.45, b: 0.9, a: 1}
+  rimAltEnd: {r: 0.25, g: 0.3, b: 1, a: 1}
+  useMotionLines: 1
+  lineColor: {r: 0.85, g: 0.97, b: 1, a: 0.55}
+  lineRate: 35
+  useDust: 1
+  dustColor: {r: 0.78, g: 0.74, b: 0.68, a: 0.3}
+  dustSize: 1
   useCameraKick: 1
   fovKick: 10
   orthoSizeKick: 0.8
@@ -3955,7 +3958,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2047082666833305160, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6668522441401500159, guid: 75f4e07857c7af34e8b9b73a3cf2ad71, type: 3}
       propertyPath: m_LocalPosition.x

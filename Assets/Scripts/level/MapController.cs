@@ -24,6 +24,13 @@ public class MapController : MonoBehaviour
     private bool isAnimating = false;
     private bool stickMoved = false;
 
+    // Fog belongs to the level, so it is switched off while the map is showing
+    private bool levelFogEnabled;
+    private bool fogStored;
+
+    // Cinematic map intro (MapIntroAnimator sits on this same GameObject)
+    private MapIntroAnimator intro;
+
     public static MapController Instance;
 
     void Awake()
@@ -31,6 +38,7 @@ public class MapController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            intro = GetComponent<MapIntroAnimator>();
             DontDestroyOnLoad(transform.root.gameObject);
         }
         else
@@ -61,6 +69,16 @@ public class MapController : MonoBehaviour
         // Block input if the map is glowing OR if we are currently loading a scene
         if (isAnimating || SceneTransitionManager.IsTransitioning) return;
 
+        // While the map intro plays, ignore everything except "skip"
+        if (intro != null && intro.IsPlaying)
+        {
+            bool skip = (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
+                     || (Keyboard.current != null && (Keyboard.current.spaceKey.wasPressedThisFrame
+                                                   || Keyboard.current.enterKey.wasPressedThisFrame));
+            if (skip) intro.Skip();
+            return;
+        }
+
         // 1. INPUT: Safely check for Right Trigger OR 'H' Key
         bool togglePressed = false;
         if (Gamepad.current != null && Gamepad.current.rightTrigger.wasPressedThisFrame) togglePressed = true;
@@ -73,14 +91,12 @@ public class MapController : MonoBehaviour
                 // Only allow teleport to Hub if we are currently playing a level (map is hidden)
                 if (!mapBoardRoot.activeInHierarchy)
                 {
-                    Debug.Log("Teleporting to Hub...");
                     SceneTransitionManager.LoadScene("Scene_Hub");
                 }
             }
             else
             {
                 // We are in Scene_Hub. Load Scene_Level specifically to view the map.
-                Debug.Log("Loading Level Scene to view map...");
                 SceneTransitionManager.LoadScene("Scene_Level");
             }
             return;
@@ -149,6 +165,13 @@ public class MapController : MonoBehaviour
         hoveredNode.transform.localScale = originalScale * 1.5f;
     }
 
+    // Puts the hovered icon back to normal size so the intro animation starts from clean values
+    private void ResetHover()
+    {
+        if (hoveredNode != null) hoveredNode.transform.localScale = originalScale;
+        hoveredNode = null;
+    }
+
     private IEnumerator AnimatePathAndLoad(MapNode fromNode, MapNode toNode)
     {
         isAnimating = true;
@@ -201,10 +224,28 @@ public class MapController : MonoBehaviour
             IsoCameraRig rig = FindObjectOfType<IsoCameraRig>(true);
             if (rig != null) mainCameraRig = rig.gameObject;
 
+            HideFogForMap();
+            ResetHover();
+
             mapBoardRoot.SetActive(true);
             mapCamera.gameObject.SetActive(true);
             if (mainCameraRig != null) mainCameraRig.SetActive(false);
+
+            // Cinematic intro: forest rises, icons pop in, paths draw
+            if (intro != null) intro.Play();
         }
+    }
+
+    private void HideFogForMap()
+    {
+        levelFogEnabled = RenderSettings.fog;   // remember what the level wants
+        fogStored = true;
+        RenderSettings.fog = false;
+    }
+
+    private void RestoreFogForLevel()
+    {
+        if (fogStored) RenderSettings.fog = levelFogEnabled;
     }
 
     private void StartSelectedChamber()
@@ -216,6 +257,11 @@ public class MapController : MonoBehaviour
 
     private void EnterLevel()
     {
+        // Make sure the intro can never be left half-finished when the map is switched off
+        if (intro != null) intro.Skip();
+
+        RestoreFogForLevel();
+
         mapBoardRoot.SetActive(false);
         mapCamera.gameObject.SetActive(false);
 

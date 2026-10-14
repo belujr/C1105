@@ -4632,6 +4632,7 @@ GameObject:
   m_Component:
   - component: {fileID: 940927834}
   - component: {fileID: 940927833}
+  - component: {fileID: 940927835}
   m_Layer: 13
   m_Name: MapController
   m_TagString: Untagged
@@ -4676,6 +4677,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1357469132}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &940927835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940927832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc1c142c6606f54429abc58a6a64a032, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapIntroAnimator
+  terrainRoot: {fileID: 3454787289299665602}
+  startDelay: 0.25
+  terrainDuration: 2
+  cameraDuration: 3.2
+  nodesStartAt: 1.4
+  nodeStagger: 0.14
+  nodePopDuration: 0.6
+  lineDrawDuration: 0.9
+  terrainRise: 0.18
+  terrainStartScale: 0.82
+  cameraPullBack: 0.22
+  nodeDrop: 0.1
+  nodeSpin: 180
+  lineSoftEdge: 0.06
 --- !u!1 &960912813
 GameObject:
   m_ObjectHideFlags: 0
@@ -5058,10 +5085,6 @@ PrefabInstance:
     - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_Name
       value: Level1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3480784841286787011, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
