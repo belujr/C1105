@@ -4,8 +4,6 @@ using UnityEngine.InputSystem;
 public class PlayerInputHandler : MonoBehaviour
 {
 	public Vector2 MoveInput { get; private set; }
-	public bool SprintTriggered { get; private set; }
-	public bool JumpTriggered { get; private set; }
 	public bool DashTriggered { get; private set; }
 	public bool SlideTriggered { get; private set; }
 	public bool AttackTriggered { get; private set; }
@@ -24,8 +22,6 @@ public class PlayerInputHandler : MonoBehaviour
 
 	[Header("Input Action References")]
 	[SerializeField] private InputActionReference moveAction;
-	[SerializeField] private InputActionReference sprintAction;
-	[SerializeField] private InputActionReference jumpAction;
 	[SerializeField] private InputActionReference dashAction;
 	[SerializeField] private InputActionReference slideAction;
 	[SerializeField] private InputActionReference attackAction;
@@ -37,8 +33,6 @@ public class PlayerInputHandler : MonoBehaviour
 	private void OnEnable()
 	{
 		moveAction.action?.Enable();
-		sprintAction.action?.Enable();
-		jumpAction.action?.Enable();
 		dashAction.action?.Enable();
 		slideAction.action?.Enable();
 		attackAction.action?.Enable();
@@ -51,8 +45,6 @@ public class PlayerInputHandler : MonoBehaviour
 	private void OnDisable()
 	{
 		moveAction.action?.Disable();
-		sprintAction.action?.Disable();
-		jumpAction.action?.Disable();
 		dashAction.action?.Disable();
 		slideAction.action?.Disable();
 		attackAction.action?.Disable();
@@ -65,9 +57,7 @@ public class PlayerInputHandler : MonoBehaviour
 	private void Update()
 	{
 		MoveInput = moveAction.action?.ReadValue<Vector2>() ?? Vector2.zero;
-		SprintTriggered = sprintAction.action?.IsPressed() ?? false;
 
-		JumpTriggered = jumpAction.action?.WasPressedThisFrame() ?? false;
 		DashTriggered = dashAction.action?.WasPressedThisFrame() ?? false;
 		SlideTriggered = slideAction.action?.WasPressedThisFrame() ?? false;
 		AttackTriggered = attackAction.action?.WasPressedThisFrame() ?? false;
