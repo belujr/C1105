@@ -960,6 +960,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashVFX
   ghostMaterial: {fileID: 2100000, guid: 71e54c92da803444eb697f397455d97d, type: 2}
+  glowMaterial: {fileID: 2100000, guid: 9523d2122ac4c7f459f765480f92a71a, type: 2}
   sourceRenderers: []
   ghostInterval: 0.05
   ghostLifetime: 0.75
@@ -977,6 +978,12 @@ MonoBehaviour:
   useTwoTone: 1
   rimAltStart: {r: 1, g: 0.062577136, b: 0, a: 1}
   rimAltEnd: {r: 0.6603774, g: 0, b: 0.6186321, a: 1}
+  useMotionLines: 1
+  lineColor: {r: 0.85, g: 0.97, b: 1, a: 0.69411767}
+  lineRate: 50
+  useDust: 1
+  dustColor: {r: 0.78, g: 0.74, b: 0.68, a: 0.3}
+  dustSize: 2
   useCameraKick: 1
   fovKick: 10
   orthoSizeKick: 0.8
