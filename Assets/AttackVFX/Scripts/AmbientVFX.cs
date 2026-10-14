@@ -100,7 +100,6 @@ public class AmbientVFX : MonoBehaviour
     private Transform target;
     private float nextSearchTime;
     private float nextRecheckTime;
-    private Transform lastLoggedTarget;
     private readonly List<Transform> candidates = new List<Transform>();
     private readonly List<Shaft> shafts = new List<Shaft>();
     private readonly List<Material> madeMaterials = new List<Material>();
@@ -169,11 +168,6 @@ public class AmbientVFX : MonoBehaviour
             return;
         }
 
-        if (target != lastLoggedTarget)
-        {
-            lastLoggedTarget = target;
-            Debug.Log("[AmbientVFX] Following '" + target.name + "' (position " + target.position + ").", target);
-        }
 
         block = new MaterialPropertyBlock();
         root = new GameObject("AmbientVFX_Generated").transform;
@@ -327,7 +321,6 @@ public class AmbientVFX : MonoBehaviour
         main.loop = true;
         main.playOnAwake = true;
         main.prewarm = true;                       // the air is already full when the game starts
-        main.duration = 5f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.startLifetime = new ParticleSystem.MinMaxCurve(lifetime.x, lifetime.y);
         main.startSpeed = new ParticleSystem.MinMaxCurve(speed.x, speed.y);

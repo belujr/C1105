@@ -722,6 +722,7 @@ GameObject:
   - component: {fileID: -8665550775658198054}
   - component: {fileID: 504257735477838715}
   - component: {fileID: -1584128687251398121}
+  - component: {fileID: 5367123354690462185}
   m_Layer: 6
   m_Name: RoomIMPEnemy
   m_TagString: Untagged
@@ -893,6 +894,18 @@ MonoBehaviour:
     m_Bits: 4294967295
   landingClip: {fileID: 7400002, guid: 39c1e8b66fab3ba418b191caaf714f42, type: 3}
   landingDuration: 1
+--- !u!114 &5367123354690462185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1808740274306136521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c849345bfb81b488ae8e387aa1eef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
 --- !u!1 &1912757558793624940
 GameObject:
   m_ObjectHideFlags: 0

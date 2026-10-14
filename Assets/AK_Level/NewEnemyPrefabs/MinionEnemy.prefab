@@ -1214,6 +1214,7 @@ GameObject:
   - component: {fileID: 2845370007556556877}
   - component: {fileID: 2738409288031471915}
   - component: {fileID: 7497581604537981577}
+  - component: {fileID: 6386360396004585780}
   m_Layer: 6
   m_Name: MinionEnemy
   m_TagString: Untagged
@@ -1419,6 +1420,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 25
+--- !u!114 &6386360396004585780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c849345bfb81b488ae8e387aa1eef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
 --- !u!1 &7659546530472026075
 GameObject:
   m_ObjectHideFlags: 0

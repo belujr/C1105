@@ -722,6 +722,7 @@ GameObject:
   - component: {fileID: 7676587401125791012}
   - component: {fileID: -8665550775658198054}
   - component: {fileID: 504257735477838715}
+  - component: {fileID: 3472617991509006327}
   m_Layer: 6
   m_Name: IMPEnemy
   m_TagString: Untagged
@@ -896,6 +897,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoulDrop
   soulEnergyValue: 25
+--- !u!114 &3472617991509006327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1808740274306136521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c849345bfb81b488ae8e387aa1eef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
 --- !u!1 &1912757558793624940
 GameObject:
   m_ObjectHideFlags: 0

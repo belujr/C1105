@@ -1370,6 +1370,7 @@ GameObject:
   - component: {fileID: 319945910997311908}
   - component: {fileID: 6123886950238107439}
   - component: {fileID: 5228374931340393400}
+  - component: {fileID: 2116294674698306228}
   m_Layer: 6
   m_Name: BulletHellMinion
   m_TagString: Untagged
@@ -1692,6 +1693,18 @@ MonoBehaviour:
   orbRadius: 0.6
   orbSpeed: 3
   orbCenterOffset: {x: 0, y: 1, z: 0}
+--- !u!114 &2116294674698306228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7572696427137771666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c849345bfb81b488ae8e387aa1eef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
 --- !u!1 &7611261585105808180
 GameObject:
   m_ObjectHideFlags: 0

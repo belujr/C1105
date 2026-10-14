@@ -155,7 +155,6 @@ GameObject:
   - component: {fileID: 1831273098190091979}
   - component: {fileID: 3700251523054111407}
   - component: {fileID: 2155850293666368563}
-  - component: {fileID: 196808317038767765}
   m_Layer: 6
   m_Name: RangedCapsule
   m_TagString: Untagged
@@ -261,48 +260,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &196808317038767765
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7135049396228161857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474e1b9cb67f564458e12ec478f86ad8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UltraInstinctRangedCapsule
-  player: {fileID: 0}
-  projectilePrefab: {fileID: 6932264869601413925, guid: d01cbe1407fbb914d9d054caafb34714, type: 3}
-  firePoint: {fileID: 4305046799438187247}
-  maxHealth: 80
-  tokenType: 4
-  enableDodging: 0
-  postDodgeBuffer: 0.2
-  reflexRange: 4
-  dodgeMappings:
-  - attackName: RightKick
-    attackID: 4
-    direction: 1
-    reactionDelay: 0
-    dodgeDuration: 0
-  - attackName: LegSweep
-    attackID: 8
-    direction: 2
-    reactionDelay: 0
-    dodgeDuration: 0
-  preferredRange: 10
-  squareSideLength: 4
-  baseMoveSpeed: 7
-  jumpHeight: 1.5
-  strafePhaseDuration: 4
-  rotationSpeed: 20
-  separationRadius: 2
-  separationWeight: 1.8
-  panicDistance: 18
-  panicSpeed: 10
-  postShotExtraWait: 2
 --- !u!1 &7218553899386124900
 GameObject:
   m_ObjectHideFlags: 0

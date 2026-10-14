@@ -835,7 +835,7 @@ public class HealGroundRune
     public void Reset()
     {
         level = 0f;
-        mr.enabled = false;
+        if (mr != null) mr.enabled = false;
         if (maskMr != null) maskMr.enabled = false;
     }
 

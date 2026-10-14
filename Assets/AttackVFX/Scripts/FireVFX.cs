@@ -215,12 +215,6 @@ public class FireVFX : MonoBehaviour
         else
         {
             sizeScale = Mathf.Abs(ls.y);
-            if (Mathf.Abs(ls.x - 1f) > 0.25f || Mathf.Abs(ls.y - 1f) > 0.25f || Mathf.Abs(ls.z - 1f) > 0.25f)
-            {
-                Debug.LogWarning("[FireVFX] '" + name + "' sits under scaled parents (world scale " + ls.ToString("F3") +
-                                 "), so Height, Radius and the other sizes are multiplied by it. Tick 'Ignore Parent Scale' " +
-                                 "to type real world sizes instead.", this);
-            }
         }
 
         // ---- materials (one set per fire, so different fires can look different)
@@ -349,7 +343,6 @@ public class FireVFX : MonoBehaviour
         ParticleSystem.MainModule main = ps.main;
         main.loop = true;
         main.playOnAwake = true;
-        main.duration = 5f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.startLifetime = new ParticleSystem.MinMaxCurve(emberLifetime.x, emberLifetime.y);
         main.startSpeed = new ParticleSystem.MinMaxCurve(emberSpeed.x, emberSpeed.y);
@@ -398,7 +391,6 @@ public class FireVFX : MonoBehaviour
         ParticleSystem.MainModule main = ps.main;
         main.loop = true;
         main.playOnAwake = true;
-        main.duration = 5f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.startLifetime = new ParticleSystem.MinMaxCurve(smokeLifetime.x, smokeLifetime.y);
         main.startSpeed = new ParticleSystem.MinMaxCurve(0.35f, 0.75f);

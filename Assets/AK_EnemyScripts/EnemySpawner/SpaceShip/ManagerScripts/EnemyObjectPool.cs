@@ -65,11 +65,12 @@ public class EnemyObjectPool : MonoBehaviour
                 return instance;
             },
             actionOnGet: (instance) => { },
-            actionOnRelease: (instance) =>
-            {
-                instance.SetActive(false);
-                instance.transform.SetParent(transform);
-            },
+           actionOnRelease: (instance) =>
+           {
+               instance.SetActive(false);
+               if (instance.transform.parent != transform)
+                   instance.transform.SetParent(transform);
+           },
             actionOnDestroy: (instance) => Destroy(instance),
             collectionCheck: true,
             defaultCapacity: 20,

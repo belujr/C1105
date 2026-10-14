@@ -39,7 +39,7 @@ public class EnemyShipPassenger : MonoBehaviour
     private void OnDisable()
     {
         if (landRoutine != null) { StopCoroutine(landRoutine); landRoutine = null; }
-        transform.SetParent(null);
+        //transform.SetParent(null);
     }
 
     public void MountToShip(Transform mountPoint)
