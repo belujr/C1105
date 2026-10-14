@@ -7,7 +7,6 @@ public class GroundedState : PlayerState
     public override void Enter()
     {
         base.Enter();
-        controller.AirborneState.ResetJumps();
 
         // Reset horizontal residual momentum upon touching the ground
         controller.VerticalVelocity = new Vector3(0f, controller.VerticalVelocity.y, 0f);
@@ -42,13 +41,6 @@ public class GroundedState : PlayerState
             controller.CurrentComboIndex = 0;
         }
 
-        if (input.JumpTriggered)
-        {
-            controller.TransitionToState(controller.AirborneState);
-            controller.AirborneState.ExecuteJump();
-            return;
-        }
-
         if (input.DashTriggered && !controller.DashState.IsOnCooldown())
         {
             controller.TransitionToState(controller.DashState);
@@ -64,7 +56,7 @@ public class GroundedState : PlayerState
 
         // Movement & Animation
         Vector3 moveDir = controller.GetIsometricInputDirection();
-        float targetSpeed = input.SprintTriggered ? controller.stats.sprintSpeed : controller.stats.walkSpeed;
+        float targetSpeed = controller.stats.sprintSpeed;
         float currentSpeed = moveDir.magnitude * targetSpeed;
 
         if (controller.Animator != null)
