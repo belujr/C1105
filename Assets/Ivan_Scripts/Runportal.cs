@@ -1,18 +1,19 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-
-// Trigger collider that sends the player to another scene.
+ 
+// Trigger collider that sends the player to another scene with a seamless fade.
 [RequireComponent(typeof(Collider))]
 public class RunPortal : MonoBehaviour
 {
     [SerializeField] private string targetScene = "scene_level";
-    private bool used;
-
+ 
     private void OnTriggerEnter(Collider other)
     {
-        if (used || !other.CompareTag("Player")) return;
-        used = true;
-        CameraTransitionManager.RequestGameplayEntry(targetScene); // skips a title shot if that scene has one
-        SceneManager.LoadScene(targetScene);
+        // Ignore everything except the player, and ignore re-triggers mid-transition
+        if (SceneTransitionManager.IsTransitioning || !other.CompareTag("Player")) return;
+ 
+        if (SceneTransitionManager.LoadScene(targetScene))
+        {
+            CameraTransitionManager.RequestGameplayEntry(targetScene); // skips a title shot if that scene has one
+        }
     }
 }

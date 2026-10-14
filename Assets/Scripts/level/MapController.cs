@@ -23,7 +23,6 @@ public class MapController : MonoBehaviour
     private Vector3 originalScale;
     private bool isAnimating = false;
     private bool stickMoved = false;
-    private bool isTeleporting = false; // Prevents input mashing during scene loads
 
     public static MapController Instance;
 
@@ -60,7 +59,7 @@ public class MapController : MonoBehaviour
     void Update()
     {
         // Block input if the map is glowing OR if we are currently loading a scene
-        if (isAnimating || isTeleporting) return;
+        if (isAnimating || SceneTransitionManager.IsTransitioning) return;
 
         // 1. INPUT: Safely check for Right Trigger OR 'H' Key
         bool togglePressed = false;
@@ -75,14 +74,14 @@ public class MapController : MonoBehaviour
                 if (!mapBoardRoot.activeInHierarchy)
                 {
                     Debug.Log("Teleporting to Hub...");
-                    StartCoroutine(SwitchSceneSeamlessly("Scene_Hub"));
+                    SceneTransitionManager.LoadScene("Scene_Hub");
                 }
             }
             else
             {
                 // We are in Scene_Hub. Load Scene_Level specifically to view the map.
                 Debug.Log("Loading Level Scene to view map...");
-                StartCoroutine(SwitchSceneSeamlessly("Scene_Level"));
+                SceneTransitionManager.LoadScene("Scene_Level");
             }
             return;
         }
@@ -192,22 +191,6 @@ public class MapController : MonoBehaviour
         isAnimating = false;
     }
 
-    private IEnumerator SwitchSceneSeamlessly(string sceneName)
-    {
-        isTeleporting = true; // Lock controls
-
-        // Load the new scene in the background to prevent game freezing
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
-
-        // Wait until Unity has fully prepared the next scene
-        while (!asyncLoad.isDone)
-        {
-            yield return null;
-        }
-
-        isTeleporting = false; // Unlock controls once arrived
-    }
-
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // When Scene_Level loads, ONLY ensure the map is ready. Never auto-spawn the level.
@@ -225,6 +208,13 @@ public class MapController : MonoBehaviour
     }
 
     private void StartSelectedChamber()
+    {
+        // Fade out -> swap map for level while the screen is black -> fade in
+        bool started = SceneTransitionManager.RunTransition(EnterLevel);
+        if (!started) EnterLevel(); // fallback, should not normally happen
+    }
+
+    private void EnterLevel()
     {
         mapBoardRoot.SetActive(false);
         mapCamera.gameObject.SetActive(false);
