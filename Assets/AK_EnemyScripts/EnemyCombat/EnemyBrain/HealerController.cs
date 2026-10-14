@@ -69,7 +69,30 @@ public class HealerController : MonoBehaviour, IDamageable
     public float allySearchRadius = 15.0f;
 
     private IHealable currentAllyTarget;
-    private static readonly Collider[] searchBuffer = new Collider[16];
+    // Each healer owns its reusable search buffer. It grows only when crowded.
+    private Collider[] searchBuffer = new Collider[32];
+    private readonly HashSet<Transform> seenAllies = new HashSet<Transform>();
+    private readonly Dictionary<Transform, ulong> lastServed = new Dictionary<Transform, ulong>();
+    private readonly List<Transform> expiredHistory = new List<Transform>();
+    private ulong serviceOrder;
+    private Transform claimedTarget;
+    private float healingTurnTimer;
+
+    // One reservation per ally, shared by every healer.
+    private static readonly Dictionary<Transform, HealerController> targetOwners =
+        new Dictionary<Transform, HealerController>();
+
+    [Header("Healing Target Sharing")]
+    [Tooltip("Seconds of actual healing before trying a different injured, unclaimed ally.")]
+    [Min(0.1f)] [SerializeField] private float healingTurnDuration = 2.5f;
+    [Tooltip("Layers containing ally colliders. Everything preserves the original search.")]
+    [SerializeField] private LayerMask allyLayers = ~0;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetReservations()
+    {
+        targetOwners.Clear();
+    }
     private bool isDead = false;
     private bool isReacting = false;
     private float reactionTimer = 0f;
@@ -106,6 +129,11 @@ public class HealerController : MonoBehaviour, IDamageable
 
     private void OnDisable()
     {
+        ClearAllyTarget();
+        lastServed.Clear();
+        seenAllies.Clear();
+        expiredHistory.Clear();
+        System.Array.Clear(searchBuffer, 0, searchBuffer.Length);
         // Disabling the script (pool / ship passenger) must also cancel a running spawn sequence
         StopAllCoroutines();
         spawnRoutine = null;
@@ -139,6 +167,11 @@ public class HealerController : MonoBehaviour, IDamageable
     {
         StopAllCoroutines();
 
+        ClearAllyTarget();
+        lastServed.Clear();
+        serviceOrder = 0;
+        spawnRoutine = null;
+        reactionTimer = 0f;
         currentHealth = maxHealth;
         isDead = false;
         isReacting = false;
@@ -151,7 +184,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
         isBackingAway = false;
         isHealingInRange = false;
-        allySearchTimer = 0f;
+        allySearchTimer = Random.Range(0f, Mathf.Max(0.05f, allySearchInterval));
         hasBeenSeen = !requireSightingBeforeSpawning;
 
         // The pool disables the collider before mounting; make sure the Healer is hittable once active
@@ -176,6 +209,7 @@ public class HealerController : MonoBehaviour, IDamageable
     private IEnumerator SpawnAnimationRoutine()
     {
         isSpawning = true;
+        ClearAllyTarget();
         StopHealing();
 
         FacePlayerInstant();
@@ -272,13 +306,23 @@ public class HealerController : MonoBehaviour, IDamageable
 
         if (isSpawning) return;
 
+        // Also resume an interrupted summon if no hit-reaction clip was available.
+        if (pendingSpawnAfterHit)
+        {
+            pendingSpawnAfterHit = false;
+            TriggerSpawnSequence();
+            if (isSpawning) return;
+        }
+
         HandleBatSpawningTimer();
+        // StartCoroutine runs immediately up to its first yield.
+        if (isSpawning) return;
         ManageBehavior();
     }
 
     private void HandleBatSpawningTimer()
     {
-        bool visible = IsInPlayerCameraView();
+        bool visible = (!hasBeenSeen || spawnOnlyWhileVisible) && IsInPlayerCameraView();
 
         // Gate: no bats until the camera has seen this Healer
         if (!hasBeenSeen)
@@ -333,6 +377,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
         if (isBackingAway)
         {
+            ClearAllyTarget();
             StopHealing();
 
             Vector3 dirAwayFromPlayer = (transform.position - playerTransform.position).normalized;
@@ -346,21 +391,24 @@ public class HealerController : MonoBehaviour, IDamageable
             return;
         }
 
-        // 2. FIND ALLY: Look for someone to heal (throttled search, no per-frame overlap queries)
-        if (currentAllyTarget != null && !currentAllyTarget.NeedsHealing())
+        // 2. Validate every frame, but perform physics searches only on the timer.
+        if (currentAllyTarget != null &&
+            (!TryGetAvailableAlly(currentAllyTarget, out Transform validTarget) ||
+             validTarget != claimedTarget || IsClaimedByAnother(validTarget) ||
+             (validTarget.position - transform.position).sqrMagnitude >
+                 Mathf.Max(0f, allySearchRadius) * Mathf.Max(0f, allySearchRadius)))
         {
-            currentAllyTarget = null;
-            isHealingInRange = false;
+            ClearAllyTarget();
         }
 
-        if (currentAllyTarget == null)
+        allySearchTimer -= Time.deltaTime;
+        if (allySearchTimer <= 0f)
         {
-            StopHealing();
-            allySearchTimer -= Time.deltaTime;
-            if (allySearchTimer <= 0f)
+            allySearchTimer = Mathf.Max(0.05f, allySearchInterval);
+            if (currentAllyTarget == null ||
+                healingTurnTimer >= Mathf.Max(0.1f, healingTurnDuration))
             {
-                allySearchTimer = allySearchInterval;
-                FindLowestHealthAlly();
+                FindNextAlly();
             }
         }
 
@@ -442,28 +490,120 @@ public class HealerController : MonoBehaviour, IDamageable
         }
     }
 
-    private void FindLowestHealthAlly()
+    // Interfaces do not use Unity's destroyed-object null check automatically.
+    private bool TryGetAvailableAlly(IHealable ally, out Transform allyTransform)
     {
+        allyTransform = null;
+        if (ally == null) return false;
+        if (ally is UnityEngine.Object unityObject && unityObject == null) return false;
+        if (ally is Behaviour behaviour && !behaviour.isActiveAndEnabled) return false;
+
+        allyTransform = ally.GetTransform();
+        return allyTransform != null && allyTransform != transform &&
+            allyTransform != playerTransform && allyTransform.gameObject.activeInHierarchy &&
+            ally.NeedsHealing();
+    }
+
+    private bool IsClaimedByAnother(Transform target)
+    {
+        if (!targetOwners.TryGetValue(target, out HealerController owner)) return false;
+
+        // Recover stale reservations after disable, destruction or pooling.
+        if (owner == null || !owner.isActiveAndEnabled || owner.isDead ||
+            owner.claimedTarget != target)
+        {
+            targetOwners.Remove(target);
+            return false;
+        }
+        return owner != this;
+    }
+
+    private void ClearAllyTarget()
+    {
+        // ReferenceEquals lets us also remove a destroyed Unity object as a key.
+        if (!ReferenceEquals(claimedTarget, null) &&
+            targetOwners.TryGetValue(claimedTarget, out HealerController owner) &&
+            owner == this)
+        {
+            targetOwners.Remove(claimedTarget);
+        }
+
+        if (currentAllyTarget != null) StopHealing();
+        claimedTarget = null;
         currentAllyTarget = null;
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, allySearchRadius, searchBuffer);
+        allyFX = null;
+        allyFXOwner = null;
+        isHealingInRange = false;
+        healingTurnTimer = 0f;
+    }
+
+    private void FindNextAlly()
+    {
+        // Remove destroyed/disabled entries without modifying a dictionary during enumeration.
+        expiredHistory.Clear();
+        foreach (var entry in lastServed)
+        {
+            if (entry.Key == null || !entry.Key.gameObject.activeInHierarchy)
+                expiredHistory.Add(entry.Key);
+        }
+        for (int i = 0; i < expiredHistory.Count; i++)
+            lastServed.Remove(expiredHistory[i]);
+
+        int hitCount;
+        float radius = Mathf.Max(0f, allySearchRadius);
+        do
+        {
+            hitCount = Physics.OverlapSphereNonAlloc(
+                transform.position, radius, searchBuffer, allyLayers,
+                QueryTriggerInteraction.UseGlobal);
+            if (hitCount < searchBuffer.Length) break;
+
+            // A full buffer may have omitted allies. Grow and repeat instead of
+            // silently ignoring them; subsequent searches reuse the larger buffer.
+            System.Array.Resize(ref searchBuffer, searchBuffer.Length * 2);
+        } while (true);
+
+        seenAllies.Clear();
+        IHealable bestAlly = null;
+        Transform bestTransform = null;
+        ulong oldestTurn = ulong.MaxValue;
+        float bestDistance = float.PositiveInfinity;
 
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = searchBuffer[i];
-            if (hit.gameObject != gameObject)
-            {
-                IHealable healableAlly = hit.GetComponentInParent<IHealable>();
+            if (hit == null) continue;
+            IHealable ally = hit.GetComponentInParent<IHealable>();
+            if (!TryGetAvailableAlly(ally, out Transform candidate)) continue;
+            if (!seenAllies.Add(candidate) || candidate == claimedTarget ||
+                IsClaimedByAnother(candidate)) continue;
 
-                if (healableAlly != null && healableAlly.GetTransform() != transform)
-                {
-                    if (healableAlly.NeedsHealing())
-                    {
-                        currentAllyTarget = healableAlly;
-                        break;
-                    }
-                }
+            float distance = (candidate.position - transform.position).sqrMagnitude;
+            if (distance > radius * radius) continue;
+
+            // Serve never-visited allies first, then the least recently served.
+            // Distance only breaks ties: collider order no longer chooses the target.
+            lastServed.TryGetValue(candidate, out ulong previousTurn);
+            if (previousTurn < oldestTurn ||
+                (previousTurn == oldestTurn && distance < bestDistance))
+            {
+                bestAlly = ally;
+                bestTransform = candidate;
+                oldestTurn = previousTurn;
+                bestDistance = distance;
             }
         }
+
+        System.Array.Clear(searchBuffer, 0, searchBuffer.Length);
+        seenAllies.Clear();
+        // If all other allies are claimed or healthy, keep helping our current ally.
+        if (bestAlly == null) return;
+
+        ClearAllyTarget();
+        currentAllyTarget = bestAlly;
+        claimedTarget = bestTransform;
+        targetOwners[bestTransform] = this;
+        lastServed[bestTransform] = ++serviceOrder;
     }
 
     private void ExecuteHealing(Transform allyTransform)
@@ -491,13 +631,14 @@ public class HealerController : MonoBehaviour, IDamageable
             allyFX = allyTransform.GetComponent<HealReceiveFX>();
             if (allyFX == null) allyFX = allyTransform.gameObject.AddComponent<HealReceiveFX>();
         }
-        healVFX.Cast(allyFX);   // the aura on the ally starts by itself when the first stream particles arrive
+        if (healVFX != null) healVFX.Cast(allyFX);   // the aura on the ally starts by itself when the first stream particles arrive
 
         // Play dedicated healing casting animation using the heal animation speed multiplier
         AnimationClip activeHealClip = healAnimationClip != null ? healAnimationClip : (animProfile != null ? (animProfile.GetAnimationClip("HealAction") ?? animProfile.idleClip) : null);
         UpdateLocomotionAnimation("CastingHeal", activeHealClip, 0.15f, healAnimationSpeed);
 
         // Apply health over time
+        healingTurnTimer += Time.deltaTime;
         currentAllyTarget.ReceiveHeal(healAmountPerSecond * Time.deltaTime);
     }
 
@@ -516,12 +657,12 @@ public class HealerController : MonoBehaviour, IDamageable
     {
         if (isDead) return;
 
+        ClearAllyTarget();
         StopHealing();
         currentHealth -= damage;
 
-        Vector3 pushDir = hitDirection;
-        pushDir.y = 0f;
-        transform.position += pushDir.normalized * (force * 0.5f);
+        // Deliberately ignore force: damage and hit reactions remain, but no knockback.
+        // Keep the signature unchanged for existing IDamageable callers.
 
         // If he gets hit while spawning, cancel the current spawn sequence immediately so bats don't spawn
         if (isSpawning)
@@ -581,6 +722,7 @@ public class HealerController : MonoBehaviour, IDamageable
         if (summonVFX != null) summonVFX.Cancel();
         if (isDead) return;
         isDead = true;
+        ClearAllyTarget();
         StopHealing();
 
         if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
