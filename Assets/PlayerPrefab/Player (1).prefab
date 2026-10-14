@@ -508,6 +508,7 @@ GameObject:
   - component: {fileID: 1126067658267139612}
   - component: {fileID: 1338018920158427594}
   - component: {fileID: 2249310026796722193}
+  - component: {fileID: 279281203749852146}
   m_Layer: 14
   m_Name: Player (1)
   m_TagString: Player
@@ -634,6 +635,7 @@ MonoBehaviour:
   ropeRenderer: {fileID: 5328439643012407842}
   dashVFX: {fileID: 0}
   hitFX: {fileID: 0}
+  aoeVFX: {fileID: 0}
   enemyGrappleReticle: {fileID: 0}
   equippedStyle: {fileID: 11400000, guid: 6b1fdbdf066b84b4a8150e669dcd4940, type: 2}
   specialAttackY: {fileID: 11400000, guid: d051e18c1327b3949b6dcdce2298c1bb, type: 2}
@@ -1059,6 +1061,78 @@ MonoBehaviour:
   autoDetectRadius: 6
   chestHeight: 1.1
   minInterval: 0.08
+--- !u!114 &279281203749852146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459098319445998704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 127d7b503c433f14a8a69fd55ae68892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AOEShockwaveVFX
+  waveMaterial: {fileID: 0}
+  distortionMaterial: {fileID: 0}
+  particleMaterial: {fileID: 0}
+  impactMaterial: {fileID: 0}
+  bodyGlowMaterial: {fileID: 0}
+  enableChargeUp: 1
+  enableGroundWave: 1
+  enableDistortion: 1
+  enableFlames: 0
+  enableSparks: 1
+  enableEmbers: 1
+  enableWindStreaks: 1
+  enableDust: 1
+  enableClippings: 1
+  enableLight: 1
+  enableBodyFlare: 1
+  enableCameraShake: 1
+  enableZoomPunch: 1
+  enableCenterFlash: 0
+  impactTime: 0.4
+  waveDuration: 0.6
+  afterglowDuration: 1.8
+  hotColor: {r: 3.2, g: 2.4, b: 1.2, a: 1}
+  edgeColor: {r: 2.4, g: 0.55, b: 0.12, a: 1}
+  flashCoreColor: {r: 3.2, g: 2.6, b: 1.6, a: 1}
+  flashEdgeColor: {r: 2.6, g: 0.6, b: 0.1, a: 1}
+  emberColorA: {r: 1, g: 0.85, b: 0.45, a: 1}
+  emberColorB: {r: 1, g: 0.35, b: 0.08, a: 1}
+  dustColor: {r: 0.72, g: 0.66, b: 0.55, a: 0.35}
+  clippingColorA: {r: 0.2, g: 0.36, b: 0.08, a: 1}
+  clippingColorB: {r: 0.46, g: 0.56, b: 0.16, a: 1}
+  lightColor: {r: 1, g: 0.55, b: 0.18, a: 1}
+  waveOpacity: 0.7
+  groundOffset: 0.1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  crackScale: 1.6
+  crackThinness: 150
+  distortionStrength: 0.02
+  distortionWidth: 0.1
+  chargeAmount: 45
+  chargeRadius: 1.8
+  flameRate: 90
+  windStreakRate: 60
+  sparkCount: 45
+  emberCount: 32
+  dustCount: 18
+  clippingCount: 40
+  lightPulse: 4
+  lightDuration: 0.35
+  bodyFlareStrength: 0.9
+  bodyFlareDuration: 0.4
+  bodyFlareRadius: 1.6
+  chestHeight: 1.1
+  shakeAmount: 0.22
+  shakeDuration: 0.4
+  orthoPunch: 0.5
+  fovPunch: 3
+  zoomDuration: 0.35
 --- !u!1 &549867627352137984
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,7 @@ MonoBehaviour:
   attackName: Punch
   description: A quick jab that interrupts weak enemy attacks.
   attackIcon: {fileID: 0}
+  soulCost: 50
   damageLevel: 3
   knockbackLevel: 2
   rangeLevel: 4
@@ -32,8 +33,10 @@ MonoBehaviour:
   coneAngle: 98
   maxEnemiesHit: 4
   verticalLift: 0
+  cutsGrass: 1
   hitStopDuration: 0.15
   cameraShakeIntensity: 0.3
   cameraShakeDuration: 0.12
   customHitSound: {fileID: 0}
-  customVFX: {fileID: 8159823443438401081, guid: cba27d119a483244f9679916f2bfc2b4, type: 3}
+  customVFX: {fileID: 0}
+  swingVFX: {fileID: 0}

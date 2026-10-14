@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     public LineRenderer ropeRenderer;
     public DashVFX dashVFX;
     public PlayerHitFX hitFX;
+    public AOEShockwaveVFX aoeVFX;
     public GameObject enemyGrappleReticle;
 
     [Header("Equipped Moveset")]
@@ -64,6 +65,14 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGravityEnabled { get; set; } = true;
 
+    [Header("AOE VFX timing")]
+    [Tooltip("ON = the AOE VFX waits for an Animation Event named AOEImpact on the attack animation (frame-exact). " +
+             "OFF = it uses the Impact Time setting on the VFX component (a time estimate).")]
+    public bool aoeVfxUseAnimationEvent = true;
+
+    private bool aoeVfxPending;
+    private float aoeVfxFallbackAt;
+
     private void OnEnable()
     {
         DialogueUI.OnPlayerMovementStateChanged += HandleDialogueMovementStateChanged;
@@ -80,7 +89,10 @@ public class PlayerController : MonoBehaviour
         InputHandler = GetComponent<PlayerInputHandler>();
         if (dashVFX == null) dashVFX = GetComponent<DashVFX>();
         if (hitFX == null) hitFX = GetComponent<PlayerHitFX>();
+        if (aoeVFX == null) aoeVFX = GetComponent<AOEShockwaveVFX>();
         Animator = GetComponentInChildren<Animator>();
+        if (Animator != null && Animator.GetComponent<AOEAnimationEvents>() == null)
+            Animator.gameObject.AddComponent<AOEAnimationEvents>();   // receives the "AOEImpact" Animation Event
 
         DefaultHeight = CharacterController.height;
         DefaultCenter = CharacterController.center;
@@ -110,6 +122,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        UpdateAOEVfxFallback();
+
         // Freeze logic updates and input checks if movement is locked during Fixed dialogue
         if (IsMovementLocked)
         {
@@ -487,5 +501,51 @@ public class PlayerController : MonoBehaviour
         if (hitFX != null) hitFX.PlayAuto();   // blood, impact burst, vignette, camera punch...
         HitState.SetUp(animHash, duration);
         TransitionToState(HitState);
+    }
+
+    // ------------------------------------------------------------------ AOE VFX timing
+    /// Starts the AOE VFX for an attack. With aoeVfxUseAnimationEvent ON the VFX waits for the "AOEImpact" Animation Event
+    /// (and fires on its own near the end of the animation if the clip has no such event).
+    /// With it OFF the VFX lands after guessImpactSeconds.
+    public void StartAOEVfx(AttackData data, float remainingAnimSeconds, float guessImpactSeconds)
+    {
+        if (aoeVFX == null || data == null) return;
+
+        if (aoeVfxUseAnimationEvent)
+        {
+            aoeVFX.Play(data.aoeRadius, data.coneAngle, 1000f);   // its own timer never fires: the event (or the fallback) does
+            aoeVfxPending = true;
+            aoeVfxFallbackAt = Time.time + Mathf.Max(0.1f, remainingAnimSeconds * 0.85f);
+        }
+        else
+        {
+            aoeVfxPending = false;
+            aoeVFX.Play(data.aoeRadius, data.coneAngle, guessImpactSeconds / Mathf.Max(0.05f, aoeVFX.impactTime));
+        }
+    }
+
+    /// Called by AOEAnimationEvents when the "AOEImpact" Animation Event plays.
+    public void OnAOEImpactEvent()
+    {
+        if (!aoeVfxPending) return;
+        aoeVfxPending = false;
+        if (aoeVFX != null) aoeVFX.Impact();
+    }
+
+    /// Stops a pending AOE VFX (attack interrupted before the hit landed).
+    public void CancelAOEVfx()
+    {
+        aoeVfxPending = false;
+        if (aoeVFX != null) aoeVFX.Cancel();
+    }
+
+    private void UpdateAOEVfxFallback()
+    {
+        if (!aoeVfxPending || Time.time < aoeVfxFallbackAt) return;
+
+        aoeVfxPending = false;
+        Debug.LogWarning("[AOE VFX] No 'AOEImpact' Animation Event arrived for this attack, so the VFX fired on a timer. " +
+                         "Add an Animation Event named AOEImpact on the hit frame of the attack animation for exact timing.");
+        if (aoeVFX != null) aoeVFX.Impact();
     }
 }
