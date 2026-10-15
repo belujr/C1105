@@ -91,6 +91,26 @@ public class MapNodePowerUp : MonoBehaviour
         punch = 1f;
     }
 
+    /// <summary>
+    /// A fresh, untouched copy of this chamber's power-up model, used by the buff room so the buff the player
+    /// picked on the map is the one waiting on the slab. The caller owns the copy and places it.
+    /// </summary>
+    public GameObject CreateBuffCopy()
+    {
+        if (powerUpModel == null) return null;
+        EnsureCreated();
+
+        GameObject copy = Instantiate(powerUpModel);
+        if (powerUpModel.scene.IsValid())
+        {
+            // cloned from the scene object, which the map has been animating: put its look back
+            copy.transform.localScale = modelOrigScale;
+            copy.transform.rotation = modelBaseRot;
+        }
+        copy.SetActive(true);
+        return copy;
+    }
+
     public void HideInstant()
     {
         showing = false;

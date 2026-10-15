@@ -8,6 +8,7 @@ public class ImpFireball : MonoBehaviour
     private float lifeTimer = 5f;
     private Collider fireballCollider;
     private LineRenderer lineRenderer;
+    private ImpShardVFX shardVFX;
 
     [Header("Homing & Arc Tracking Settings")]
     public float trackingDuration = 1.5f;
@@ -52,6 +53,11 @@ public class ImpFireball : MonoBehaviour
         Vector3 targetPos = target != null ? target.position + Vector3.up * 1.0f : transform.position + transform.forward * 10f;
         currentVelocity = (targetPos - transform.position).normalized * speed;
         transform.rotation = Quaternion.LookRotation(currentVelocity);
+
+        // Shard + trail VFX (add ImpShardVFX to the prefab and assign its materials; it is added here if missing)
+        shardVFX = GetComponent<ImpShardVFX>();
+        if (shardVFX == null) shardVFX = gameObject.AddComponent<ImpShardVFX>();
+        shardVFX.Begin(currentVelocity.normalized);
     }
 
     private void Update()
@@ -59,6 +65,7 @@ public class ImpFireball : MonoBehaviour
         lifeTimer -= Time.deltaTime;
         if (lifeTimer <= 0f)
         {
+            if (shardVFX != null) shardVFX.Impact(transform.position, -currentVelocity.normalized, false);
             Destroy(gameObject);
             return;
         }
@@ -80,7 +87,7 @@ public class ImpFireball : MonoBehaviour
         {
             Vector3 currentPos = transform.position;
             Vector3 trailStartPos = currentPos - (currentVelocity.normalized * trailLength);
-            
+
             lineRenderer.SetPosition(0, trailStartPos); // Tail of the trail
             lineRenderer.SetPosition(1, currentPos);    // Head of the trail at the bullet
         }
@@ -99,10 +106,12 @@ public class ImpFireball : MonoBehaviour
         if (other.CompareTag("Player") || other.GetComponent<PlayerController>() != null)
         {
             ApplyDamage(other);
+            if (shardVFX != null) shardVFX.Impact(transform.position, -currentVelocity.normalized, true);
             Destroy(gameObject);
         }
         else if (!other.isTrigger)
         {
+            if (shardVFX != null) shardVFX.Impact(transform.position, -currentVelocity.normalized, true);
             Destroy(gameObject);
         }
     }

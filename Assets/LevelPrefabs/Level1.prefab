@@ -21039,7 +21039,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1098349803403286197
 Transform:
   m_ObjectHideFlags: 0
@@ -36690,7 +36690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7925306098289517116
 Transform:
   m_ObjectHideFlags: 0
@@ -99922,7 +99922,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1409892135948093921
 Transform:
   m_ObjectHideFlags: 0
@@ -182274,7 +182274,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -3.026, y: 249}
+  m_AnchoredPosition: {x: -3.025879, y: 249}
   m_SizeDelta: {x: 560, y: 240}
   m_Pivot: {x: 1, y: 1}
 --- !u!225 &1006616585315809994
@@ -189156,6 +189156,7 @@ GameObject:
   - component: {fileID: 5171732141704801415}
   - component: {fileID: 7108464260202802152}
   - component: {fileID: 9055170517045742205}
+  - component: {fileID: 4407545715385404390}
   m_Layer: 0
   m_Name: Center_Square
   m_TagString: Untagged
@@ -189256,6 +189257,75 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.02004336, y: 0.020043358, z: 0.019999998}
   m_Center: {x: -0.00000023841858, y: 0.00000023841858, z: -0.000000029802322}
+--- !u!114 &4407545715385404390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7762296531898315599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b96922f11bb856b4cbd13bbe1ff4c43a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuffRoomPedestal
+  buffAnchor: {fileID: 0}
+  buffSize: 2
+  floatGap: 0.35
+  spinSpeed: 50
+  bobHeight: 0.06
+  bobSpeed: 1.6
+  fallbackBuff: {fileID: 0}
+  buffLight: 1
+  glowIntensity: 20
+  glowRange: 200
+  glowLift: 0.9
+  glowTowardCamera: 0.5
+  glowPulse: 0.15
+  autoGlowColor: 1
+  glowColor: {r: 0.75, g: 1, b: 0.85, a: 1}
+  absorbEffect: 1
+  absorbShardCount: 12
+  absorbShardScale: 0.2
+  absorbDuration: 0.75
+  gainLightIntensity: 6
+  gainLightRange: 5
+  playerGainEffectPrefab: {fileID: 0}
+  playerGainEffectLifetime: 4
+  aura:
+    enabled: 1
+    useBuffColor: 1
+    color: {r: 1, g: 0.45, b: 0.15, a: 1}
+    brightness: 1
+    ringStartRadius: 1.6
+    ringIntensity: 2
+    risingRings: 1
+    groundRing: 1
+    noiseTexture: {fileID: 0}
+    sparkRate: 28
+    haloStrength: 0.25
+    duration: 3.5
+    fadeOut: 1.5
+    lightIntensity: 4
+    lightRange: 4
+  pickupRadius: 2.2
+  autoPickup: 0
+  promptObject: {fileID: 0}
+  pickupDuration: 0.7
+  pickupEffectPrefab: {fileID: 0}
+  portalPrefab: {fileID: 0}
+  portalAnchor: {fileID: 0}
+  portalDistance: 3
+  portalHeight: 2
+  portalRadius: 1.5
+  returnScene: Scene_Level
+  windowShader: {fileID: 0}
+  particleShader: {fileID: 0}
+  distortShader: {fileID: 0}
+  soulRingShader: {fileID: 0}
+  onPickedUp:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &7766584533829837743
 GameObject:
   m_ObjectHideFlags: 0
@@ -197029,7 +197099,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8621506974565359957
 Transform:
   m_ObjectHideFlags: 0

@@ -38,7 +38,8 @@ public class MapNodeCompletion : MonoBehaviour
         public readonly List<PropFade> props = new List<PropFade>();
     }
 
-    private static readonly MaterialPropertyBlock block = new MaterialPropertyBlock();
+    // created on first use: Unity does not allow creating one inside a field initializer of a MonoBehaviour
+    private static MaterialPropertyBlock block;
 
     private readonly List<Slot> slots = new List<Slot>();
     private readonly Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
@@ -136,6 +137,8 @@ public class MapNodeCompletion : MonoBehaviour
 
     private void Apply()
     {
+        if (block == null) block = new MaterialPropertyBlock();
+
         float e = amount * amount * (3f - 2f * amount);   // smoothstep
 
         foreach (Slot s in slots)

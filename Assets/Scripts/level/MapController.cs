@@ -41,6 +41,11 @@ public class MapController : MonoBehaviour
     private readonly HashSet<MapNode> completedNodes = new HashSet<MapNode>();
     private readonly List<MapNode> pendingGreyOut = new List<MapNode>();
 
+    // The chamber the player picked but has NOT finished yet. If the player dies, the map offers this same
+    // chamber again and nothing new unlocks. "currentNode" only moves forward once a chamber is completed.
+    private MapNode pendingNode;
+    private readonly List<MapNode> retryList = new List<MapNode>();
+
     public static MapController Instance;
 
     void Awake()
@@ -129,7 +134,7 @@ public class MapController : MonoBehaviour
         if (!mapBoardRoot.activeInHierarchy) return;
 
         // 3. DETERMINE VALID PATHS
-        List<MapNode> validNodes = (currentNode == null) ? startingNodes : currentNode.nextNodes;
+        List<MapNode> validNodes = GetValidNodes();
         if (validNodes.Count == 0) return;
 
         if (hoveredNode == null || !validNodes.Contains(hoveredNode))
@@ -172,14 +177,51 @@ public class MapController : MonoBehaviour
         return node != null && completedNodes.Contains(node);
     }
 
+    /// <summary>The chamber the player entered and has not finished yet (null if none).</summary>
+    public MapNode PendingNode => pendingNode;
+
+    // Which chambers can be picked right now
+    private List<MapNode> GetValidNodes()
+    {
+        // an unfinished chamber must be retried: nothing new unlocks until it is completed
+        if (pendingNode != null)
+        {
+            retryList.Clear();
+            retryList.Add(pendingNode);
+            return retryList;
+        }
+
+        return (currentNode == null) ? startingNodes : currentNode.nextNodes;
+    }
+
     /// <summary>
-    /// Call this when the chamber the player entered is finished, for example from your level-complete code:
-    ///     MapController.Instance.CompleteCurrentChamber();
-    /// The chamber greys out the next time the map is shown.
+    /// Completes the chamber the player entered (called by BuffRoomPedestal when the buff is picked up).
+    /// It greys out on the map, and the chambers after it unlock.
     /// </summary>
     public void CompleteCurrentChamber()
     {
-        MarkCompleted(currentNode);
+        if (pendingNode != null) CompleteChamber(pendingNode);
+    }
+
+    public void CompleteChamber(MapNode node)
+    {
+        if (node == null) return;
+
+        currentNode = node;                       // the player now stands here, the next chambers unlock
+        if (pendingNode == node) pendingNode = null;
+        MarkCompleted(node);
+    }
+
+    /// <summary>
+    /// A fresh copy of the pending chamber's buff model, for the buff room. Null if there is no pending chamber
+    /// or that chamber has no buff. The caller owns the copy.
+    /// </summary>
+    public GameObject CreatePendingBuff()
+    {
+        if (pendingNode == null) return null;
+
+        MapNodePowerUp powerUp = pendingNode.GetComponent<MapNodePowerUp>();
+        return powerUp != null ? powerUp.CreateBuffCopy() : null;
     }
 
     public void MarkCompleted(MapNode node)
@@ -201,7 +243,7 @@ public class MapController : MonoBehaviour
     [ContextMenu("Test: complete hovered chamber")]
     private void TestCompleteHovered()
     {
-        MarkCompleted(hoveredNode);
+        CompleteChamber(hoveredNode);
     }
 
     private void CycleNode(int direction, List<MapNode> validNodes)
@@ -239,7 +281,7 @@ public class MapController : MonoBehaviour
     private IEnumerator AnimatePathAndLoad(MapNode fromNode, MapNode toNode)
     {
         isAnimating = true;
-        currentNode = toNode;
+        pendingNode = toNode;       // only becomes "currentNode" once the chamber is completed
 
         if (highlighter != null) highlighter.OnSelect(toNode);
 

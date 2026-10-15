@@ -587,6 +587,7 @@ MonoBehaviour:
   bobHeight: 0.08
   bobSpeed: 1.6
   tiltAmount: 6
+  glowScale: 0.35
   popEffectPrefab: {fileID: 0}
 --- !u!114 &80132956
 MonoBehaviour:
@@ -24156,6 +24157,7 @@ MonoBehaviour:
   bobHeight: 0.08
   bobSpeed: 1.6
   tiltAmount: 6
+  glowScale: 0.35
   popEffectPrefab: {fileID: 0}
 --- !u!1 &277365595
 GameObject:
@@ -60349,6 +60351,7 @@ MonoBehaviour:
   bloomThreshold: 0.85
   bloomScatter: 0.7
   bloomTint: {r: 1, g: 0.85, b: 0.7, a: 1}
+  bloomClamp: 65472
   filmGrain: 0.18
   chromaticAberration: 0.07
   depthOfField: 1
@@ -73634,10 +73637,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2090893749}
-    - target: {fileID: 1364832359148767746, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 1511535906100165622, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -73742,17 +73741,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1713503892}
-    - target: {fileID: 4308146064591665848, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 4585134991920860069, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 4786695035003669413, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Layer
-      value: 10
+    - target: {fileID: 4407545715385404390, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
+      propertyPath: glowIntensity
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4932831373898170012, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: infoPool
@@ -73834,10 +73825,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 456825656}
-    - target: {fileID: 7481630667254515268, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 7742001730978584227, guid: aeaa99f2d0a9d194c9c37c3be84e431e, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -75911,6 +75898,7 @@ MonoBehaviour:
   bobHeight: 0.08
   bobSpeed: 1.6
   tiltAmount: 6
+  glowScale: 0.35
   popEffectPrefab: {fileID: 0}
 --- !u!114 &1154883719
 MonoBehaviour:
@@ -93918,6 +93906,7 @@ MonoBehaviour:
   bobHeight: 0.08
   bobSpeed: 1.6
   tiltAmount: 6
+  glowScale: 0.35
   popEffectPrefab: {fileID: 0}
 --- !u!1 &1662537314 stripped
 GameObject:
@@ -118844,6 +118833,7 @@ MonoBehaviour:
   bobHeight: 0.08
   bobSpeed: 1.6
   tiltAmount: 6
+  glowScale: 0.35
   popEffectPrefab: {fileID: 0}
 --- !u!114 &2040385013
 MonoBehaviour:
