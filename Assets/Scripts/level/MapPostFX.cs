@@ -42,6 +42,8 @@ public class MapPostFX : MonoBehaviour
     public float bloomThreshold = 0.85f;
     [Range(0f, 1f)] public float bloomScatter = 0.7f;
     public Color bloomTint = new Color(1f, 0.85f, 0.7f);
+    [Tooltip("Limits how much a VERY bright pixel can bleed into the bloom. Default = no limit (nothing changes). Try 4-8 if something still blows out; bloom intensity and threshold stay as they are.")]
+    public float bloomClamp = 65472f;
 
     [Header("Film look")]
     [Range(0f, 1f)] public float filmGrain = 0.18f;
@@ -52,10 +54,21 @@ public class MapPostFX : MonoBehaviour
     [Tooltip("Higher = sharper. Depends on the scale of your scene: if the whole map looks blurry, raise it; if there is no blur at all, lower it.")]
     [Range(1f, 32f)] public float dofAperture = 2f;
     [Range(1f, 300f)] public float dofFocalLength = 250f;
+    [Tooltip("How softly the focus glides onto the hovered chamber (seconds).")]
+    public float focusSmoothTime = 0.25f;
+    [Tooltip("While a chamber is spotlit the aperture is multiplied by this, so a wider area around it is sharp. 1 = no change.")]
+    [Range(1f, 4f)] public float focusedApertureMultiplier = 1.6f;
 
     [Header("Life")]
     [Tooltip("Tiny slow pulse of vignette and bloom once the intro is done. 0 = off.")]
     [Range(0f, 0.05f)] public float breathing = 0.02f;
+
+    [Header("Spotlight focus (driven by MapNodeHighlighter)")]
+    [Tooltip("How much darker the map gets while a chamber is spotlit, in exposure steps.")]
+    public float focusDimExposure = -0.7f;
+    [Tooltip("Extra vignette while a chamber is spotlit.")]
+    [Range(0f, 0.5f)] public float focusVignetteBoost = 0.12f;
+    [Range(0f, 1f)] public float FocusAmount;   // set by MapNodeHighlighter
 
     [Header("Intro start values (what it fades up from)")]
     public float introExposure = -3.5f;
@@ -78,7 +91,13 @@ public class MapPostFX : MonoBehaviour
 
     private bool active;
     private float clock;
-    private float focus;
+    private float focus;            // default focus depth (middle of the chambers)
+
+    private Camera fxCam;
+    private bool hasFocusPoint;
+    private Vector3 focusPoint;
+    private float focusCurrent;     // smoothed focus depth actually used
+    private float focusVel;
 
     // ------------------------------------------------------------------ public API
 
@@ -100,6 +119,19 @@ public class MapPostFX : MonoBehaviour
         if (active) clock = introDuration;
     }
 
+    /// <summary>Focus the depth of field on this world point (the spotlit chamber).</summary>
+    public void SetFocusPoint(Vector3 worldPoint)
+    {
+        hasFocusPoint = true;
+        focusPoint = worldPoint;
+    }
+
+    /// <summary>Go back to the default focus (middle of the map).</summary>
+    public void ClearFocusPoint()
+    {
+        hasFocusPoint = false;
+    }
+
     /// <summary>Switch the map look off (when the level starts).</summary>
     public void Hide()
     {
@@ -115,6 +147,8 @@ public class MapPostFX : MonoBehaviour
         if (layer < 0) layer = 0;       // layer not found: fall back to Default
 
         Camera cam = mc.mapCamera;
+        fxCam = cam;
+        hasFocusPoint = false;
 
         // make sure the map camera renders post-processing, and only sees OUR volume
         UniversalAdditionalCameraData camData = cam.GetUniversalAdditionalCameraData();
@@ -141,6 +175,7 @@ public class MapPostFX : MonoBehaviour
         bloom.threshold.value = bloomThreshold;
         bloom.scatter.value = bloomScatter;
         bloom.tint.value = bloomTint;
+        bloom.clamp.value = bloomClamp;
         bloom.highQualityFiltering.value = true;
 
         vig = profile.Add<Vignette>(true);
@@ -172,6 +207,8 @@ public class MapPostFX : MonoBehaviour
             }
             Vector3 center = count > 0 ? sum / count : mc.mapBoardRoot.transform.position;
             focus = Mathf.Max(1f, Vector3.Dot(center - cam.transform.position, cam.transform.forward));
+            focusCurrent = focus;
+            focusVel = 0f;
 
             dof = profile.Add<DepthOfField>(true);
             dof.mode.value = DepthOfFieldMode.Bokeh;
@@ -203,15 +240,29 @@ public class MapPostFX : MonoBehaviour
 
         float breath = Mathf.Sin(Time.unscaledTime * 0.9f) * breathing * e;
 
-        grade.postExposure.value = Mathf.Lerp(introExposure, exposure, e);
+        grade.postExposure.value = Mathf.Lerp(introExposure, exposure, e) + focusDimExposure * FocusAmount;
         grade.saturation.value = Mathf.Lerp(introSaturation, saturation, e);
 
-        vig.intensity.value = Mathf.Clamp01(Mathf.Lerp(introVignette, vignette, e) + breath);
+        vig.intensity.value = Mathf.Clamp01(Mathf.Lerp(introVignette, vignette, e) + breath + focusVignetteBoost * FocusAmount);
         bloom.intensity.value = Mathf.Max(0f, Mathf.Lerp(introBloom, bloomIntensity, e) * (1f + breath * 6f));
         chroma.intensity.value = Mathf.Lerp(introAberration, chromaticAberration, e);
 
         if (dof != null)
-            dof.focusDistance.value = Mathf.Lerp(focus * introFocusFraction, focus, s);
+        {
+            // focus depth = depth of the spotlit chamber (or the middle of the map when none is lit)
+            float want = focus;
+            if (hasFocusPoint && fxCam != null)
+                want = Mathf.Max(1f, Vector3.Dot(focusPoint - fxCam.transform.position, fxCam.transform.forward));
+
+            focusCurrent = Mathf.SmoothDamp(focusCurrent, want, ref focusVel,
+                Mathf.Max(0.01f, focusSmoothTime), Mathf.Infinity, Mathf.Min(Time.unscaledDeltaTime, 0.05f));
+
+            // the intro still starts blurry and pulls into focus
+            dof.focusDistance.value = Mathf.Lerp(focusCurrent * introFocusFraction, focusCurrent, s);
+
+            // a wider area around the lit chamber stays sharp
+            dof.aperture.value = Mathf.Clamp(dofAperture * Mathf.Lerp(1f, focusedApertureMultiplier, FocusAmount), 1f, 32f);
+        }
     }
 
     private void OnDestroy()

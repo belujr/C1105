@@ -1,4 +1,4 @@
-using System; 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,16 +14,16 @@ public class UltraInstinctCapsule : MonoBehaviour, IDamageable, IHealable
     public enum HitDirection { Front, Back, Left, Right }
     public enum MeleeBehaviorState { Approach, ArcStrafe, Wait, AttackLunge, Retreat }
 
-private CharacterController charController;
+    private CharacterController charController;
 
     [System.Serializable]
     public struct DodgeMapping
     {
-        public string attackName; 
+        public string attackName;
         public int attackID;
         public DodgeDirection direction;
-        public float reactionDelay; 
-        public float dodgeDuration; 
+        public float reactionDelay;
+        public float dodgeDuration;
     }
 
     [Header("Core References & Animation Profiles")]
@@ -69,7 +69,7 @@ private CharacterController charController;
     [Header("Movement & Realistic Combat Tuning")]
     public float baseMoveSpeed = 3.5f;
     public float baseStrafeSpeed = 2.5f;
-    public float stoppingDistance = 4.0f; 
+    public float stoppingDistance = 4.0f;
     public float dodgeDistance = 2.0f;
     public float jumpHeight = 2.0f;
     public float rotationSpeed = 20f;
@@ -158,8 +158,8 @@ private CharacterController charController;
         enemyRenderers = GetComponentsInChildren<Renderer>();
 
         charController = GetComponent<CharacterController>();
-    cachedTransform = transform;
-    animationEngine = GetComponent<EnemyAnimationEngine>();
+        cachedTransform = transform;
+        animationEngine = GetComponent<EnemyAnimationEngine>();
 
         foreach (var r in enemyRenderers)
         {
@@ -230,7 +230,7 @@ private CharacterController charController;
         charController = GetComponent<CharacterController>();
 
         if (cachedTransform == null) cachedTransform = transform;
-        
+
         // Removed internal airborne lock. Passenger script handles it entirely.
         if (capsuleCollider != null) capsuleCollider.enabled = true;
 
@@ -347,7 +347,7 @@ private CharacterController charController;
             HandleRangedMovement(Mathf.Sqrt(sqrDistToPlayer));
         }
 
-        if (!enableDodging || sqrDistToPlayer > reflexRangeSqr || activeEnemyComboRoutine != null || isReacting) 
+        if (!enableDodging || sqrDistToPlayer > reflexRangeSqr || activeEnemyComboRoutine != null || isReacting)
         {
             return;
         }
@@ -391,7 +391,7 @@ private CharacterController charController;
         groundYCoord = targetY;
 
         Vector3 pos = cachedTransform.position;
-        
+
         // Strict clamp prevents sinking. If the character dips below groundYCoord, snap immediately.
         if (pos.y < targetY)
         {
@@ -432,7 +432,7 @@ private CharacterController charController;
     private void UpdateLocomotionAnimation(string stateKey, AnimationClip clip, float duration)
     {
         if (animationEngine == null || animProfile == null || IsDodging || isDead || isReacting) return;
-        
+
         if (lastPlayedLocomotionState != stateKey)
         {
             lastPlayedLocomotionState = stateKey;
@@ -456,7 +456,7 @@ private CharacterController charController;
                 Vector3 awayDir = currentPos - hit.transform.position;
                 awayDir.y = 0f;
                 float distanceSqr = awayDir.sqrMagnitude;
-                
+
                 if (distanceSqr > 0.0001f)
                 {
                     separationMove += (awayDir.normalized / Mathf.Sqrt(distanceSqr)) * separationWeight;
@@ -467,7 +467,7 @@ private CharacterController charController;
         return separationMove;
     }
 
-   private void HandleMeleeMovement(float distToPlayer, Vector3 currentPos, Vector3 playerPos)
+    private void HandleMeleeMovement(float distToPlayer, Vector3 currentPos, Vector3 playerPos)
     {
         if (charController == null || !charController.enabled) return;
         Vector3 dirToPlayer = playerPos - currentPos;
@@ -533,7 +533,7 @@ private CharacterController charController;
         Vector3 rightDir = Vector3.Cross(Vector3.up, dirToPlayer).normalized;
         Vector3 separation = CalculateSeparationForce(currentPos);
         float deltaTime = Time.deltaTime;
-        
+
         // Base gravity applied across all states to ensure they snap natively
         float gravityPull = -9.81f * deltaTime;
 
@@ -545,7 +545,7 @@ private CharacterController charController;
                     Vector3 moveDelta = (dirToPlayer * randomizedMoveSpeed + rightDir * (randomizedStrafeSpeed * 0.2f * strafeDirectionSign) + separation) * deltaTime;
                     moveDelta.y = gravityPull;
                     charController.Move(moveDelta);
-                    
+
                     if (animProfile != null)
                         UpdateLocomotionAnimation("Approach", animProfile.walkClip, animProfile.walkTransitionDuration);
                 }
@@ -568,7 +568,7 @@ private CharacterController charController;
                 Vector3 strafeDelta = (rightDir * randomizedStrafeSpeed * strafeDirectionSign) + separation;
                 float distanceError = distToPlayer - stoppingDistance;
                 strafeDelta += dirToPlayer * (distanceError * randomizedMoveSpeed);
-                
+
                 Vector3 moveStrafe = strafeDelta * deltaTime;
                 moveStrafe.y = gravityPull;
                 charController.Move(moveStrafe);
@@ -603,7 +603,7 @@ private CharacterController charController;
                 {
                     holdDelta = dirToPlayer * (waitDistError * randomizedMoveSpeed * 0.5f);
                 }
-                
+
                 Vector3 moveWait = (holdDelta + separation) * deltaTime;
                 moveWait.y = gravityPull;
                 charController.Move(moveWait);
@@ -657,7 +657,7 @@ private CharacterController charController;
     private bool IsPlayerInAttackCorridor()
     {
         if (playerTransform == null) return false;
-        
+
         Vector3 enemyPos = cachedTransform.position;
         Vector3 playerPos = playerTransform.position;
         Vector3 dirToPlayer = playerPos - enemyPos;
@@ -724,8 +724,8 @@ private CharacterController charController;
 
                         Vector3 step = cachedTransform.forward * (lungeDist / active) * Time.deltaTime;
                         Vector3 newPos = cachedTransform.position + step;
-                        newPos.y = cachedTransform.position.y; 
-                        cachedTransform.position = newPos;
+                        newPos.y = cachedTransform.position.y;
+                        cachedTransform.position += EnemyCollision.ClampMove(cachedTransform, charController, newPos - cachedTransform.position);
 
                         yield return null;
                     }
@@ -741,7 +741,7 @@ private CharacterController charController;
 
                     BaseAttackDataSO atk = enemyComboSequence[i];
                     currentActiveEnemyAttack = atk;
-                    float speedScaleLocal = speedScale; 
+                    float speedScaleLocal = speedScale;
 
                     if (i == 0)
                     {
@@ -793,8 +793,8 @@ private CharacterController charController;
 
                         Vector3 step = cachedTransform.forward * (lungeDist / active) * Time.deltaTime;
                         Vector3 newPos = cachedTransform.position + step;
-                        newPos.y = cachedTransform.position.y; 
-                        cachedTransform.position = newPos;
+                        newPos.y = cachedTransform.position.y;
+                        cachedTransform.position += EnemyCollision.ClampMove(cachedTransform, charController, newPos - cachedTransform.position);
 
                         yield return null;
                     }
@@ -917,7 +917,7 @@ private CharacterController charController;
             arcTimer = Random.Range(1.0f, 2.0f);
             SetPlayerComboLock(false);
 
-            cachedTransform.position -= cachedTransform.forward * 0.3f;
+            cachedTransform.position += EnemyCollision.ClampMove(cachedTransform, charController, -cachedTransform.forward * 0.3f);
         }
 
         AttackData incomingAttack = GetActiveAttackData(player);
@@ -981,7 +981,7 @@ private CharacterController charController;
 
         if (hitDirection == Vector3.zero) hitDirection = -cachedTransform.forward;
         Vector3 localDir = cachedTransform.InverseTransformDirection(hitDirection.normalized);
-        
+
         HitDirection direction = HitDirection.Front;
         if (Mathf.Abs(localDir.z) > Mathf.Abs(localDir.x))
         {
@@ -1019,7 +1019,7 @@ private CharacterController charController;
             animationEngine.PlayAnimation(hitAnim.clip, hitAnim.transitionDuration, hitAnim.playbackSpeed);
             isReacting = true;
             reactionTimer = hitAnim.clip.length / Mathf.Max(0.01f, hitAnim.playbackSpeed);
-            lastPlayedLocomotionState = "Reaction"; 
+            lastPlayedLocomotionState = "Reaction";
         }
     }
 
@@ -1027,7 +1027,7 @@ private CharacterController charController;
     {
         if (isDead) return;
         isDead = true;
-        
+
         if (TryGetComponent<EnemySoulDrop>(out var soulDrop))
         {
             soulDrop.TriggerSoulDrop();
@@ -1099,7 +1099,7 @@ private CharacterController charController;
         IsDodging = true;
         if (capsuleCollider != null) capsuleCollider.enabled = false;
 
-        DodgeDirection targetDirection = DodgeDirection.DodgeRight; 
+        DodgeDirection targetDirection = DodgeDirection.DodgeRight;
         float targetDelay = 0f;
         float targetDuration = 0.2f;
         bool foundMapping = false;
@@ -1110,7 +1110,7 @@ private CharacterController charController;
             {
                 targetDirection = dodgeMappings[i].direction;
                 targetDelay = dodgeMappings[i].reactionDelay;
-                targetDuration = dodgeMappings[i].dodgeDuration > 0f ? dodgeMappings[i].dodgeDuration : 0.2f; 
+                targetDuration = dodgeMappings[i].dodgeDuration > 0f ? dodgeMappings[i].dodgeDuration : 0.2f;
                 foundMapping = true;
                 break;
             }
@@ -1137,9 +1137,9 @@ private CharacterController charController;
         if (!isDead)
         {
             if (capsuleCollider != null) capsuleCollider.enabled = true;
-            
+
             Vector3 pos = cachedTransform.position;
-            
+
             // Prevent dropping below the recorded ground level when resetting the dodge
             if (pos.y < groundYCoord)
             {
@@ -1149,11 +1149,17 @@ private CharacterController charController;
         }
     }
 
+    // Same as setting the position, but the move stops at walls (see EnemyCollision). The player and other enemies do not block it, as before.
+    private void MoveToClamped(Vector3 target)
+    {
+        cachedTransform.position += EnemyCollision.ClampMove(cachedTransform, charController, target - cachedTransform.position);
+    }
+
     private IEnumerator PerformKnockbackRoutine(Vector3 hitDirection, float knockbackForce)
     {
         Vector3 startPos = cachedTransform.position;
         float slideDistance = knockbackForce > 0f ? knockbackForce : 1.5f;
-        
+
         Vector3 pushDir = hitDirection;
         pushDir.y = 0f;
         if (pushDir == Vector3.zero) pushDir = -cachedTransform.forward;
@@ -1173,11 +1179,11 @@ private CharacterController charController;
             if (playerTransform == null && player != null) playerTransform = player.transform;
             if (playerTransform != null) FacePlayer(playerTransform.position, cachedTransform.position);
 
-            cachedTransform.position = Vector3.Lerp(startPos, targetPos, smoothProgress);
+            MoveToClamped(Vector3.Lerp(startPos, targetPos, smoothProgress));
             yield return null;
         }
 
-        cachedTransform.position = targetPos;
+        MoveToClamped(targetPos);
         activeKnockbackRoutine = null;
     }
 
@@ -1201,7 +1207,7 @@ private CharacterController charController;
         Vector3 pPos = playerTransform != null ? playerTransform.position : startPos;
         Vector3 dirToPlayer = (pPos - cachedTransform.position).normalized;
         dirToPlayer.y = 0f;
-        
+
         Vector3 rightDir = Vector3.Cross(Vector3.up, dirToPlayer).normalized;
 
         if (direction == DodgeDirection.DodgeLeft)
@@ -1230,11 +1236,11 @@ private CharacterController charController;
             if (direction == DodgeDirection.Jump)
             {
                 float heightCurve = Mathf.Sin(progress * Mathf.PI) * jumpHeight;
-                cachedTransform.position = new Vector3(startPos.x, groundYCoord + heightCurve, startPos.z);
+                MoveToClamped(new Vector3(startPos.x, groundYCoord + heightCurve, startPos.z));
             }
             else
             {
-                cachedTransform.position = Vector3.Lerp(startPos, targetPos, smoothProgress);
+                MoveToClamped(Vector3.Lerp(startPos, targetPos, smoothProgress));
             }
 
             yield return null;
@@ -1242,11 +1248,11 @@ private CharacterController charController;
 
         if (direction == DodgeDirection.Jump)
         {
-            cachedTransform.position = new Vector3(startPos.x, groundYCoord, startPos.z);
+            MoveToClamped(new Vector3(startPos.x, groundYCoord, startPos.z));
         }
         else
         {
-            cachedTransform.position = targetPos;
+            MoveToClamped(targetPos);
         }
 
         if (postDodgeBuffer > 0f)
@@ -1269,7 +1275,7 @@ private CharacterController charController;
     {
         Gizmos.color = Color.yellow;
         Matrix4x4 oldMatrix = Gizmos.matrix;
-        
+
         Vector3 boxCenter = transform.position + (transform.forward * (playerDodgeRange * 0.5f));
         Vector3 boxSize = new Vector3(attackCorridorWidth * 2f, 0.1f, playerDodgeRange);
         Gizmos.matrix = Matrix4x4.TRS(boxCenter, transform.rotation, Vector3.one);
@@ -1295,7 +1301,7 @@ private CharacterController charController;
             return playerRef.equippedStyle.GetActiveChargeAttack();
         }
 
-        if (playerRef.equippedStyle != null && playerRef.equippedStyle.lightComboSequence != null && 
+        if (playerRef.equippedStyle != null && playerRef.equippedStyle.lightComboSequence != null &&
             playerRef.equippedStyle.lightComboSequence.Length > playerRef.CurrentComboIndex)
         {
             return playerRef.equippedStyle.lightComboSequence[playerRef.CurrentComboIndex];

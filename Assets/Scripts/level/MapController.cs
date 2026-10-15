@@ -34,6 +34,13 @@ public class MapController : MonoBehaviour
     // Post-processing look for the map (MapPostFX sits on this same GameObject)
     private MapPostFX fx;
 
+    // Spotlight + power-up pop for the hovered chamber (MapNodeHighlighter sits on this same GameObject)
+    private MapNodeHighlighter highlighter;
+
+    // Chambers the player has finished. They stay greyed out on the map.
+    private readonly HashSet<MapNode> completedNodes = new HashSet<MapNode>();
+    private readonly List<MapNode> pendingGreyOut = new List<MapNode>();
+
     public static MapController Instance;
 
     void Awake()
@@ -43,6 +50,7 @@ public class MapController : MonoBehaviour
             Instance = this;
             intro = GetComponent<MapIntroAnimator>();
             fx = GetComponent<MapPostFX>();
+            highlighter = GetComponent<MapNodeHighlighter>();
             DontDestroyOnLoad(transform.root.gameObject);
         }
         else
@@ -85,6 +93,13 @@ public class MapController : MonoBehaviour
                 if (fx != null) fx.Skip();
             }
             return;
+        }
+
+        // Chambers completed while the map was hidden grey out now, in front of the player
+        if (pendingGreyOut.Count > 0 && mapBoardRoot.activeInHierarchy)
+        {
+            foreach (MapNode n in pendingGreyOut) ApplyCompletedLook(n);
+            pendingGreyOut.Clear();
         }
 
         // 1. INPUT: Safely check for Right Trigger OR 'H' Key
@@ -150,6 +165,45 @@ public class MapController : MonoBehaviour
         }
     }
 
+    // ------------------------------------------------------------------ completed chambers
+
+    public bool IsCompleted(MapNode node)
+    {
+        return node != null && completedNodes.Contains(node);
+    }
+
+    /// <summary>
+    /// Call this when the chamber the player entered is finished, for example from your level-complete code:
+    ///     MapController.Instance.CompleteCurrentChamber();
+    /// The chamber greys out the next time the map is shown.
+    /// </summary>
+    public void CompleteCurrentChamber()
+    {
+        MarkCompleted(currentNode);
+    }
+
+    public void MarkCompleted(MapNode node)
+    {
+        if (node == null || !completedNodes.Add(node)) return;
+        pendingGreyOut.Add(node);
+    }
+
+    private void ApplyCompletedLook(MapNode node)
+    {
+        if (node == null) return;
+
+        MapNodeCompletion look = node.GetComponent<MapNodeCompletion>();
+        if (look == null) look = node.gameObject.AddComponent<MapNodeCompletion>();
+        look.SetCompleted(true, true);
+    }
+
+    // Right-click the component title (the three dots) while playing to try it on the hovered chamber
+    [ContextMenu("Test: complete hovered chamber")]
+    private void TestCompleteHovered()
+    {
+        MarkCompleted(hoveredNode);
+    }
+
     private void CycleNode(int direction, List<MapNode> validNodes)
     {
         if (validNodes.Count <= 1) return;
@@ -171,6 +225,8 @@ public class MapController : MonoBehaviour
         hoveredNode = newNode;
         originalScale = hoveredNode.transform.localScale;
         hoveredNode.transform.localScale = originalScale * 1.5f;
+
+        if (highlighter != null) highlighter.OnHover(hoveredNode);
     }
 
     // Puts the hovered icon back to normal size so the intro animation starts from clean values
@@ -184,6 +240,8 @@ public class MapController : MonoBehaviour
     {
         isAnimating = true;
         currentNode = toNode;
+
+        if (highlighter != null) highlighter.OnSelect(toNode);
 
         if (fromNode != null && fromNode.pathLines.ContainsKey(toNode))
         {
@@ -242,6 +300,7 @@ public class MapController : MonoBehaviour
             // Cinematic intro: forest rises, icons pop in, paths draw
             if (intro != null) intro.Play();
             if (fx != null) fx.Show();
+            if (highlighter != null) highlighter.Show();
         }
     }
 
@@ -269,6 +328,7 @@ public class MapController : MonoBehaviour
         // Make sure the intro can never be left half-finished when the map is switched off
         if (intro != null) intro.Skip();
         if (fx != null) fx.Hide();
+        if (highlighter != null) highlighter.Hide();
 
         RestoreFogForLevel();
 

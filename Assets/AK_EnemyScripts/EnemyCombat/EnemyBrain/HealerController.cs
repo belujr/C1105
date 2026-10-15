@@ -22,6 +22,7 @@ public class HealerController : MonoBehaviour, IDamageable
     public GameObject batPrefab;
     private LineRenderer healBeam;
     private Collider bodyCollider;
+    private CharacterController bodyController;   // only used to measure the body for wall checks
     private HealerHealVFX healVFX;
     private HealerSummonVFX summonVFX;
     private HealReceiveFX allyFX;
@@ -84,7 +85,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
     [Header("Healing Target Sharing")]
     [Tooltip("Seconds of actual healing before trying a different injured, unclaimed ally.")]
-    [Min(0.1f)] [SerializeField] private float healingTurnDuration = 2.5f;
+    [Min(0.1f)][SerializeField] private float healingTurnDuration = 2.5f;
     [Tooltip("Layers containing ally colliders. Everything preserves the original search.")]
     [SerializeField] private LayerMask allyLayers = ~0;
 
@@ -150,6 +151,7 @@ public class HealerController : MonoBehaviour, IDamageable
         healBeam.enabled = false;
         healBeam.useWorldSpace = true; // Prevents LineRenderer stretching glitches
         bodyCollider = GetComponent<Collider>();
+        bodyController = GetComponent<CharacterController>();
         animationEngine = GetComponent<EnemyAnimationEngine>();
 
         healVFX = GetComponent<HealerHealVFX>();
@@ -382,7 +384,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
             Vector3 dirAwayFromPlayer = (transform.position - playerTransform.position).normalized;
             dirAwayFromPlayer.y = 0f;
-            transform.position += dirAwayFromPlayer * moveSpeed * Time.deltaTime;
+            MoveBody(dirAwayFromPlayer * moveSpeed * Time.deltaTime);
 
             FacePlayerSmooth(15f * Time.deltaTime);
 
@@ -434,7 +436,7 @@ public class HealerController : MonoBehaviour, IDamageable
                 StopHealing();
                 Vector3 moveDir = (allyTransform.position - transform.position).normalized;
                 moveDir.y = 0f;
-                transform.position += moveDir * moveSpeed * Time.deltaTime;
+                MoveBody(moveDir * moveSpeed * Time.deltaTime);
                 if (moveDir != Vector3.zero)
                 {
                     transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDir), 10f * Time.deltaTime);
@@ -462,7 +464,7 @@ public class HealerController : MonoBehaviour, IDamageable
 
             Vector3 rightDir = Vector3.Cross(Vector3.up, transform.forward).normalized;
             Vector3 strafeMove = rightDir * (strafeDirectionSign * (moveSpeed * 0.4f)) * Time.deltaTime;
-            transform.position += strafeMove;
+            MoveBody(strafeMove);
 
             FacePlayerSmooth(10f * Time.deltaTime);
 
@@ -474,6 +476,14 @@ public class HealerController : MonoBehaviour, IDamageable
                 UpdateLocomotionAnimation(strafeKey, strafeClip, 0.15f, strafeAnimationSpeed);
             }
         }
+    }
+
+    // Same movement as before (the position is still set directly), but the move is shortened when a wall is in the way.
+    private void MoveBody(Vector3 delta)
+    {
+        delta.y = 0f;
+        if (delta.sqrMagnitude < 0.0000001f) return;
+        transform.position += EnemyCollision.ClampMove(transform, bodyController, delta);
     }
 
     private void UpdateLocomotionAnimation(string stateKey, AnimationClip clip, float duration, float speedMultiplier = 1.0f)
