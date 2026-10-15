@@ -1514,6 +1514,10 @@ MonoBehaviour:
   healAmountPerSecond: 15
   maintainPlayerDistance: 6
   allySearchRadius: 15
+  healingTurnDuration: 2.5
+  allyLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   distanceBuffer: 1.5
   healRangeBuffer: 1
   allySearchInterval: 0.3

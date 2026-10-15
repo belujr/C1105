@@ -821,7 +821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928f136b10b9abe4ab249293ce5dc11d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 5
+  maxHealth: 500
   animator: {fileID: 3408760209031683829}
   audioSource: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
@@ -1112,7 +1112,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   crackScale: 1.6
-  crackThinness: 150
+  crackThinness: 100
   distortionStrength: 0.02
   distortionWidth: 0.1
   chargeAmount: 45
