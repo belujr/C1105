@@ -36720,7 +36720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d468c4cc244f63641ba0dd4fd19384ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Shopkeeper
-  requiredDialogueToUnlock: {fileID: 0}
+  requiredDialogueToUnlock: {fileID: 11400000, guid: 8f0a9ccac7c8b7047be6c834ab60c99d, type: 2}
   exitTeleportPoint: {fileID: 2014301583}
   skillTreeCanvasGroup: {fileID: 1066402191}
   fadeDuration: 1
@@ -68372,6 +68372,111 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
+--- !u!1 &680456492
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 680456495}
+  - component: {fileID: 680456494}
+  - component: {fileID: 680456493}
+  m_Layer: 0
+  m_Name: TutorialManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &680456493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680456492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4519366e526709c439cfd2ba1b955337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
+  sequence: {fileID: 11400000, guid: b6dc6d29bca1b5440a6e01969471c8f9, type: 2}
+  tutorialRunNumber: 0
+  followUpSequence: {fileID: 11400000, guid: e94a88007be35ff46a3f3a009bf1a132, type: 2}
+  followUpRunNumber: 1
+  openingDialogue: {fileID: 11400000, guid: f7880ce257af2f345b325b0cbab62c2f, type: 2}
+  openingDialogueGrace: 6
+  autoStart: 1
+  cameraIntro: {fileID: 252290445}
+  delayAfterIntro: 0.75
+  waitForDialogueToEnd: 1
+  hideHudDuringDialogue: 1
+  moveDeadzone: 0.2
+  gapBetweenObjectives: 0.25
+  showNextWhileFading: 0
+  onTutorialStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onPortalObjectiveReached:
+    m_PersistentCalls:
+      m_Calls: []
+  onTutorialCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &680456494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680456492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02fd41ab7437ba0429ded801e842f4a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialObjectiveHUD
+  style:
+    rowSize: {x: 560, y: 72}
+    iconSize: 44
+    padding: 18
+    accentWidth: 8
+    slant: 28
+    backgroundSprite: {fileID: 0}
+    backgroundColor: {r: 0.04, g: 0.04, b: 0.06, a: 0.82}
+    accentColor: {r: 0.9, g: 0.9, b: 0.95, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    font: {fileID: 0}
+    fontSize: 30
+    italic: 1
+    glowColor: {r: 1, g: 0.9, b: 0.15, a: 1}
+    haloAlpha: 0.85
+    glowPunch: 0.05
+    popInTime: 0.45
+    slideDistance: 120
+    glowInTime: 0.25
+    glowHoldTime: 0.55
+    fadeToBlackTime: 0.6
+    collapseTime: 0.2
+  margin: {x: 80, y: 80}
+  rowSpacing: 12
+  sortingOrder: 50
+--- !u!4 &680456495
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680456492}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.38153, y: 0.26707, z: 0.38153}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &693420690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97552,6 +97657,11 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.8, b: 0.3, a: 1}
   pressedColor: {r: 0, g: 0, b: 0, a: 1}
+  selectClip: {fileID: 0}
+  selectVolume: 0.5
+  submitClip: {fileID: 0}
+  submitVolume: 0.7
+  sfxOutput: {fileID: 0}
 --- !u!4 &1044121241 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 496850035243729860, guid: 21fb7c88c0e5def41a9a5170df06840e, type: 3}
@@ -108621,6 +108731,18 @@ MonoBehaviour:
       - m_Target: {fileID: 252290445}
         m_TargetAssemblyTypeName: CameraTransitionManager, Assembly-CSharp
         m_MethodName: PlayTransition
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: HubSoundController, Assembly-CSharp
+        m_MethodName: OnPlayButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -185985,6 +186107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1930851460}
   - component: {fileID: 1930851459}
+  - component: {fileID: 1930851461}
   m_Layer: 0
   m_Name: PauseManager
   m_TagString: Untagged
@@ -186007,6 +186130,29 @@ MonoBehaviour:
   loadingSceneName: Scene_Loading
   pauseSprite: {fileID: 21300000, guid: 4da8f1e7ce65b5246835b61f2882b301, type: 3}
   pauseSpriteSize: {x: 500, y: 150}
+  sliderTrackSprite: {fileID: 0}
+  sliderFillSprite: {fileID: 0}
+  sliderHandleSprite: {fileID: 0}
+  trackHeight: 10
+  handleSize: {x: 30, y: 30}
+  controllerStep: 0.05
+  selectedColor: {r: 1, g: 0.85, b: 0.45, a: 1}
+  audioMixer: {fileID: 0}
+  layers:
+  - label: Master
+    mixerParameter: MasterVolume
+    defaultValue: 1
+  - label: Music
+    mixerParameter: MusicVolume
+    defaultValue: 1
+  - label: Nature
+    mixerParameter: AmbienceVolume
+    defaultValue: 1
+  - label: SFX
+    mixerParameter: SFXVolume
+    defaultValue: 1
+  volumeStartY: -160
+  volumeRowSpacing: 56
 --- !u!4 &1930851460
 Transform:
   m_ObjectHideFlags: 0
@@ -186022,6 +186168,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1930851461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1930851458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af41b114b036a164d8110141e76703a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseMenuSoundAdapter
 --- !u!114 &1934698972
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202091,6 +202249,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RunPortal
   targetScene: scene_level
+  lockedUntilTutorialReady: 1
+  onLockedAttempt:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &919132148498380372
 GameObject:
   m_ObjectHideFlags: 0
@@ -237487,3 +237649,4 @@ SceneRoots:
   - {fileID: 929169905}
   - {fileID: 941985902}
   - {fileID: 1930851460}
+  - {fileID: 680456495}

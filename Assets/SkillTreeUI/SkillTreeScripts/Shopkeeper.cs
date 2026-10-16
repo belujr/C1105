@@ -22,6 +22,12 @@ public class Shopkeeper : MonoBehaviour
     [Tooltip("Drag your 'Back/Cancel' action from your PlayerControls asset here.")]
     public InputActionReference backActionRef;
 
+    /// <summary>
+    /// Raised every time the player has fully left the shop (fade finished, menu closed, player back outside).
+    /// The tutorial listens to it. Nothing needs to subscribe for the shop to work.
+    /// </summary>
+    public static event System.Action ShopClosed;
+
     private bool isShopOpen = false;
     private bool isFading = false;
 
@@ -167,6 +173,7 @@ public class Shopkeeper : MonoBehaviour
         }
 
         isFading = false;
+        ShopClosed?.Invoke();
     }
 
     private IEnumerator FadeRoutine(CanvasGroup group, float from, float to)

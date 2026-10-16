@@ -295,6 +295,7 @@ public class HubNarrativeManager : MonoBehaviour
         PlayerPrefs.DeleteKey(SAVE_STEP_KEY);
         PlayerPrefs.DeleteKey(SAVE_SEQUENCES_KEY);
         PlayerPrefs.Save();
+        TutorialManager.ResetSavedProgress();
 
         currentRunNumber = 0;
         run1ProgressStep = 0;

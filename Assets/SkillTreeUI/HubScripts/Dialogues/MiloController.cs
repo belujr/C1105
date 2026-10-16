@@ -38,6 +38,15 @@ public class MiloController : MonoBehaviour
     [HideInInspector] public bool isAtRen = false;
     private int renIdleLineIndex = 0;
 
+    /// <summary>True once BeginMiloSequence has run in this scene.</summary>
+    public bool HasBegun { get; private set; }
+
+    /// <summary>
+    /// True once Milo has finished leading the player: his second dialogue (Player To Ren) is over, or he has
+    /// reached Master Ren, whichever comes first. The "Follow Milo" tutorial objective completes on this.
+    /// </summary>
+    public bool HasFinishedLeading { get; private set; }
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -98,6 +107,8 @@ public class MiloController : MonoBehaviour
 
         isAtRen = false;
         renIdleLineIndex = 0;
+        HasBegun = true;
+        HasFinishedLeading = false;
 
         StopAllCoroutines();
         StartCoroutine(MiloSequenceRoutine());
@@ -147,7 +158,7 @@ public class MiloController : MonoBehaviour
         // --- PHASE 2: Walk from Player to Master Ren ---
         if (dialoguePlayerToRen != null && DialogueUI.Instance != null)
         {
-            DialogueUI.Instance.StartSequence(dialoguePlayerToRen);
+            DialogueUI.Instance.StartSequence(dialoguePlayerToRen, () => HasFinishedLeading = true);
         }
 
         // Compile clean path, filtering out null references to prevent jumping/teleporting
@@ -200,6 +211,7 @@ public class MiloController : MonoBehaviour
         }
 
         isAtRen = true;
+        HasFinishedLeading = true;
     }
 
     public void HandleMiloInteraction()
