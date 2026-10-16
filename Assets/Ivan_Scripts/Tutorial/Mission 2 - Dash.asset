@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9271e3c20908c8547b233f13c1db0485, type: 3}
   m_Name: Mission 2 - Dash
   m_EditorClassIdentifier: Assembly-CSharp::TutorialMissionData
-  icon: {fileID: 21300000, guid: 212269c4af031e647877aa3540ec37ea, type: 3}
-  text: to Dash
+  icon: {fileID: 0}
+  text: '[B] to Dash'
   completion: 0
   condition: 1
   requiredCount: 1
   requiredSeconds: 0.75
+  dialogue: {fileID: 0}
   displaySeconds: 5

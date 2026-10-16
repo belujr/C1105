@@ -7,6 +7,10 @@ public class BeaconSpawnerManager : MonoBehaviour
     [Tooltip("Reference to the BeaconHealth component in the scene.")]
     [SerializeField] private BeaconHealth beaconHealth;
 
+    [Header("Music")]
+    [Tooltip("Optional. The ArenaMusic object: plays the arena music while ship-dropped enemies are alive.")]
+    [SerializeField] private ArenaMusic arenaMusic;
+
     [SerializeField] private int maxAliveEnemies = 15;
     [SerializeField] private int maxShipsInTransit = 3;
 
@@ -168,6 +172,10 @@ public class BeaconSpawnerManager : MonoBehaviour
         {
             activeEnemies.Add(enemy);
         }
+
+        // Only enemies dropped by this beacon's ships count for the arena music.
+        if (arenaMusic != null && isEncounterRunning)
+            arenaMusic.RegisterEnemy(enemy);
     }
 
     private void OnShipMissionComplete(SpaceshipController ship)
@@ -189,6 +197,8 @@ public class BeaconSpawnerManager : MonoBehaviour
             activeEnemies.Remove(enemy);
         }
 
+        if (arenaMusic != null) arenaMusic.OnEnemyKilled(enemy);
+
         if (beaconHealth != null)
         {
             beaconHealth.RegisterEnemyKilled();
@@ -197,6 +207,7 @@ public class BeaconSpawnerManager : MonoBehaviour
     public void RegisterEnemyDefeated(GameObject enemy)
     {
         activeEnemies.Remove(enemy);
+        if (arenaMusic != null) arenaMusic.OnEnemyKilled(enemy);
         if (EnemyObjectPool.Instance != null) EnemyObjectPool.Instance.ReturnToPool(enemy);
     }
 
@@ -228,6 +239,9 @@ public class BeaconSpawnerManager : MonoBehaviour
     {
         isEncounterRunning = false;
         allowReinforcements = false;
+
+        // Encounter over: fade the arena music out and the normal music back in.
+        if (arenaMusic != null) arenaMusic.ForceEnd();
 
         if (escalationRoutine != null)
         {

@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
- 
+
 // Trigger collider that sends the player to another scene with a seamless fade.
 [RequireComponent(typeof(Collider))]
 public class RunPortal : MonoBehaviour
@@ -13,7 +13,16 @@ public class RunPortal : MonoBehaviour
     [SerializeField] private bool lockedUntilTutorialReady = true;
     [Tooltip("Player touched the portal while it is still locked (hook up a 'not yet' sound or hint).")]
     [SerializeField] private UnityEvent onLockedAttempt;
- 
+
+    [Header("Audio")]
+    [Tooltip("Optional. Leave empty to use the PortalAudio on this same object. Its 'Pass Through Clip' plays when the player enters.")]
+    [SerializeField] private PortalAudio portalAudio;
+
+    private void Awake()
+    {
+        if (portalAudio == null) portalAudio = GetComponent<PortalAudio>();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         // Ignore everything except the player, and ignore re-triggers mid-transition
@@ -26,9 +35,13 @@ public class RunPortal : MonoBehaviour
             onLockedAttempt?.Invoke();
             return;
         }
- 
+
         if (SceneTransitionManager.LoadScene(targetScene))
         {
+            // "Go through" sound. Only played once the transition has really started,
+            // so a locked or ignored touch never triggers it.
+            if (portalAudio != null) portalAudio.PlayPassThrough();
+
             CameraTransitionManager.RequestGameplayEntry(targetScene); // skips a title shot if that scene has one
 
             // Completes the "Traverse through the portal" objective and marks the tutorial as finished

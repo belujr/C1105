@@ -20880,7 +20880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1098349803403286197
 Transform:
   m_ObjectHideFlags: 0
@@ -22558,7 +22558,19 @@ MonoBehaviour:
   showOnlyOnce: 1
   onObjectivesCompleted:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1355468924423694815
 GameObject:
   m_ObjectHideFlags: 0
@@ -36661,7 +36673,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7925306098289517116
 Transform:
   m_ObjectHideFlags: 0
@@ -36977,7 +36989,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 140, y: -27.242432}
+  m_AnchoredPosition: {x: 159.3, y: -27.242432}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1258002587013154492
@@ -37008,12 +37020,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'HP
-
-'
+  m_text: 100/100
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ea055f114b298244cab413841b33d2ee, type: 2}
+  m_sharedMaterial: {fileID: 1208166822007071282, guid: ea055f114b298244cab413841b33d2ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -37076,7 +37086,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -1.5060883, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -99666,7 +99676,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -162, y: -27.242432}
+  m_AnchoredPosition: {x: -141.9, y: -27.242432}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6820238321460835362
@@ -99701,8 +99711,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ea055f114b298244cab413841b33d2ee, type: 2}
+  m_sharedMaterial: {fileID: 1208166822007071282, guid: ea055f114b298244cab413841b33d2ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -99765,7 +99775,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -180.49443, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -99788,7 +99798,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1409892135948093921
 Transform:
   m_ObjectHideFlags: 0
@@ -119964,7 +119974,7 @@ MonoBehaviour:
   healthFill: {fileID: 177796188588058956}
   healthFillGroup: {fileID: 4733810934950720900}
   portraitGroup: {fileID: 3713115322239327138}
-  nameSpriteGroup: {fileID: 4978810266582862007}
+  nameSpriteGroup: {fileID: 0}
   levelSceneName: Scene_Level
   openDuration: 1
   fadeDuration: 0.2
@@ -174977,10 +174987,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -181888,8 +181898,8 @@ RectTransform:
   m_LocalScale: {x: 1.1321055, y: 1.9605441, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 807718151170889633}
   - {fileID: 2888514923441381642}
+  - {fileID: 807718151170889633}
   - {fileID: 5419631891604438609}
   - {fileID: 5721944922226408108}
   - {fileID: 4359829878325946136}
@@ -196723,7 +196733,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8621506974565359957
 Transform:
   m_ObjectHideFlags: 0
@@ -249322,6 +249332,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3022820418141523124}
     m_Modifications:
+    - target: {fileID: 1896700066074388054, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.133
+      objectReference: {fileID: 0}
     - target: {fileID: 3046653242686922552, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: m_Name
       value: Shield
@@ -249372,7 +249386,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.size
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.size
@@ -249388,6 +249402,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[4].m_Mode
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
@@ -249451,6 +249469,10 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[4].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
       value: 2
       objectReference: {fileID: 0}
@@ -249481,6 +249503,10 @@ PrefabInstance:
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_MethodName
       value: BuildWall
+      objectReference: {fileID: 0}
+    - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[4].m_MethodName
+      value: StartArena
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -249515,6 +249541,10 @@ PrefabInstance:
       value: BeaconWallBarrier, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[4].m_TargetAssemblyTypeName
+      value: ArenaMusic, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconDestroyed.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
       value: BeaconWallBarrier, Assembly-CSharp
       objectReference: {fileID: 0}
@@ -249540,6 +249570,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
       propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}
+      propertyPath: OnBeaconActivated.m_PersistentCalls.m_Calls.Array.data[4].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8634635570770749492, guid: 81cd338fdf5480241b7754a1e24dce27, type: 3}

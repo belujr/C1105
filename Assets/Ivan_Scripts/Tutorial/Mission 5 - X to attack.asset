@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Mission 5 - X to attack
   m_EditorClassIdentifier: Assembly-CSharp::TutorialMissionData
   icon: {fileID: 0}
-  text: to perform a chain of hand-to-hand attacks
+  text: '[X] to perform a chain of hand-to-hand attacks'
+  completion: 0
   condition: 5
   requiredCount: 1
   requiredSeconds: 0.75
+  dialogue: {fileID: 0}
+  displaySeconds: 5

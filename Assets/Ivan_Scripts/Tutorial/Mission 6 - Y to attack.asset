@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Mission 6 - Y to attack
   m_EditorClassIdentifier: Assembly-CSharp::TutorialMissionData
   icon: {fileID: 0}
-  text: to deal a timed AOE attack
+  text: '[Y] to deal a timed AOE attack'
+  completion: 0
   condition: 6
   requiredCount: 1
   requiredSeconds: 0.75
+  dialogue: {fileID: 0}
+  displaySeconds: 5
