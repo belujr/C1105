@@ -20,6 +20,10 @@ public sealed class SoulManager : MonoBehaviour
     [Tooltip("Wipes saved souls when you hit Play. Only has an effect inside the Unity Editor.")]
     public bool resetSaveDataOnStart = false;
 
+    [Tooltip("ON: every time the game is launched (build started, or Play pressed) souls start at 0 and any souls saved " +
+             "by an earlier launch are wiped. Souls still carry over deaths and scene loads within the same launch.")]
+    public bool startFromZeroEachLaunch = true;
+
     [Header("Persistence")]
     [Tooltip("Disk writes are batched: many changes inside this window cost a single PlayerPrefs.Save().")]
     [SerializeField, Min(0f)] private float saveDelaySeconds = 1.5f;
@@ -34,12 +38,17 @@ public sealed class SoulManager : MonoBehaviour
     private Coroutine saveRoutine;
     private bool isDirty;
 
+    // True once the manager has started in this launch. A static resets on every app start / Play press,
+    // so it tells "fresh launch" apart from "manager re-created mid-session".
+    private static bool launchInitialized;
+
     // Keeps static state clean when "Enter Play Mode > Reload Domain" is disabled.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         Instance = null;
         OnSoulsChanged = null;
+        launchInitialized = false;
     }
 
     private void Awake()
@@ -59,8 +68,11 @@ public sealed class SoulManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         saveWait = new WaitForSecondsRealtime(saveDelaySeconds);
 
-        if (resetSaveDataOnStart && Application.isEditor)
-            ResetSoulData();
+        bool freshLaunch = !launchInitialized;
+        launchInitialized = true;
+
+        if ((startFromZeroEachLaunch && freshLaunch) || (resetSaveDataOnStart && Application.isEditor))
+            ResetSoulData();   // new launch: start at 0 and wipe souls saved by earlier launches
         else
             totalSouls = PlayerPrefs.GetInt(SAVE_SOULS_KEY, 0);
 
