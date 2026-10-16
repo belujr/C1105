@@ -5,49 +5,52 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Collections;
 
-// Runs before the skill nodes' Awake so the editor reset below lands before they read PlayerPrefs.
 [DefaultExecutionOrder(-50)]
 public class ComboUIManager : MonoBehaviour
 {
     public static ComboUIManager Instance;
 
     [Header("UI Panel & Inputs")]
-    public GameObject skillTreePanel; 
+    public GameObject skillTreePanel;
     public InputActionReference backAction;
-    public InputActionAsset inputActions; 
+    public InputActionAsset inputActions;
 
     [Header("Player Data References")]
-    public CombatStyle playerCombatStyle; 
+    public CombatStyle playerCombatStyle;
 
     [Header("UI References")]
-    public UIComboSlot[] comboSlots; 
-    public Transform treeContainer; 
-    public SkillTreeNode startingSelectedNode; 
+    public UIComboSlot[] comboSlots;
+    public Transform treeContainer;
+    public SkillTreeNode startingSelectedNode;
 
     private SkillTreeNode[] allTreeNodes;
 
     [Header("Debug & Testing")]
-    [Tooltip("UNITY EDITOR ONLY. Wipes every saved skill-tree unlock once each time you press Play, so you can " +
-             "re-test buying skills with the souls you have. Builds ignore this: players keep their unlocks.")]
+    [Tooltip("UNITY EDITOR ONLY. Wipes every saved skill-tree unlock once each time you press Play.")]
     public bool resetSkillUnlocksOnPlay = true;
 
     private static bool hasResetUnlocksThisSession;
 
-    // Clears the flag on every new Play, even with Domain Reload disabled
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ClearUnlockResetFlag() => hasResetUnlocksThisSession = false;
 
-    // Set by Shopkeeper so it can fade the panel out BEFORE the menu closes.
-    // Defaults to false, so the menu behaves exactly as before everywhere else.
     [HideInInspector] public bool suppressBackClose;
+
+    private const string APP_STARTED_KEY = "Game_HasStartedThisSession";
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
+        // Check if this is a fresh launch of the executable game
+        if (Instance == this && !PlayerPrefs.HasKey(APP_STARTED_KEY))
+        {
+            PlayerPrefs.SetInt(APP_STARTED_KEY, 1);
+            ResetToStarterBuildUnlocks();
+        }
+
 #if UNITY_EDITOR
-        // Once per Play session (not every time the hub reloads after a death), and only for the real instance.
         if (Instance == this && resetSkillUnlocksOnPlay && !hasResetUnlocksThisSession)
         {
             hasResetUnlocksThisSession = true;
@@ -64,6 +67,29 @@ public class ComboUIManager : MonoBehaviour
         return FindObjectsByType<SkillTreeNode>(FindObjectsInactive.Include, FindObjectsSortMode.None);
     }
 
+    // Resets everything on a fresh boot, but leaves exactly 2 nodes unlocked as starters
+    public void ResetToStarterBuildUnlocks()
+    {
+        SkillTreeNode[] nodes = FindAllNodes();
+        int unlockedCount = 0;
+
+        foreach (SkillTreeNode node in nodes)
+        {
+            node.ResetUnlockSaveData();
+
+            // Forcefully unlock only the first 2 nodes found so the player can attack twice
+            if (unlockedCount < 2 && node.attackData != null)
+            {
+                PlayerPrefs.SetInt("NodeUnlocked_" + node.attackData.name, 1);
+                node.isUnlocked = true;
+                unlockedCount++;
+            }
+        }
+
+        PlayerPrefs.Save();
+        Debug.Log("[ComboUIManager] Fresh boot detected: Skill tree reset to 2 starter unlocks.");
+    }
+
     [ContextMenu("Reset Skill Unlocks (Debug)")]
     public void ResetAllSkillUnlocks()
     {
@@ -74,36 +100,10 @@ public class ComboUIManager : MonoBehaviour
         Debug.Log("[ComboUIManager] Skill tree unlocks reset.");
     }
 
-    // Right-click the component > "Log Skill Tree Wiring" to print every node's parent and attack.
-    // Use it to spot a child whose Parent Node points at the wrong node, or two nodes sharing one AttackData.
-    [ContextMenu("Log Skill Tree Wiring")]
-    private void LogSkillTreeWiring()
-    {
-        var seen = new Dictionary<AttackData, SkillTreeNode>();
-
-        foreach (SkillTreeNode n in FindAllNodes())
-        {
-            string parent = n.parentNode != null ? n.parentNode.name : "NONE (root, unlocked for free)";
-            string attack = n.attackData != null ? n.attackData.name : "NONE";
-            Debug.Log($"[SkillTree] {n.name}  <-  parent: {parent}  |  attack: {attack}", n);
-
-            if (n.parentNode == n)
-                Debug.LogWarning($"[SkillTree] {n.name} is its own parent!", n);
-
-            if (n.attackData == null) continue;
-
-            if (seen.TryGetValue(n.attackData, out SkillTreeNode other))
-                Debug.LogWarning($"[SkillTree] {n.name} and {other.name} share the same AttackData '{n.attackData.name}'. " +
-                                 "They share one save key, so unlocking one unlocks the other on the next launch.", n);
-            else
-                seen.Add(n.attackData, n);
-        }
-    }
-
     private void Start()
     {
         if (skillTreePanel != null)
-            skillTreePanel.SetActive(false); 
+            skillTreePanel.SetActive(false);
 
         if (treeContainer != null)
             allTreeNodes = treeContainer.GetComponentsInChildren<SkillTreeNode>(true);
@@ -152,14 +152,14 @@ public class ComboUIManager : MonoBehaviour
 
         RefreshAllNodes();
         LoadComboFromPlayer();
-        AnimateAllLines(); // Trigger line animations
+        AnimateAllLines();
 
         StartCoroutine(SetInitialUIFocus());
     }
 
     private IEnumerator SetInitialUIFocus()
     {
-        yield return null; 
+        yield return null;
 
         EventSystem.current.SetSelectedGameObject(null);
 
@@ -214,8 +214,8 @@ public class ComboUIManager : MonoBehaviour
 
         for (int i = 0; i < comboSlots.Length; i++)
         {
-            if (playerCombatStyle.lightComboSequence != null && 
-                i < playerCombatStyle.lightComboSequence.Length && 
+            if (playerCombatStyle.lightComboSequence != null &&
+                i < playerCombatStyle.lightComboSequence.Length &&
                 playerCombatStyle.lightComboSequence[i] != null)
             {
                 comboSlots[i].SetAttack(playerCombatStyle.lightComboSequence[i]);
@@ -240,9 +240,21 @@ public class ComboUIManager : MonoBehaviour
     {
         if (playerCombatStyle == null) return;
 
-        AttackData[] newCombo = new AttackData[comboSlots.Length];
-
+        // Find the highest index that actually contains an attack
+        int highestAssignedIndex = -1;
         for (int i = 0; i < comboSlots.Length; i++)
+        {
+            if (!comboSlots[i].IsEmpty() && comboSlots[i].currentAttack != null)
+            {
+                highestAssignedIndex = i;
+            }
+        }
+
+        // Create an array sized exactly to the highest assigned slot (minimum length 0 if empty)
+        int finalComboLength = highestAssignedIndex + 1;
+        AttackData[] newCombo = new AttackData[finalComboLength];
+
+        for (int i = 0; i < finalComboLength; i++)
         {
             if (!comboSlots[i].IsEmpty())
             {
@@ -250,10 +262,11 @@ public class ComboUIManager : MonoBehaviour
             }
             else
             {
-                newCombo[i] = null; 
+                newCombo[i] = null; // Fills intermediate gaps safely if any exist
             }
         }
 
         playerCombatStyle.lightComboSequence = newCombo;
+        playerCombatStyle.TrimEmptyTrailingSlots();
     }
 }

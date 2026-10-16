@@ -8,11 +8,11 @@ using System.Collections;
 public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IEventSystemHandler
 {
     [Header("Combo Binding")]
-    public int targetComboSlot = 1; 
+    public int targetComboSlot = 1;
 
     [Header("Attack Settings")]
     public AttackData attackData;
-    public SkillTreeNode parentNode; 
+    public SkillTreeNode parentNode;
 
     [Header("Explicit D-Pad Navigation Links")]
     public Selectable navUp;
@@ -44,6 +44,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     [Min(0f)] public float successGlowDuration = 0.5f;
 
     [Header("State")]
+    [Tooltip("Check this only if this node should start unlocked by default. Unchecked nodes will require purchase or game start allocation.")]
     public bool isUnlocked = false;
 
     private Button button;
@@ -82,7 +83,8 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         if (attackData != null)
         {
             saveKey = SaveKeyFor(attackData);
-            isUnlocked = PlayerPrefs.GetInt(saveKey, parentNode == null ? 1 : 0) == 1;
+            // CHANGED: Removed "parentNode == null ? 1 : 0". Now it defaults strictly to 0 (locked) unless saved or explicitly set.
+            isUnlocked = PlayerPrefs.GetInt(saveKey, isUnlocked ? 1 : 0) == 1;
         }
 
         if (holdPromptUI != null) holdPromptUI.SetActive(false);
@@ -105,7 +107,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     {
         if (unlockActionRef != null && unlockActionRef.action != null)
             unlockActionRef.action.Disable();
-        
+
         if (holdPromptUI != null) holdPromptUI.SetActive(false);
     }
 
@@ -126,17 +128,16 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
 
     /// <summary>
     /// Editor/dev helper (called by ComboUIManager): forgets this node's saved unlock and
-    /// puts it back to its starting state. Root nodes (no parent) start unlocked.
+    /// puts it back to its starting state.
     /// </summary>
     public void ResetUnlockSaveData()
     {
         if (attackData != null) PlayerPrefs.DeleteKey(SaveKeyFor(attackData));
-        isUnlocked = parentNode == null;
+        isUnlocked = false; // Reset safely to locked by default
         holdTimer = 0f;
     }
 
     // True only if EVERY node above this one in the chain is unlocked, not just the direct parent.
-    // (The loop guard stops a mis-wired circular parent link from hanging the game.)
     private bool AncestorsUnlocked()
     {
         SkillTreeNode p = parentNode;
@@ -149,19 +150,13 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         return true;
     }
 
-    // A node only counts as owned if its whole chain is owned. This also heals stale saves
-    // where a child was saved as unlocked while its parent is not.
     public bool IsUnlockedEffective => isUnlocked && AncestorsUnlocked();
 
-    // The direct parent (and everything above it) must be unlocked.
     public bool CanBeUnlocked()
     {
         return AncestorsUnlocked();
     }
 
-    // The ONLY condition for the glow / hold-to-unlock prompt: this node is the immediate next
-    // step in its chain AND the player can afford it. Deeper nodes never qualify, because
-    // their parent is still locked.
     public bool IsAvailableToUnlock => !IsUnlockedEffective && CanBeUnlocked() && HasEnoughSouls();
 
     public bool HasEnoughSouls()
@@ -176,7 +171,6 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
 
         if (IsUnlockedEffective) return;
 
-        // Robust selection check using EventSystem
         bool isSelected = EventSystem.current != null && EventSystem.current.currentSelectedGameObject == gameObject;
         bool canUnlockNow = IsAvailableToUnlock;
 
@@ -185,7 +179,6 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
             if (holdPromptUI != null && !holdPromptUI.activeSelf)
                 holdPromptUI.SetActive(true);
 
-            // Robust input checking (Action Reference + Fallbacks)
             bool isHolding = (unlockActionRef != null && unlockActionRef.action != null && unlockActionRef.action.IsPressed()) ||
                              (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed) ||
                              (Keyboard.current != null && (Keyboard.current.spaceKey.isPressed || Keyboard.current.enterKey.isPressed));
@@ -225,8 +218,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         if (progress > 0f)
         {
             if (!flashOverlayImage.gameObject.activeSelf) flashOverlayImage.gameObject.SetActive(true);
-            
-            // Dramatic high-contrast sweeping flash effect
+
             float alpha = Mathf.Clamp01(Mathf.Sin(progress * Mathf.PI * 5f + Time.unscaledTime * 15f) * 0.5f + 0.5f);
             float intensity = Mathf.Lerp(0.6f, 1.0f, progress);
             flashOverlayImage.color = new Color(holdFlashColor.r, holdFlashColor.g, holdFlashColor.b, alpha * intensity * holdFlashColor.a);
@@ -240,7 +232,7 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
     private void UnlockAttack()
     {
         if (attackData == null) return;
-        if (!CanBeUnlocked()) return; // never allow skipping a locked parent
+        if (!CanBeUnlocked()) return;
 
         if (SoulManager.Instance != null)
         {
@@ -318,16 +310,14 @@ public class SkillTreeNode : MonoBehaviour, ISelectHandler, IDeselectHandler, IE
         }
         else if (IsAvailableToUnlock)
         {
-            // Vibrant pulsing highlight when available to purchase
             float pulse = (Mathf.Sin(Time.unscaledTime * availablePulseSpeed) + 1f) * 0.5f;
             buttonImage.color = Color.Lerp(availableGlowColor, Color.white, pulse);
             button.interactable = true;
         }
         else
         {
-            // Locked / Greyed out with decreased alpha
             Color c = buttonImage.color;
-            c.a = 0.35f; 
+            c.a = 0.35f;
             buttonImage.color = c;
             button.interactable = false;
         }

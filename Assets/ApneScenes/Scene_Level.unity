@@ -36832,7 +36832,7 @@ MonoBehaviour:
     priority: 1
     restartOnActivate: 0
     mixerGroupName: Music
-    output: {fileID: 0}
+    output: {fileID: 24300002, guid: fb4859a15a3c657459cda985772a4d57, type: 2}
   - name: Buildup
     clip: {fileID: 8300000, guid: 9b9b3239878d9e343890b8a86b76469c, type: 3}
     volume: 0.305
@@ -36844,7 +36844,7 @@ MonoBehaviour:
     priority: 1
     restartOnActivate: 0
     mixerGroupName: Music
-    output: {fileID: 0}
+    output: {fileID: 24300002, guid: fb4859a15a3c657459cda985772a4d57, type: 2}
   - name: Arena
     clip: {fileID: 8300000, guid: 9d63381bc7bed5d4c998d3b178979e87, type: 3}
     volume: 0.305
@@ -36856,7 +36856,7 @@ MonoBehaviour:
     priority: 2
     restartOnActivate: 0
     mixerGroupName: Music
-    output: {fileID: 0}
+    output: {fileID: 24300002, guid: fb4859a15a3c657459cda985772a4d57, type: 2}
   fadeOutDuration: 2
 --- !u!82 &629790954
 AudioSource:
@@ -79687,6 +79687,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoulManager
   resetSaveDataOnStart: 1
+  startFromZeroEachLaunch: 1
   saveDelaySeconds: 1.5
   totalSouls: 0
 --- !u!4 &1292585296
@@ -94123,7 +94124,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArenaMusic
   layerName: Arena
   startOnPlayerTrigger: 1
-  startWhenEnemiesRegister: 0
+  startWhenEnemiesRegister: 1
   canStartAgain: 0
   enemiesRoot: {fileID: 0}
   enemies:
