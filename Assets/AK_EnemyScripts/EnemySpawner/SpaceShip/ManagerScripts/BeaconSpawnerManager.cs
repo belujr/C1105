@@ -188,7 +188,7 @@ public class BeaconSpawnerManager : MonoBehaviour
         }
     }
 
-   
+
 
     public void RegisterOnlyKill(GameObject enemy)
     {
@@ -251,9 +251,40 @@ public class BeaconSpawnerManager : MonoBehaviour
 
         StopAllCoroutines();
 
-    
-     
+        KillAllActiveEnemies();
+
         activeShipsInTransit = 0;
+    }
+
+    /// Kills every enemy this beacon spawned that is still alive.
+    public void KillAllActiveEnemies()
+    {
+        // Copy first: a kill can call back into ReportEnemyDeath,
+        // which removes from activeEnemies while we are looping.
+        List<GameObject> toKill = new List<GameObject>(activeEnemies);
+
+        foreach (GameObject enemy in toKill)
+        {
+            if (enemy == null || !enemy.activeInHierarchy) continue;
+
+            IDamageable damageable = enemy.GetComponentInChildren<IDamageable>();
+
+            if (damageable != null)
+            {
+                // Goes through the enemy's normal death (animation, soul drop, etc.).
+                damageable.TakeDamage(999999f, enemy.transform.position, Vector3.up, 0f);
+            }
+            else if (EnemyObjectPool.Instance != null)
+            {
+                EnemyObjectPool.Instance.ReturnToPool(enemy);
+            }
+            else
+            {
+                Destroy(enemy);
+            }
+        }
+
+        activeEnemies.Clear();
     }
 
     /// Called by EnemySoulDrop at the moment of a real kill. Only counts enemies this beacon spawned.

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Reflection;
 using TMPro;
@@ -24,7 +25,8 @@ public class PlayerHealthHUD : MonoBehaviour
 
     [Header("Damage Flash")]
     [SerializeField] private Color normalFillColor = Color.white;
-    [SerializeField] private Color damageFlashColor =
+    [SerializeField]
+    private Color damageFlashColor =
         new Color(1f, 0.35f, 0.35f, 1f);
 
     [SerializeField, Min(0f)] private float flashDuration = 0.18f;
@@ -47,6 +49,58 @@ public class PlayerHealthHUD : MonoBehaviour
     private float targetFill;
     private float trailWait;
     private float flashRemaining;
+
+    private static Sprite fallbackSprite;
+
+    private void Awake()
+    {
+        ConfigureFillImage(healthFill, "Health Fill", true);
+        ConfigureFillImage(healthTrail, "Health Trail", true);
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        // Keeps the Inspector setup correct while editing.
+        ConfigureFillImage(healthFill, "Health Fill", false);
+        ConfigureFillImage(healthTrail, "Health Trail", false);
+    }
+#endif
+
+    // Image.fillAmount is ignored unless the Image is type Filled
+    // AND has a Source Image. Without a sprite Unity draws a plain
+    // full-size quad, so the bar never visibly shrinks.
+    private void ConfigureFillImage(Image image, string label, bool runtime)
+    {
+        if (image == null)
+            return;
+
+        if (image.sprite == null && runtime)
+        {
+            Debug.LogWarning(
+                "[PlayerHealthHUD] " + label + " has no Source Image, so " +
+                "fillAmount cannot crop it. Using a white fallback sprite; " +
+                "assign a sprite in the Inspector to silence this.", image);
+
+            if (fallbackSprite == null)
+            {
+                Texture2D tex = Texture2D.whiteTexture;
+                fallbackSprite = Sprite.Create(
+                    tex,
+                    new Rect(0f, 0f, tex.width, tex.height),
+                    new Vector2(0.5f, 0.5f));
+            }
+
+            image.sprite = fallbackSprite;
+        }
+
+        if (image.type != Image.Type.Filled)
+        {
+            image.type = Image.Type.Filled;
+            image.fillMethod = Image.FillMethod.Horizontal;
+            image.fillOrigin = (int)Image.OriginHorizontal.Left;
+        }
+    }
 
     private void OnEnable()
     {
@@ -138,7 +192,12 @@ public class PlayerHealthHUD : MonoBehaviour
             return;
 
         int maximum = Mathf.Max(0, playerHealth.maxHealth);
-        int current = (int)HealthField.GetValue(playerHealth);
+        // A direct (int) unbox throws every frame if currentHealth
+        // is a float, which silently stops the bars from updating.
+        object raw = HealthField.GetValue(playerHealth);
+        int current = raw is float f
+            ? Mathf.CeilToInt(f)
+            : Convert.ToInt32(raw);
 
         current = playerHealth.IsDead
             ? 0

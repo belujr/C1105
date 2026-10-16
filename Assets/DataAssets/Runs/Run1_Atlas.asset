@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ec8b4c43df9884dab1e56106bf74dc, type: 3}
   m_Name: Run1_Atlas
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSequence
+  advanceMode: 0
+  movementMode: 0
+  autoAdvanceTime: 3
   lines:
   - speakerProfile: {fileID: 11400000, guid: 5a655b03adb9d904482801e230a21b96, type: 2}
-    speakerName: ATLAS
-    speakerSubtitle: 
-    speakerSprite: {fileID: 21300000, guid: 8a1ca990f612b464cbf912c6444d5e19, type: 3}
-    defaultTitleAccentColor: {r: 1, g: 1, b: 1, a: 1}
     textOptions:
     - Prove to me you're not just another waste of flesh.
-    - Show me the strength I fused into your bones.
+    - Go and put some dirt in their eyes.
